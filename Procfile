@@ -1,1 +1,1 @@
-worker: source esclave/bin/activate; python main.py
+worker: python main.py
