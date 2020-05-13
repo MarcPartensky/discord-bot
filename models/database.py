@@ -59,7 +59,7 @@ class Database:
         self.cursor.execute(cmd, row)
         return cmd
 
-    def update(self, table:str, values:dict, conditions={}):
+    def update(self, table:str, values:dict, conditions:dict={}):
         """Remplace un item."""
         cmd = f"update {table} set "+", ".join([k+"=?" for k in values.keys()])
         if conditions:
@@ -70,7 +70,7 @@ class Database:
 
 
 
-    def select(self, table:str, column="*", conditions={}, orderby="", order="asc", limit="", offset="", like=""):
+    def select(self, table:str, column:str="*", conditions:dict={}, orderby:str="", order=:str"asc", limit:str="", offset:str="", like:str=""):
         """Sélectionne un item."""
         cmd = f"select {column} from {table}"
         if conditions:
@@ -86,7 +86,7 @@ class Database:
         self.cursor.execute(cmd, tuple(conditions.values()))
         return cmd
 
-    def delete(self, table:str, conditions={}, orderby="", order="asc", limit="", offset="", like=""):
+    def delete(self, table:str, conditions:dict={}, orderby:str="", order:str="asc", limit:str="", offset:str="", like:str=""):
         """Supprime un item."""
         cmd = f"delete from {table}"
         if conditions:
@@ -102,7 +102,7 @@ class Database:
         self.cursor.execute(cmd, tuple(conditions.values()))
         return cmd
 
-    def drop_table(self, table:str, if_exists=False):
+    def drop_table(self, table:str, if_exists:bool=False):
         """Oublie toutes la mémoire."""
         cmd = "drop table"
         if if_exists:
