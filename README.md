@@ -59,7 +59,7 @@ Go to:
 **Download python3.8 (Tested in 3.8.2)**
 - Download from the official website (recommended): https://www.python.org/
 OR
-- Download with homebrew
+- Download with homebrew (for mac or windows)
     -Go to homebrew website and download by typing their command: https://brew.sh/
     -Then download python3.8 by typing into terminal: brew install python3.8
 
