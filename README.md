@@ -2,19 +2,19 @@
 A discord bot that obeys me.
 
 
-###Short presentation###
+### Short presentation ###
 
 
 This is a discord bot in python that does everything i tell it to do.
 I added cool features to it:
 
-#APIs
+# APIs
 wikipedia, translations, memes, insults
 
-#Machine learning for vulgarity evaluations
+# Machine learning for vulgarity evaluations
 - accept all languages (check command)
 
-#Music support (uses youtube-dl)
+# Music support (uses youtube-dl)
 - play music from youtube urls
 - queue system
 - rating system for skipping
@@ -23,14 +23,14 @@ wikipedia, translations, memes, insults
 Soon:
 - save playlists to reuse later
 
-#Bank and games system
+# Bank and games system
 - play rock/papers/scissors to win coins
 - play heads or tails
 Soon:
 Casino system to play all types of games
 
 
-#Admin commands (Need to install the project to use them and change config folder, see the section)
+# Admin commands (Need to install the project to use them and change config folder, see the section)
 - mute and kick people from voice channel (as long as wanted)
 - ban, kick people
 - promote, demote people
@@ -38,7 +38,7 @@ Casino system to play all types of games
 ...
 
 
-#Basic commands:
+# Basic commands:
 - say hi
 - see top role, roles, permissions
 - tell date, hour
@@ -46,7 +46,7 @@ Casino system to play all types of games
 
 #and lots of other things...
 
-#More info:
+# More info:
 - Databases: mongodb, sqlite
 - Hosted by heroku
 
@@ -55,51 +55,51 @@ Casino system to play all types of games
 Go to:
 https://discord.com/api/oauth2/authorize?client_id=703347349623144549&permissions=8&scope=bot
 
-###To install the project to run your own bot###
+### To install the project to run your own bot ###
 
-#Download python3.8 (Tested in 3.8.2)
+# Download python3.8 (Tested in 3.8.2)
 - Download from the official website (recommended): https://www.python.org/
 OR
 - Download with homebrew
     -Go to homebrew website and download by typing their command: https://brew.sh/
     -Then download python3.8 by typing into terminal: brew install python3.8
 
-#Make a folder to download the repo (use cd, ls, mkdir in linux) (optional)
+# Make a folder to download the repo (use cd, ls, mkdir in linux) (optional)
 For instance to create a project in root:
 cd ~
 mkdir DiscordBot
 cd discordbot
 
-#Download the repo by typing:
+# Download the repo by typing:
 git clone https://github.com/MarcPartensky/discord-bot-esclave
 
-#Go into the new repo by typing:
+# Go into the new repo by typing:
 cd esclave
 
-#Use a virtual environment in python (optional but highly recommended)
+# Use a virtual environment in python (optional but highly recommended)
 To do so type:
 pip3.8 install virtualenv  #install virtualenv
 virtualenv esclave #create a virtual environment named esclave (you can name it however you want)
 source esclave/bin/activate #activate your virtual environment, to deactivate type 'deactivate'
 
-#Download librairies by typing:
+# Download librairies by typing:
 pip install requirements.txt (if using virtualenv)
 OR
 pip3.8 install requirements.txt (if not using virtualenv, this will install packages globally in machine)
 
-#You are almost good to go you just need to change credentials.py and config.py files to run your own discord bot
+# You are almost good to go you just need to change credentials.py and config.py files to run your own discord bot
 to learn more: https://discordpy.readthedocs.io/en/latest/discord.html
 you might need to change the 'masters' list with your own discord id to have admin commands
 
-#Finally start the program by typing
+# Finally start the program by typing
 python main.py (if using virtualenv)
 OR
 python3.8 main.py (if not using virtualenv)
 
-#Deactivate virtual environment after use (if using virtualenv) by typing:
+# Deactivate virtual environment after use (if using virtualenv) by typing:
 deactivate
 
  
- ##############
+### Host ###
 If you want to host the bot later on i recommand this tutorial video:
 https://www.youtube.com/watch?v=BPvg9bndP1U&t=399s
