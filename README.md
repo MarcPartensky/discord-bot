@@ -101,10 +101,12 @@ deactivate
  
 # Host
 If you want to host the bot later on i recommand this tutorial video for tech with tim on youtube:
-https://www.youtube.com/watch?v=BPvg9bndP1U
+*https://www.youtube.com/watch?v=BPvg9bndP1U*
 
 Here are some good playlists to get started in discord bots in python:
-Playlist of Tech with Tim:
-https://www.youtube.com/watch?v=xdg39s4HSJQ&list=PLzMcBGfZo4-kdivglL5Dt-gY7bmdNQUJu
-Playlist of Lucas:
-https://www.youtube.com/watch?v=nW8c7vT6Hl4&list=PLW3GfRiBCHOhfVoiDZpSz8SM_HybXRPzZ
+
+- Playlist of Tech with Tim:
+*https://www.youtube.com/watch?v=xdg39s4HSJQ&list=PLzMcBGfZo4-kdivglL5Dt-gY7bmdNQUJu*
+
+- Playlist of Lucas:
+*https://www.youtube.com/watch?v=nW8c7vT6Hl4&list=PLW3GfRiBCHOhfVoiDZpSz8SM_HybXRPzZ*
