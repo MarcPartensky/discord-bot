@@ -84,6 +84,7 @@ To do so type:
 
 **Download librairies by typing:**
 - pip install requirements.txt (if using virtualenv)
+
 OR
 - pip3.8 install requirements.txt (if not using virtualenv, this will install packages globally in machine)
 
@@ -95,6 +96,7 @@ you might need to change the 'masters' list with your own discord id to have adm
 
 **Finally start the program by typing**
 - python main.py (if using virtualenv)
+
 OR
 - python3.8 main.py (if not using virtualenv)
 
