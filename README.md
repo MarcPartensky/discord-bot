@@ -57,80 +57,58 @@ Go to:
 # To install the project to run your own bot
 
 **Download python3.8 (Tested in 3.8.2)**
-
 - Download from the official website (recommended): https://www.python.org/
-
 OR
-
-- Download with homebrew (for mac or windows)
-
-    -Go to homebrew website and download by typing their command: https://brew.sh/
-    
-    -Then download python3.8 by typing into terminal: brew install python3.8
+- Download with homebrew (for mac or windows) 
+    - Go to homebrew website and download by typing their command: https://brew.sh/
+    - Then download python3.8 by typing into terminal: brew install python3.8
 
 **Make a folder to download the repo (use cd, ls, mkdir in linux) (optional)**
-
 For instance to create a project in root:
-
-cd ~
-
-mkdir DiscordBot
-
-cd discordbot
+- cd ~
+- mkdir DiscordBot
+- cd discordbot
 
 **Download the repo by typing:**
-git clone https://github.com/MarcPartensky/discord-bot-esclave
+- git clone https://github.com/MarcPartensky/discord-bot-esclave
 
 **Go into the new repo by typing:**
-
-cd esclave
+- cd esclave
 
 **Use a virtual environment in python (optional but highly recommended)**
-
 To do so type:
-
-pip3.8 install virtualenv  #install virtualenv
-
-virtualenv esclave #create a virtual environment named esclave (you can name it however you want)
-
-source esclave/bin/activate #activate your virtual environment, to deactivate type 'deactivate'
+- pip3.8 install virtualenv  #install virtualenv
+- virtualenv esclave #create a virtual environment named esclave (you can name it however you want)
+- source esclave/bin/activate #activate your virtual environment, to deactivate type 'deactivate'
 
 
 **Download librairies by typing:**
-pip install requirements.txt (if using virtualenv)
-
+- pip install requirements.txt (if using virtualenv)
 OR
-
-pip3.8 install requirements.txt (if not using virtualenv, this will install packages globally in machine)
+- pip3.8 install requirements.txt (if not using virtualenv, this will install packages globally in machine)
 
 
 **You are almost good to go you just need to change credentials.py and config.py files to run your own discord bot**
-
 to learn more: https://discordpy.readthedocs.io/en/latest/discord.html
 
 you might need to change the 'masters' list with your own discord id to have admin commands
 
 **Finally start the program by typing**
-
-python main.py (if using virtualenv)
-
+- python main.py (if using virtualenv)
 OR
-
-python3.8 main.py (if not using virtualenv)
+- python3.8 main.py (if not using virtualenv)
 
 **Deactivate virtual environment after use (if using virtualenv) by typing:**
-deactivate
+- deactivate
 
  
 # Host your own bot version on Heroku for free
-
 If you want to host the bot later on i recommand this tutorial video for tech with tim on youtube:
 
 *https://www.youtube.com/watch?v=BPvg9bndP1U*
 
 
 # Learn more about discord bots in python
-
 Here are some good playlists to get started in discord bots in python:
 
 - Playlist of Tech with Tim:
