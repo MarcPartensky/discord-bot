@@ -122,7 +122,7 @@ python3.8 main.py (if not using virtualenv)
 deactivate
 
  
-# Host
+# Host on Heroku
 
 If you want to host the bot later on i recommand this tutorial video for tech with tim on youtube:
 
