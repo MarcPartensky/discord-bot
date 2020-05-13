@@ -105,7 +105,7 @@ OR
 
  
 # Host your own bot version on Heroku for free
-If you want to host the bot later on i recommand this tutorial video for tech with tim on youtube:
+If you want to host the bot later on i recommand this tutorial video of tech with tim on youtube:
 
 *https://www.youtube.com/watch?v=BPvg9bndP1U*
 
