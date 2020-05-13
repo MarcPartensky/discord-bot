@@ -1,4 +1,4 @@
-token = "NzAzMzQ3MzQ5NjIzMTQ0NTQ5.XqNpcg.qybAmE4p2XcMC5MnwAgvx3llHSY"
+token = "z23QagwhaQwGKzNXV9P7dRhV1MWZPTPC"
 client_id = 703347349623144549
 # mongo_url = "mongodb+srv://esclave:marcgptl44@discord-cluster-5ckni.mongodb.net/test"
 mongo_url = "mongodb+srv://<username>:<password>@discord-cluster-5ckni.mongodb.net/test"
