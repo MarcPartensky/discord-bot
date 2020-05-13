@@ -103,6 +103,8 @@ deactivate
 If you want to host the bot later on i recommand this tutorial video for tech with tim on youtube:
 *https://www.youtube.com/watch?v=BPvg9bndP1U*
 
+
+# Learn more about discord bots in python
 Here are some good playlists to get started in discord bots in python:
 
 - Playlist of Tech with Tim:
