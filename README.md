@@ -2,7 +2,7 @@
 A discord bot that obeys me.
 
 
-### Short presentation ###
+# Short presentation
 
 This is a discord bot in python that does everything i tell it to do.
 I added cool features to it:
