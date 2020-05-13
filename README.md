@@ -101,4 +101,4 @@ deactivate
  
 # Host
 If you want to host the bot later on i recommand this tutorial video:
-https://www.youtube.com/watch?v=BPvg9bndP1U&t=399s
+https://www.youtube.com/watch?v=BPvg9bndP1U
