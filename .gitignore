@@ -1,4 +1,4 @@
 env
 database
 *.vscode
-secrets
+.secrets

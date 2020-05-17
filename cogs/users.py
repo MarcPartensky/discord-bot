@@ -13,6 +13,7 @@ class Users(commands.Cog):
     # def update_user(self, ctx:commansd)
 
 
+
 def setup(bot):
     collection = MongoCollection("Users")
     bot.add_cog(Users(bot, collection))
