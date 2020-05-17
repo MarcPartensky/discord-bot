@@ -7,7 +7,8 @@ import pymongo
 
 cluster = MongoClient(mongo_url)
 
-prefixes = ["esclave", "."]
+# prefixes = ["esclave", "."]
+prefix = "?"
 # masters = ["Marc Partensky#5983"]#, "Mazex#3106"]
 masters = [478552571510915072]#, 219949869220102147]
 

@@ -40,7 +40,7 @@ class Bank(commands.Cog, Database):
 
     @commands.command(name="ouvrir-compte")
     async def open_an_account(self, ctx, customer:discord.User=None):
-        """Supprime un compte bancaire."""
+        """Ouvrir un compte bancaire."""
         customer = customer or ctx.author
         if ctx.author!=customer and not ctx.author.id in masters:
             await ctx.send("Vous n'êtes pas autorisés à ouvrir le compte de cette personne.")
@@ -62,9 +62,9 @@ class Bank(commands.Cog, Database):
                 await ctx.send(f"Un compte au nom de {customer.name} a été ouvert.")
                 await ctx.send(f"{customer.name} bénéficie d'un starter de {self.starter_money} {emoji.coin}.")
 
-    @commands.command(name="fermer-compte")
+    @commands.command(name="fermer-compte", aliases=["supprimer-compte"])
     async def close_an_account(self, ctx, customer:discord.User=None):
-        """Crée un compte bancaire."""
+        """Supprime un compte bancaire."""
         customer = customer or ctx.author
         if ctx.author!=customer and not ctx.author.id in masters:
             await ctx.send("Vous n'êtes pas autorisés à fermer le compte de cette personne.")
@@ -148,7 +148,7 @@ class Bank(commands.Cog, Database):
         self.drop_table("transactions")
         await ctx.send("Toute la banque est supprimée.")
 
-    @commands.command(name="charger_banque")
+    @commands.command(name="charger-banque")
     @access.admin
     async def load_bank(self, ctx):
         """Charge la banque."""

@@ -32,7 +32,7 @@ class Memory(commands.Cog, Database):
 
     @commands.command(name="clm-mémoire", aliases=["colonnes-mémoire"])
     async def memory_columns(self, ctx):
-        """Donnes le noms des colonnes des commandes."""
+        """Donne le noms des colonnes des commandes."""
         cursor = self.connection.execute(f'select * from {self.table}')
         names = list(map(lambda x: x[0], cursor.description))
         await ctx.send(names)
@@ -75,14 +75,14 @@ class Memory(commands.Cog, Database):
             else:
                 await ctx.send(resp)
 
-    @commands.command(name="taille-mémoire")
-    async def memory_length(self, ctx):
-        """Affiche la taille mémoire."""
+    @commands.command(name="nombre-commandes", aliases=["taille-mémoire"])
+    async def commands_number(self, ctx):
+        """Affiche le nombre de commandes."""
         await ctx.send(str(len(self[self.table])))
 
     @commands.command(name="commandes", aliases=["mémoire"])
     async def all_commands(self, ctx, member:discord.Member=None, n=5, order="desc"):
-        """Affiche toute la mémoire."""
+        """Affiche les commandes enregistrées."""
         if not member: member = ctx.author
         if not ctx.author.id in masters:
             n = min(n, 10)
@@ -100,7 +100,7 @@ class Memory(commands.Cog, Database):
 
     @commands.command(name="mes-commandes", aliases=["ma-mémoire"])
     async def my_commands(self, ctx, n=5, order="desc"):
-        """Affiche toute la mémoire."""
+        """Affiche ses commandes enregistrées."""
         if not ctx.author.id in masters:
             n = min(n, 10)
         self.select(self.table, conditions=dict(author=str(ctx.author)), orderby="rowid", order=order)

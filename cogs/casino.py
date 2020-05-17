@@ -1,5 +1,5 @@
-from config.config import access, status, delete_after_time, masters
-from models.database import Database
+from config.config import access, delete_after_time, masters
+from models.mongocollection import MongoCollection
 from config import emoji
 from utils import tools
 
@@ -8,18 +8,20 @@ import discord
 import random
 import time
 
-
-class Casino(commands.Cog, Database):
-    def __init__(self, bot, path, **kwargs):
-        commands.Cog.__init__(self, **kwargs)
-        Database.__init__(self, path)
+class Casino(commands.Cog, MongoCollection):
+    def __init__(self, bot, **kwargs):
+        # commands.Cog.__init__(self, **kwargs)
+        # MongoCollection.__init__(self, type(self).__name__)
         self.bot = bot
         self.max_chips = 5
-        self.bank = self.bot.get_cog("Bank")
+        # self.bank = self.bot.get_cog("Bank")
+
+    @commands.command
+    def find_the_number(self, ctx:commands.Context, n:int):
+        """Jeu ou il faut deviner le nombre."""
+        pass
 
 
 def setup(bot):
-    from os.path import join, dirname, abspath
-    path = join(dirname(dirname(abspath(__file__))), 'database/casino.db')
-
-    bot.add_cog(Casino(bot, path=path))
+    # bot.add_cog(Casino(bot))
+    pass

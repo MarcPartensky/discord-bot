@@ -1,5 +1,5 @@
 from config.credentials import token, client_id
-from config.config import prefixes, masters, delete_after_time, status, access
+from config.config import prefix, masters, delete_after_time, status, access
 
 from discord.ext import commands, tasks
 import warnings
@@ -17,24 +17,42 @@ import os
 #TODO
 #command prefix
 
-
-client = commands.Bot(command_prefix='.', case_insensitive=True)
+client = commands.Bot(command_prefix=prefix, case_insensitive=True)
 client.id = client_id
-
 
 class Main(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.load_cogs()
         self.invited = "invité"
         self.good_invited = "bon invité"
         self.bad_invited = "mauvais invité"
+        self.load_cogs()
+
+    @commands.command(name="charge-tous")
+    @access.admin
+    async def load_all(self, ctx:commands.Context):
+        """Charge tous les cogs."""
+        self.load_cogs()
+        await ctx.send("Tous les cogs sont chargés.")
 
     def load_cogs(self):
         """Charge tous les cogs."""
         for filename in os.listdir('./cogs'):
             if filename.endswith('.py'):
                 self.bot.load_extension(f"cogs.{filename[:-3]}")
+
+    @commands.command(name="décharge-tous")
+    @access.admin
+    async def unload_all(self, ctx:commands.Context):
+        """Décharge tous les cogs."""
+        self.unload_cogs()
+        await ctx.send("Tous les cogs sont déchargés.")
+
+    def unload_cogs(self):
+        """Décharge tous les cogs."""
+        for filename in os.listdir('./cogs'):
+            if filename.endswith('.py'):
+                self.bot.unload_extension(f"cogs.{filename[:-3]}")
 
     @commands.command(name="charge", aliases=["load"])
     @access.admin

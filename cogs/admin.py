@@ -74,7 +74,7 @@ class Admin(commands.Cog):
     @commands.command()
     @access.admin
     async def clear(self, ctx, limit:int=None, included=True):
-        """Nettoie le channel."""
+        """Nettoie le chat."""
         limit = limit or self.clear_limit
         await ctx.channel.purge(limit=limit+included)
 

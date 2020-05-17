@@ -19,7 +19,7 @@ import random
 
 
 class Basic(commands.Cog):
-    def __init__(self, bot, **kwargs):
+    def __init__(self, bot:commands.Bot, **kwargs):
         super().__init__(**kwargs)
         self.bot = bot
 
@@ -45,6 +45,35 @@ class Basic(commands.Cog):
         """Réagit à un message avec un emoji."""
         await ctx.send(message)
         await ctx.message.add_reaction(emoji)
+
+    @commands.command(name="emoji-id")
+    async def emoji_id(self, ctx:commands.Context, emoji):
+        """Renvoie l'id d'un emoji."""
+        if isinstance(emoji, int):
+            await ctx.send(emoji)
+        elif isinstance(emoji, str):
+            emoji = discord.utils.get(self.bot.emojis, name=emoji)
+            await ctx.send(emoji.id)
+
+    @commands.command(name="emoji-to-id")
+    async def emoji_to_id(self, ctx:commands.Context):
+        """Donne l'id d'un emoji."""
+        def check(reaction, user):
+            return user==ctx.author
+        user, reaction = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
+        await ctx.send(reaction.id)
+
+    @commands.command(name="id-to-emoji")
+    async def id_to_emoji(self, ctx:commands.Context, id:int):
+        """Donne l'emoji avec l'id."""
+        emoji = self.bot.get_emoji(id)
+        await ctx.send(emoji)
+
+    @commands.command(name="list-emojis")
+    async def list_emojis(self, ctx):
+        """Liste les noms d'emojis."""
+        names = [e.name for e in self.bot.emojis]
+        await ctx.send(names)
 
     @commands.command()
     async def ping(self, ctx):
@@ -97,9 +126,9 @@ class Basic(commands.Cog):
         """Dit à l'oral les messages écrits."""
         await ctx.send(msg, tts=True)
 
-    @commands.command(name='mes-servers')
+    @commands.command(name='mes-servers', aliases=['mes-serveurs'])
     async def my_servers(self, ctx:commands.Context):
-        """Donnes les serveurs où vous êtes connectés."""
+        """Donnes vos serveurs."""
         ctx.author.guild
         await ctx.send()
 
@@ -117,7 +146,7 @@ class Basic(commands.Cog):
 
     @commands.command(name="nom-à-tag")
     async def name_to_tag(self, ctx, name:str):
-        """Renvoie le nom associé au tag"""
+        """Renvoie le nom associé au tag."""
         id = tools.name_to_id(ctx, name)
         tag = tools.to_tag(id)
         await ctx.send(tag)
