@@ -1,12 +1,6 @@
 # from mongocollection import MongoCollection
 import discord
 
-class DictObject(dict):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.__dict__ = self
-
-
 class User(DictObject)
     def __str__(self):
         if hasattr(self, 'name'):
@@ -59,7 +53,6 @@ cluster.bank[id].money += 123
 cluster.casino[id].coins += 34
 cluster.commands.append(command)
 cluster.commands.find(machin=34, bidule=324)
-cluster.code.
 
 
 

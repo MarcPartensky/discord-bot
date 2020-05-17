@@ -36,3 +36,8 @@ def tag_to_id(tag):
 def id_to_tag(id):
     return f"<@!{id}>"
 
+class DictObject(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__dict__ = self
+
