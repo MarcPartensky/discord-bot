@@ -21,7 +21,7 @@ class Commandes(commands.Cog):
         # self.commands.create_index([('command', pymongo.ASCENDING)], unique=True)
         self.max_commands_shown = 10
         self.learn_separator = "=>"
-        self.search_prefix = ","+prefix
+        self.search_prefix = ","
         self.timeout = 60
     
     @commands.command(name='migrer-commandes')
