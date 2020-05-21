@@ -148,7 +148,7 @@ class Basic(commands.Cog):
     async def name_to_tag(self, ctx, name:str):
         """Renvoie le nom associé au tag."""
         id = tools.name_to_id(ctx, name)
-        tag = tools.to_tag(id)
+        tag = tools.id_to_tag(id)
         await ctx.send(tag)
 
     @commands.command()

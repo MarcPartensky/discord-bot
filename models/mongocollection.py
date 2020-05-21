@@ -61,15 +61,15 @@ class MongoCollection:
         """Delete many posts meeting conditions."""
         self.collection.delete_many(conditions)
 
-    def __getattribute__(self, id:Any):
+    def __getattribute__(self, id):
         """Return a post of the collection using its id."""
         return self.find({'_id':id})
 
-    def __setattr__(self, id:Any, value:dict):
+    def __setattr__(self, id, value:dict):
         """Create or modify a post."""
         pass
 
-    def __contains__(self, id:Any):
+    def __contains__(self, id):
         """Determine if a collection contains an id."""
         
 

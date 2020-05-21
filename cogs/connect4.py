@@ -1,4 +1,4 @@
-from config.config import prefix
+from config.config import prefix, cluster
 from discord.ext import commands
 import discord
 import random
@@ -18,6 +18,9 @@ class Puissance4(commands.Cog):
         self.done = False
         self.message = None
         self.grid_message = None
+        self.bet = None
+        self.player = None
+        self.against = None
 
     @commands.command(name="p4-random")
     async def random(self, ctx):
@@ -30,8 +33,15 @@ class Puissance4(commands.Cog):
 
     @commands.command(name="p4-jouer", aliases=['p4-lancer', 'p4-play', 'p4-start', 'p4-rejouer'])
     @random.before_invoke
-    async def start(self, ctx:commands.Context):
+    async def start(self,
+            ctx:commands.Context,
+            against:discord.Member=None,
+            bet:int=None
+        ):
         """Lance le jeu du puissance 4."""
+        self.player = ctx.author
+        self.against = against
+        self.bet = bet
         self.done = False
         self.message = await ctx.send("Nouvelle partie.")
         self.grid_message = await ctx.send("grid")
@@ -40,13 +50,21 @@ class Puissance4(commands.Cog):
         color_name = type(self).color_names[self.board.turns%2]
         await self.message.edit(content=f"Au tour du joueur {color_name}.")
 
+    @commands.command(name="p4-stop")
+    async def stop(self, ctx):
+        """Arrête le jeu du puissance 4."""
+        if self.grid_message and self.message:
+            await self.grid_message.delete()
+            await self.message.delete()
+        else:
+            await ctx.send("Aucune partie de puissance 4 en cours.")
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction:discord.Reaction, member:discord.Member):
         """Détecte les réactions des membres."""
-        member.display_name
-        if member.id == self.bot.id: return
-        if str(reaction) in type(self).numbers:
+        if member.id == int(self.bot.id): return
+        print(member.id, self.bot.id)
+        if str(reaction) in type(self).numbers and member in [self.player, self.against]:
             self.choice = type(self).numbers.index(str(reaction))
             await reaction.remove(member)
             await self.play()

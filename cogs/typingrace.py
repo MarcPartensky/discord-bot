@@ -1,4 +1,5 @@
-# from models.mongocollection import MongoCollection
+from config.config import cluster
+from models.mongo import Post
 
 from discord.ext import commands, tasks
 import discord
@@ -12,6 +13,8 @@ import string
 
 class TypingRace(commands.Cog):
     def __init__(self, bot:commands.Bot):
+        self.users = cluster.users
+        self.info = self.users.info
         self.bot = bot
         self.timeout = 30
         self.precision_digits = 1
@@ -55,6 +58,9 @@ class TypingRace(commands.Cog):
             msg = await self.bot.wait_for('message', check=check, timeout=timeout)
             t = time.time()-t
             wpm = w*60/t
+            post = self.users.info[msg.author.id] or Post()
+            post.last_typing_speed = wpm
+            self.users.info[msg.author.id] = post
             msg = f"{msg.author.name} a pris {int(f*t)/f} secondes."
             msg += f"\nSoit {int(f*wpm)/f} mots par minutes."
         except asyncio.exceptions.TimeoutError:

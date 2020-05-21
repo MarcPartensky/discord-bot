@@ -41,3 +41,19 @@ class DictObject(dict):
         super().__init__(*args, **kwargs)
         self.__dict__ = self
 
+
+def for_all_cog_methods(decorator_method):
+    def decorate(cls):
+        def decorator__new__(new):
+            def decorated__new__(cls, *args, **kwargs):
+                o = new(cls, *args, **kwargs)
+                decorated_cog_commands = []
+                for command in o.__cog_commands__:
+                    decorated = decorator_method(command)
+                    decorated_cog_commands.append(decorated)
+                o.__cog_commands__ = tuple(decorated_cog_commands)
+                return o
+            return decorated__new__
+        cls.__new__ = decorator__new__(cls.__new__)
+        return cls
+    return decorate

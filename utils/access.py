@@ -8,6 +8,7 @@ class Access:
         self.admin_emoji = "⚜️"
         self.member_emoji = "✅"
         self.bank_emoji = ""
+        self.decorated = 0
 
     def limit(self, *authorized):
         """Limite l'accès à une fonction aux autorisés."""
@@ -19,7 +20,10 @@ class Access:
                 else:
                     await ctx.send(self.rejection)
             decorator.__doc__ = self.admin_emoji+func.__doc__                
-            decorator.__name__ = func.__name__
+            if hasattr(func, 'qualified_name'):
+                decorator.__name__ = func.qualified_name
+            else:
+                decorator.__name__ = func.__name__
             sig = inspect.signature(func)
             decorator.__signature__ = inspect.signature(func)
             return decorator
@@ -28,18 +32,34 @@ class Access:
 
     def admin(self, func):
         """Impose la condition d'être admin."""
-        async def decorator(obj, ctx, *args, **kwargs):
+        async def decorated(obj, ctx, *args, **kwargs):
             if ctx.author.id in self.masters or 'authorized' in ctx.__dict__:
                 return await func(obj, ctx, *args, **kwargs)
             else:
                 await ctx.send(self.rejection)
-        decorator.__doc__ = self.admin_emoji+func.__doc__                
-        decorator.__name__ = func.__name__
+        decorated.__doc__ = self.admin_emoji+func.__doc__
+        decorated.__name__ = func.__name__
         sig = inspect.signature(func)
         # decorator.__signature__ = sig.replace(parameters=tuple(sig.parameters.values())[1:])
-        decorator.__signature__ = inspect.signature(func)
-        return decorator
+        decorated.__signature__ = inspect.signature(func)
+        decorated.__admin__ = True
+        return decorated
 
+    def cog_admin(self, command):
+        """Impose la condition d'être admin à une commande."""
+        print('command name in cog admin 1:', command.name)
+        command.help = self.admin_emoji+command.help
+        def decorator(func):
+            async def decorated(obj, ctx, *args, **kwargs):
+                print("here's your context:", ctx)
+                if ctx.author.id in self.masters or 'authorized' in ctx.__dict__:
+                    return await func(obj, ctx, *args, **kwargs)
+                else:
+                    await ctx.send(self.rejection)
+            return decorated
+        command.__call__ = decorator(command.__call__)
+        print('command name in cog admin 2:', command.name)
+        return command
 
     def member(self, func):
         """Impose la condition d'être membre."""
