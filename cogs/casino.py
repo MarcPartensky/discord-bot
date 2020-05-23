@@ -91,9 +91,9 @@ class Casino(commands.Cog):
             self.accounts[ctx.author.id] = {'coins': self.coins_starter, 'creation':time.time(), 'time':time.time()}
         else:
             if time.time()-account.time>self.refill_wait_time:
-                self.refill()
+                self.refill(ctx)
 
-    def refill(self):
+    def refill(self, ctx):
         """Rajoute des coins régulièrement."""
         self.accounts.update_one({'_id':ctx.author.id}, {'$inc': {'coins':self.refill_coins}})
 

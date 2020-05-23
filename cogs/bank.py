@@ -1,14 +1,13 @@
-from config.config import access, masters
-from models.database import Database
-from config import emoji
-from utils import tools
+from config.config import access, cluster, check, masters
+from models.mongo import Post
 
-from discord.ext import commands, tasks
+from discord.ext import commands
 import discord
+
+import datetime
 import time
 
-
-class Bank(commands.Cog, Database):
+class Bank(commands.Cog):
     class NotEnoughMoney(Exception):
         def __init__(self, user):
             super().__init__(f"{user.name} n'a pas assez d'argent.")
@@ -16,263 +15,191 @@ class Bank(commands.Cog, Database):
         def __init__(self, user):
             super().__init__(f"{user.name} n'a pas de compte en banque.")
 
-    def __init__(self, bot, path, **kwargs):
-        commands.Cog.__init__(self, **kwargs)
-        Database.__init__(self, path)
+    def __init__(self, bot):
         self.bot = bot
-        self.money_fields = dict(customer="integer", money="integer", datetime="integer")
-        self.booklet_a_fields = dict(customer="integer", datetime="integer")
-        self.transactions_fields = dict(buyer="integer", receiver="integer", money="integer", datetime="integer") #auto increment key
+        self.bank = cluster.bank
+        self.accounts = self.bank.accounts
         self.starter_money = 10
-        self.load()
+        self.never = "jamais"
+        self.troll_message = "Vous y avez vraiment cru? mdr"
 
-    def load(self):
-        self.create_table_if_not_exists("money", self.money_fields)
-        self.create_table_if_not_exists("booklet_a", self.booklet_a_fields)
-        self.create_table_if_not_exists("transactions", self.transactions_fields)
-        try:
-            self.create_unique_index(table="money", id="id", field="customer") #unique customer key
-            self.create_unique_index(table="booklet_a", id="id", field="customer") #unique customer key
-            self.insert(table="money", row=[self.bot.id, "infinity", time.time()])
-        except:
+    async def has_bank_account(self, ctx:commands.Context, member:discord.Member):
+        """Assure l'existence d'un compte."""
+        account = self.accounts[member.id]
+        return await self.is_bank_account(ctx, account, member)
+
+    async def is_bank_account(self, ctx:commands.Context, account, member:discord.Member):
+        """Détermine si un compte bancaire est valide."""
+        if not account:
+            if ctx.author==member:
+                msg = "Vous n'avez pas ouvert de compte bancaire."
+            else:
+                msg = f"{member.name} n'a pas ouvert de compte bancaire."
+            await ctx.send(msg)
+            return False
+        return True
+        
+    async def has_enough_money(self, ctx:commands.Context, account, pay:int):
+        """Assure la capacité de payer."""
+        if account.money < pay:
+            if ctx.author==user:
+                msg = "Vous n'avez pas assez d'argent."
+            else:
+                msg = f"{user.name} n'a pas assez d'argent."
+            await ctx.send(msg)
+            return False
+        return True
+
+    @commands.command(name="choisir-argent", aliases=["argent="])
+    async def set_money(self, ctx:commands.Context, member:discord.Member):
+        """Choisi l'argent d'un compte bancaire."""
+        member = member or ctx.author
+        if await self.has_bank_account(ctx, member):
             pass
 
 
+    @commands.command(name="migrer-banque")
+    @access.admin
+    async def migrate(self, ctx:commands.Context):
+        """Migre banque de sqlite vers mongodb."""
+        await ctx.send("En attente")
+
+    @commands.command(name="code-bancaire")
+    async def bank_code(self, ctx:commands.Context, member:discord.Member):
+        """Donne le code bancaire d'un membre."""
+        msg = f"Le code bancaire de {member.name} est ||{self.troll_message}||"
+        await ctx.send(msg)
+
+    @commands.command(name="comptes-bancaires")
+    @access.admin
+    async def bank_accounts(self, ctx:commands.Context):
+        """Informe sur un compte bancaire."""
+        cursor = list(self.accounts.find())
+        if len(cursor)==0:
+            msg = "Personne n'a ouvert de compte en banque."
+            return await ctx.send(msg)
+        for post in cursor:
+            account = Post(post)
+            msg = self.describe_account(account)
+            await ctx.send(msg)
+
+    @commands.command(name="compte-bancaire")
+    async def bank_account(self, ctx:commands.Context, member:discord.Member=None):
+        """Informe sur un compte bancaire."""
+        member = member or ctx.author
+        account = self.accounts[member.id]
+        if await self.is_bank_account(ctx, account, member):
+            msg = self.describe_account(account, member)
+            await ctx.send(msg)
+
+    def describe_account(self, account, user:discord.Member=None):
+        """Décrit un compte bancaire."""
+        user = user or self.bot.get_user(account._id)
+        creation = datetime.datetime.fromtimestamp(int(account.creation))
+        if account.withdrawed:
+            withdrawed_time = datetime.datetime.fromtimestamp(int(account.withdrawed_time))
+        else:
+            withdrawed_time = self.never
+        if account.saved:
+            saved_time = datetime.datetime.fromtimestamp(int(account.saved_time))
+        else:
+            saved_time = self.never
+        lines = [
+            f"Informations bancaire de **{user.name}**:",
+            f"compte de `{user.name}`",
+            f"crée le `{creation}`",
+            f"a retiré de l'argent `{account.withdrawed}` fois",
+            f"dont la dernière fois le `{withdrawed_time}`",
+            f"a placé de l'argent `{account.saved}` fois",
+            f"dont la dernière fois le `{saved_time}`"
+        ]
+        msg = "\n  - ".join(lines)
+        return msg
+
+    @commands.command(name="compte-bancaire-brute", hidden=True)
+    async def raw_bank_account(self, ctx:commands.Context, user:discord.Member=None):
+        """Informe sur un compte bancaire."""
+        user = ctx.author or user
+        account = self.accounts[user.id]
+        if await self.has_bank_account(ctx, user):
+            lines = [f"Informations bancaire de {user.name}:"]
+            lines += [f"{k} : {v}"  for k,v in account.items()]
+            msg = "\n  - ".join(lines)
+            await ctx.send(msg)
+
     @commands.command(name="ouvrir-compte")
-    async def open_an_account(self, ctx, customer:discord.User=None):
-        """Ouvrir un compte bancaire."""
-        customer = customer or ctx.author
-        if ctx.author!=customer and not ctx.author.id in masters:
-            await ctx.send("Vous n'êtes pas autorisés à ouvrir le compte de cette personne.")
-            return
-        self.select(table="money", conditions={"customer":customer.id})
-        result = self.fetchone()
-        if result:
-            if ctx.author == customer:
-                await ctx.send("Vous avez déjà un compte.")
+    async def open_account(self, ctx:commands.Context, member:discord.Member=None):
+        """Ouvre un compte en banque."""
+        member = member or ctx.author
+        if ctx.author!=member and not ctx.author.id in masters:
+            return await ctx.send("Vous n'êtes pas autorisés à ouvrir le compte de cette personne.")
+        account = self.accounts[member.id]
+        if post:
+            if ctx.author==member:
+                msg = "Vous avez déjà un compte en banque."
             else:
-                await ctx.send(f"Le nom {customer.name} est déjà pris.")
+                msg = f"{member.name} a déjà un compte en banque."
+            return await ctx.send(msg)
+        post = Post(
+            _id = ctx.author.id,
+            money = self.starter_money,
+            creation = time.time(),
+            withdrawed = 0,
+            withdrawed_time = None,
+            saved = 0,
+            saved_time = None,
+        )
+        self.accounts.post(post)
+        if ctx.author==member:
+            await ctx.send("Votre compte est ouvert.")
         else:
-            self.insert(table="money", row=[customer.id, self.starter_money, time.time()])
-            self.insert(table="transactions", row=[self.bot.id, customer.id, self.starter_money, time.time()])
-            if ctx.author.id == customer.id:
-                await ctx.send("Votre compte est ouvert.")
-                await ctx.send(f"Vous bénéficez d'un starter de {self.starter_money} {emoji.coin}.")
-            else:
-                await ctx.send(f"Un compte au nom de {customer.name} a été ouvert.")
-                await ctx.send(f"{customer.name} bénéficie d'un starter de {self.starter_money} {emoji.coin}.")
+            await ctx.send(f"Un compte au nom de {member.name} a été ouvert.")
 
-    @commands.command(name="fermer-compte", aliases=["supprimer-compte"])
-    async def close_an_account(self, ctx, customer:discord.User=None):
-        """Supprime un compte bancaire."""
-        customer = customer or ctx.author
-        if ctx.author!=customer and not ctx.author.id in masters:
-            await ctx.send("Vous n'êtes pas autorisés à fermer le compte de cette personne.")
+    @commands.command(name="fermer-compte", aliases=['supprimer-compte'])
+    async def close_account(self, ctx:commands.Context, member:discord.Member=None):
+        """Ferme un compte en banque."""
+        member = member or ctx.author
+        if ctx.author!=member and not ctx.author.id in masters:
+            await ctx.send(f"Vous n'êtes pas autorisés à fermer le compte de {member.name}.")
             return
-        self.select(table="money", conditions={"customer":customer.id})
-        result = self.fetchone()
-        if result:
-            self.delete(table="money", conditions={"customer":customer.id})
-            await ctx.send(f"Le compte au nom de '{customer.name}' a été fermé.")
+        post = self.accounts.find_one({'_id':member.id})
+        if not post:
+            if member==ctx.author:
+                await ctx.send("Vous n'avez pas de compte.")
+            else:
+                await ctx.send(f"{member.name} n'as pas de compte.")
+            return
+        if member==ctx.author:
+            await ctx.send("Votre compte a été trouvé. "
+                "Êtes-vous sur de vouloir le supprimer?")
         else:
-            await ctx.send(f"Ce compte au nom de '{customer.name}' n'existe pas.")
-
-    @commands.command(name="choisir-argent", aliases=["argent="])
-    @access.admin
-    async def set_money(self, ctx, money:int, customer:discord.User=None):
-        """Choisis l'argent d'un compte."""
-        customer = customer or ctx.author
-        buyer = self.bot.get_user(self.bot.id)
-        self.update(table="money", values={"money":money}, conditions={"customer":customer.id})
-        await ctx.send(f"{customer.name} a maintenant {money} {emoji.coin}.")
-
-    @commands.command(name="gagner-argent", aliases=["argent+="])
-    @access.admin
-    async def win_money(self, ctx, money:int, customer:discord.User=None):
-        """Ajoute de l'argent à un compte."""
-        customer = customer or ctx.author
-        buyer = self.bot.get_user(self.bot.id)
-        try:
-            self.win(customer, money)
-            await ctx.send(f"{customer.name} reçoit {money} {emoji.coin} de {buyer.name}.")
-        except Exception as e:
-            await ctx.send(e)
-
-    @commands.command(name="perdre-argent", aliases=["argent-="])
-    @access.admin
-    async def loose_money(self, ctx, money:int, customer:discord.User=None):
-        """Retire de l'argent à compte bancaire."""
-        customer = customer or ctx.author
-        receiver = self.bot.get_user(self.bot.id)
-        try:
-            self.loose(customer, money)
-            await ctx.send(f"{customer.name} donne {money} {emoji.coin} à {receiver.name}.")
-        except Exception as e:
-            await ctx.send(e)
-
+            await ctx.send(f"Le compte de {member.name} a été trouvé. "
+                "Êtes-vous sur de vouloir le supprimer?")
+        success = await check.wait_for_check(ctx)
+        if not success:
+            return
+        self.accounts.delete_one({'_id':member.id})
+        if member==ctx.author:
+            await ctx.send("Votre compte a été supprimé.")
+        else:
+            await ctx.send(f"{member.name} a été supprimé.")
 
     @commands.command(name="argent")
-    async def money(self, ctx, customer:discord.User=None):
+    async def money(self, ctx:commands.Context, member:discord.User=None):
         """Affiche l'argent d'un compte bancaire."""
-        customer = customer or ctx.author
-        self.select(table="money", column="money", conditions={"customer":customer.id})
-        result = self.fetchone()
-        if result:
-            money = result[0]
-            if customer==ctx.author:
-                await ctx.send(f"Vous avez {money} {emoji.coin}.")
+        member = member or ctx.author
+        account = self.accounts[member.id]
+        if not account:
+            if member==ctx.author:
+                msg = "Vous n'avez pas ouvert de compte."
             else:
-                await ctx.send(f"{customer.name} a {money} {emoji.coin}.")          
+                msg = f"{member.name} n'a pas ouvert de compte."
         else:
-            if customer==ctx.author:
-                await ctx.send(f"Vous avez n'avez pas de compte.")
+            if member==ctx.author:
+                msg = f"Vous avez {account.money} d'argent en banque."
             else:
-                await ctx.send(f"Le compte {customer.name} n'existe pas.")
+                msg = f"{member.name} a {account.money} d'argent en banque."
+        return await ctx.send(msg)
 
-    @commands.command(name="vider-banque")
-    @access.admin
-    async def reset(self, ctx):
-        """Vide tous les comptes bancaires."""
-        self.update(table="money", values={"money":0})
-        self.select(table="money", column="customer")
-        for name in self.fetchall():
-            self.insert(table="transaction", row=(name, 0, time.time()))
-        await ctx.send("Tout les comptes bancaires sont mis à zéros.")
-
-    @commands.command(name="sup-banque", aliases=['supprimer-banque'])
-    @access.admin
-    async def delete(self, ctx):
-        """Vide tous les comptes bancaires."""
-        self.drop_table("money")
-        self.drop_table("booklet_a")
-        self.drop_table("transactions")
-        await ctx.send("Toute la banque est supprimée.")
-
-    @commands.command(name="charger-banque")
-    @access.admin
-    async def load_bank(self, ctx):
-        """Charge la banque."""
-        self.load()
-        await ctx.send("La banque est chargée.")
-
-    @commands.command(name="comptes")
-    @access.admin
-    async def accounts(self, ctx):
-        """Affiche tous les comptes."""
-        rows = self["money"]
-        if not rows:
-            await ctx.send("La banque est vide.")
-        else:
-            for [id, money, time] in rows:
-                customer = self.bot.get_user(id)
-                msg = f"{customer.name} has {money} {emoji.coin}."
-                await ctx.send(msg)
-
-    @commands.command(name="nb-comptes", aliases=["nombre_comptes", "taille_comptes"])
-    async def accounts_number(self, ctx):
-        """Affiche le nombre total de comptes."""
-        rows = self["money"]
-        if not rows:
-            await ctx.send("La banque est vide.")
-        else:
-            msg = f"Il y a {len(rows)} comptes en banque enregistrés."
-            await ctx.send(msg)
-
-
-    @commands.command()
-    @access.admin
-    async def transactions(self, ctx, n=10):
-        """Affiche toutes les transactions."""
-        rows = self["transactions"]
-        n = min(n, len(rows))
-        if not rows:
-            await ctx.send("Aucune transaction n'a été effectué.")
-        else:
-            for i,[buyer_id, receiver_id, money, time] in enumerate(reversed(rows)):
-                if i==n:
-                    break
-                buyer = self.bot.get_user(buyer_id)
-                receiver = self.bot.get_user(receiver_id)
-                msg = f"{buyer.name} paie {receiver.name} {money} {emoji.coin}."
-                await ctx.send(msg)
-
-    @commands.command(name="nb-transactions", aliases=["nombre_transactions, taille_transactions"])
-    async def transactions_number(self, ctx):
-        """Affiche le nombre total de transactions."""
-        rows = self["transactions"]
-        if not rows:
-            await ctx.send("Il n'y a aucune transaction enregistrée.")
-        else:
-            msg = f"Il y'a {len(rows)} transactions enregistrées."
-            await ctx.send(msg)
-
-    def pay(self, buyer, receiver, money:int):
-        """Paie un client avec l'argent."""
-        #Checking if the buyer has an account
-        self.select(table="money", column="money", conditions={"customer":buyer.id})
-        result = self.fetchone()
-        if not result:
-            raise Bank.NoAccount(buyer)
-        #Accepting infinite amount of money for the buyer
-        buyer_money = result[0]
-        try:
-            buyer_money = int(result[0])
-        except:
-            buyer_money = float(buyer_money)
-        #Checking if the buyer has enough money
-        if buyer_money-money<0:
-            raise Bank.NotEnoughMoney(buyer)
-        #Checking if the receiver has an account
-        self.select(table="money", column="money", conditions={"customer":receiver.id})
-        result = self.fetchone()
-        if not result:
-            raise Bank.NoAccount(receiver)
-        #Now that we're sure everything is fine the buyer can pay
-        self.update(table="money", values={"money":buyer_money-money}, conditions={"customer":buyer.id})
-        self.select(table="money", column="money", conditions={"customer":receiver.id})
-        result = self.fetchone()
-        #Accepting infinite amount of money for the receiver
-        receiver_money = result[0]
-        try:
-            receiver_money = int(result[0])
-        except:
-            receiver_money = float(receiver_money)
-        #Then the receiver can receiver
-        self.update(table="money", values={"money":receiver_money+money}, conditions={"customer":receiver.id})
-        #The transactions are stored
-        self.insert(table="transactions", row=[buyer.id, receiver.id, money, time.time()])
-
-    def win(self, customer:discord.User, money:int):
-        """Gagne de l'argent"""
-        self.pay(self.bot, customer, money)
-    
-    def loose(self, customer:discord.User, money:int):
-        """Perds de l'argent."""
-        self.pay(customer, self.bot, money)
-
-    @commands.command(name="payer", aliases=["pay"])
-    async def pay_command(self, ctx, receiver:discord.User, money:int, buyer:discord.User=None):
-        """Paie un utilisateur."""
-        buyer = buyer or ctx.author
-        if not ctx.author.id in masters:
-            await ctx.send("Vous n'avez pas les droits.")
-            return
-        try:
-            self.pay(buyer, receiver, money)
-            await ctx.send(f"{receiver.name} a reçu {money} {emoji.coin} de {buyer.name}")
-        except Exception as e:
-            await ctx.send(e)
-            
-def setup(bot): #Production
-    from os.path import join, dirname, abspath
-    path = join(dirname(dirname(abspath(__file__))), 'database/bank.db')
-    bot.add_cog(Bank(bot, path=path))
-    
-    
-
-if __name__=="__main__": #Test
-    b = Bank(None, ":memory:")
-    b.register(None, "marc")
-    b.register(None, "marc")
-    print(b["money"])
-
+def setup(bot):
+    bot.add_cog(Bank(bot))

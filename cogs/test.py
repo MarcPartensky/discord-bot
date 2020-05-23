@@ -1,4 +1,4 @@
-from config.config import access, status, delete_after_time, masters
+from config.config import masters, access, check, shop
 from utils import tools
 
 from discord.ext import commands
@@ -9,24 +9,47 @@ import os
 class Test(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.success = "Le test est concluant."
 
     @commands.command(hidden=True)
     @access.admin
     async def number(self, ctx, amount:int):
-        """Testing missing amount argument for error."""
+        """Test erreur d'argument."""
         await ctx.send(amount)
 
     @commands.command(hidden=True)
     @access.limit(*masters)
     async def test_limit(self, ctx):
-        """Test the access.limit decorator."""
-        await ctx.send("all good")
+        """Test access limite."""
+        await ctx.send(self.sucess)
 
     @commands.command(hidden=True)
     @commands.has_permissions(manage_messages=True)
     async def test_permissions(self, ctx):
-        """Test the commands.has_permissions decorator."""
-        await ctx.send("all good")
+        """Test les permissions de messages."""
+        await ctx.send(self.success)
+
+    @commands.command(hidden=True)
+    @check.validation
+    async def test_validation(self, ctx):
+        """Test la validation."""
+        await ctx.send(self.success)
+
+    @commands.command(hidden=True)
+    @check.validate("T'es sur mec?")
+    async def test_ghetto_validation(self, ctx):
+        """Test la validation."""
+        await ctx.send("gg wesh")
+
+
+    @commands.command(hidden=False)
+    @shop.sell(2)
+    async def test_selling(self, ctx):
+        """Test la vente de commande."""
+        await ctx.send("Adjugé vendu.")
+
+
+
 
 
     # @commands.Cog.listener()

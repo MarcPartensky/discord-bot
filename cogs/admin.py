@@ -86,7 +86,7 @@ class Admin(commands.Cog):
 
     @commands.command(name="exit", aliases=['quitter'])
     @access.admin
-    async def exit_(self, ctx):
+    async def exit(self, ctx):
         """Arrête le programme du bot."""
         await ctx.send("Je quitte discord. Au revoir!")
         raise SystemExit
@@ -133,6 +133,12 @@ class Admin(commands.Cog):
         await member.add_roles(role)
         await ctx.send(f"{member.name} a été mute sur tous les salons vocaux parce {reason}.")
         await self.kick_from_voice_channel(ctx, member)
+
+    @commands.command(name="déplacer", aliases=['mettre', 'move-to', 'move'])
+    @access.admin
+    async def move_to(self, ctx:commands.Context, member:discord.Member, channel:discord.VoiceChannel):
+        """Déplace vers dans un salon vocal."""
+        await member.move_to(channel)
 
     @commands.command(name="kick-vocal", aliases=['kick-du-vocal', 'shut-up', 'ftg', 'tg'])
     @access.admin

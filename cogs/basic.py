@@ -1,4 +1,4 @@
-from config.config import access, status, delete_after_time, masters
+from config.config import access, status, delete_after_time, masters, link
 from config import emoji
 
 from utils.date import days, months
@@ -46,6 +46,12 @@ class Basic(commands.Cog):
         await ctx.send(message)
         await ctx.message.add_reaction(emoji)
 
+    @commands.command(name="masquer", aliases=['mask'])
+    async def mask(self, ctx:commands.Context, *, message):
+        message = f"||{message}||"
+        await ctx.message.delete()
+        await ctx.send(content=message)
+
     @commands.command(name="emoji-id")
     async def emoji_id(self, ctx:commands.Context, emoji):
         """Renvoie l'id d'un emoji."""
@@ -80,6 +86,11 @@ class Basic(commands.Cog):
         """Donne le ping."""
         await ctx.send(f'Pong! {round(self.bot.latency * 1000)}ms')
 
+    @commands.command(aliases=['share'])
+    async def invitation(self, ctx:commands.Context):
+        """Donne le lien pour m'inviter ailleurs."""
+        await ctx.send(link)
+
     @commands.command()
     async def language(self, ctx):
         """Renvoie 'language' de captain america."""
@@ -107,7 +118,6 @@ class Basic(commands.Cog):
             await ctx.send("Oui vous êtes amis.")
         else:
             await ctx.send("Non vous n'êtes pas amis.")
-
 
     @commands.command()
     async def howgay(self, ctx):
@@ -140,7 +150,7 @@ class Basic(commands.Cog):
     @commands.command(name="tag-à-nom")
     async def tag_to_name(self, ctx, tag:str):
         """Renvoie le nom associé au tag."""
-        id = tools.to_id(tag)
+        id = tools.tag_to_id(tag)
         name = self.bot.get_user(id).name
         await ctx.send(name)
 

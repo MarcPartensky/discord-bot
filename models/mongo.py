@@ -5,11 +5,12 @@ from pymongo.database import Database
 from pymongo.collection import Collection
 import pymongo
 
+# from pymongo.cursor import Cursor
+
 class DictObject(dict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__dict__ = self
-
 
 class Post(DictObject):
     """Mongo Post class."""
@@ -123,8 +124,9 @@ class MongoCollection(Collection):
     def __setitem__(self, id, value):
         self.post(id, value)
 
-    def post(self, id, post):
+    def post(self, post):
         """Replace or insert a post."""
+        id = post.pop('_id')
         self.replace_one({'_id':id}, post, upsert=True)
         # post = self.find_one({'_id':id})
         # value.update({'_id':id})
@@ -138,6 +140,10 @@ class MongoCollection(Collection):
             super().__setattr__(att, value)
         else:
             self.__setitem__(att, value)
+
+    # def find(self, *args, **kwargs):
+    #     cursor = super().find(*args, **kwargs)
+    #     return map(Post, cursor)
 
 # from config.config import mongo
 

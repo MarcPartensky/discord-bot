@@ -14,19 +14,19 @@ class Access:
         """Limite l'accès à une fonction aux autorisés."""
         def f(func):
             """Impose des limites d'accès à une fonction."""
-            async def decorator(obj, ctx, *args, **kwargs):
+            async def decorated(obj, ctx, *args, **kwargs):
                 if ctx.author.id in authorized or 'authorized' in ctx.__dict__:
                     return await func(obj, ctx, *args, **kwargs)
                 else:
                     await ctx.send(self.rejection)
-            decorator.__doc__ = self.admin_emoji+func.__doc__                
+            decorated.__doc__ = self.admin_emoji+func.__doc__                
             if hasattr(func, 'qualified_name'):
-                decorator.__name__ = func.qualified_name
+                decorated.__name__ = func.qualified_name
             else:
-                decorator.__name__ = func.__name__
+                decorated.__name__ = func.__name__
             sig = inspect.signature(func)
-            decorator.__signature__ = inspect.signature(func)
-            return decorator
+            decorated.__signature__ = inspect.signature(func)
+            return decorated
         return f
 
 
@@ -63,15 +63,15 @@ class Access:
 
     def member(self, func):
         """Impose la condition d'être membre."""
-        async def decorator(ctx, *args, **kwargs):
+        async def decorated(ctx, *args, **kwargs):
             if str(ctx.author) in self.masters:
                 return await func(ctx, *args, **kwargs)
             else:
                 await ctx.send(self.rejection)
-        decorator.__name__ = func.__name__
+        decorated.__name__ = func.__name__
         sig = inspect.signature(func)
-        decorator.__signature__ = inspect.signature(func)
-        return decorator
+        decorated.__signature__ = inspect.signature(func)
+        return decorated
 
     def check(self):
         """Demande une confirmation."""

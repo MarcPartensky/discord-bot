@@ -373,6 +373,7 @@ class Music(commands.Cog):
         """Demande le bot dans le salon vocal
         Si aucun salon n'est précisé, le bot rejoins votre salon.
         """
+        print(ctx.voice_state)
         if not channel and not ctx.author.voice:
             raise VoiceError("Vous n'avez ni spécifier de salon vocal ni rejoins un.")
         destination = channel or ctx.author.voice.channel
@@ -384,7 +385,7 @@ class Music(commands.Cog):
     @commands.command(name='leave', aliases=['disconnect', 'quitte'])
     @commands.has_permissions(manage_guild=True)
     async def _leave(self, ctx: commands.Context):
-        """Nettoie la queue et quitte le salon vocal."""
+        """Nettoie la queue, quitte le salon vocal."""
         if not ctx.voice_state.voice:
             return await ctx.send('Pas connecté à un salon vocal.')
         await ctx.voice_state.stop()
@@ -441,8 +442,8 @@ class Music(commands.Cog):
     @commands.command(name='skip', aliases=['next', 'suivant'])
     async def _skip(self, ctx: commands.Context):
         """Vote pour passer une musique.
-        3 votes sont nécessaires pour passer une musique,
-        sauf pour le demandeur."""
+        un certain nombre de votes sont nécessaires pour
+        passer une musique, sauf pour le demandeur."""
         if not ctx.voice_state.is_playing:
             return await ctx.send('Je ne joue pas de musique pour le moment')
         voter = ctx.message.author
@@ -531,7 +532,6 @@ class Music(commands.Cog):
                         await message.edit(content=content)
                 
     @_join.before_invoke
-    @_play.before_invoke
     async def ensure_voice_state(self, ctx: commands.Context):
         if not ctx.author.voice or not ctx.author.voice.channel:
             raise commands.CommandError('Vous n\'êtes pas connecté à un salon vocal.')

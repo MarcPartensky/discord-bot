@@ -41,6 +41,15 @@ class DictObject(dict):
         super().__init__(*args, **kwargs)
         self.__dict__ = self
 
+def post_passer(func, *passed_args, **passed_kwargs):
+    def decorated(*args, **kwargs):
+        args = list(args)
+        args.extend(passed_args)
+        args = tuple(args)
+        kwargs.update(passed_kwargs)
+        return func(*args, **kwargs)
+    return decorated
+
 
 def for_all_cog_methods(decorator_method):
     def decorate(cls):
