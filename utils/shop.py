@@ -3,7 +3,7 @@ import inspect
 
 class Shop:
     def __init__(self, masters, cluster):
-        self.default_price = 15
+        self.default_price = 10
         self.premium_members = masters
         self.users = cluster.users
         self.bank = cluster.bank
