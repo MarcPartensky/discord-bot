@@ -96,7 +96,6 @@ class Puissance4(commands.Cog):
 
     # def update(self):
     #     bx, by = self.board.size
-
     #     for event in pygame.event.get():
     #         if event.type == pygame.QUIT:
     #             self.done = True
