@@ -3,6 +3,7 @@ from config.config import access, status, delete_after_time, masters
 from utils import tools
 
 from discord.ext import commands, tasks
+from developper
 import discord
 import random
 import time
@@ -32,6 +33,17 @@ class Admin(commands.Cog):
         self.clear_limit = 10
         self.muted_role_name = muted_role_name
         self.victims_channel_name = "Victimes"
+        self.terminal = False
+
+    @commands.command(aliases=['console'])
+    @access.admin
+    def terminal(self, ctx:commands.Context):
+        """Execute and send terminal output."""
+        self.terminal = not self.terminal
+        if self.terminal:
+            self.bot.add_cog(Terminal(self.bot))
+        else:
+            bot.remove_cog('Terminal')
 
     @commands.command()
     @access.admin
