@@ -115,7 +115,4 @@ class Mongo(commands.Cog):
 
 def setup(bot):
     mongo = Mongo(bot)
-    # print(mongo.find.help)
-    print('mro in setup:', Mongo.__mro__)
-    print('mro in setup:', type(mongo).__mro__)
     bot.add_cog(mongo)

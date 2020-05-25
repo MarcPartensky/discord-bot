@@ -3,7 +3,7 @@ from config.config import access, status, delete_after_time, masters
 from utils import tools
 
 from discord.ext import commands, tasks
-from developper
+from models.terminal import Terminal
 import discord
 import random
 import time
@@ -37,13 +37,15 @@ class Admin(commands.Cog):
 
     @commands.command(aliases=['console'])
     @access.admin
-    def terminal(self, ctx:commands.Context):
+    async def terminal(self, ctx:commands.Context):
         """Execute and send terminal output."""
         self.terminal = not self.terminal
         if self.terminal:
             self.bot.add_cog(Terminal(self.bot))
+            await ctx.send("Votre terminal est ouvert.")
         else:
-            bot.remove_cog('Terminal')
+            self.bot.remove_cog('Terminal')
+            await ctx.send("Votre terminal est fermé.")
 
     @commands.command()
     @access.admin
