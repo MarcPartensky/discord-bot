@@ -39,7 +39,8 @@ class Terminal(commands.Cog):
             if result:
                 await msg.channel.send(result)
             else:
-                self.stdin += msg.content+"; "
+                if msg.content.startswith('cd'):
+                    self.stdin += msg.content+"; "
         except Exception as e:
             await msg.channel.send(e)
 

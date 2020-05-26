@@ -21,7 +21,7 @@ class Test(commands.Cog):
     @access.limit(*masters)
     async def test_limit(self, ctx):
         """Test access limite."""
-        await ctx.send(self.sucess)
+        await ctx.send(self.success)
 
     @commands.command(hidden=True)
     @commands.has_permissions(manage_messages=True)
@@ -43,10 +43,17 @@ class Test(commands.Cog):
 
 
     @commands.command(hidden=False)
-    @shop.sell(2)
-    async def test_selling(self, ctx):
+    @shop.sell_for(2)
+    async def test_selling_for(self, ctx):
         """Test la vente de commande."""
         await ctx.send("Adjugé vendu.")
+
+    @shop.sell
+    @commands.command(hidden=False)
+    async def test_selling(self, ctx:commands.Context):
+        """Test la vente automatique."""
+        await ctx.send("Adjugé vendu.")
+
 
 
 

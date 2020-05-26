@@ -1,13 +1,13 @@
 import inspect
 import discord
+from config import emoji
 
 class Access:
     def __init__(self, masters, rejection="Vous n'avez pas les droits."):
         self.masters = masters
         self.rejection = rejection
-        self.admin_emoji = "⚜️"
-        self.member_emoji = "✅"
-        self.bank_emoji = ""
+        self.admin_emoji = emoji.admin
+        self.member_emoji = emoji.member
         self.decorated = 0
 
     def limit(self, *authorized):

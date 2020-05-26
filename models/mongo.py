@@ -126,14 +126,10 @@ class MongoCollection(Collection):
 
     def post(self, post):
         """Replace or insert a post."""
-        id = post.pop('_id')
-        self.replace_one({'_id':id}, post, upsert=True)
-        # post = self.find_one({'_id':id})
-        # value.update({'_id':id})
-        # if post:
-        #     self.replace_one({'_id':id}, value)
-        # else:
-        #     self.insert_one(value)
+        if '_id' in post:
+            self.replace_one({'_id':post['_id']}, post, upsert=True)
+        else:
+            self.insert_one(post)
 
     def __setattr__(self, att, value):
         if att in type(self).keys:
