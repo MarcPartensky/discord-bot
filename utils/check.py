@@ -12,7 +12,8 @@ class Check:
         self.timeout = timeout
         self.message = None
         self.warning_emoji = emoji.warning
-        self.consent_message = "En effecutant cette action vous consentez à"
+        self.help_message = "Répondre par `oui` ou `non`."
+        self.consent_message = "En effectuant cette action vous consentez à"
         self.sure = "Êtes-vous sur?"
         self.yes = ['oui', 'yes', 'yep', 'yup', 'y', 'affirmatif', '+1']
         self.no = ['non', 'no', 'nope', 'nop', 'nah', 'n', 'flemme', 'negatif', '-1']
@@ -41,14 +42,21 @@ class Check:
     def validate(self, message):
         return tools.post_passer(self.validation, message)
 
-    def validation(self, func, message=None):
+    def warn(self, message):
+        return tools.post_passer(tools.post_passer(self.validation, message), True)
+
+    def validation(self, func, message=None, warning=False):
         async def decorated(command, ctx:commands.Context, *args):
             msg = message or self.sure
+            msg += (" " + self.help_message)
             await ctx.send(msg)
             self.message = None
             if await self.wait_for_check(ctx):
                 return await func(command, ctx, *args)
-        decorated.__doc__ = self.warning_emoji+func.__doc__
+        if warning:
+             decorated.__doc__ = self.warning_emoji+func.__doc__
+        else:
+            decorated.__doc__ = func.__doc__
         decorated.__name__ = func.__name__
         decorated.__signature__ = inspect.signature(func)
         decorated.__validation__ = True

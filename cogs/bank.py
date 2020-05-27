@@ -2,7 +2,7 @@ from config.config import access, cluster, check, masters
 from config.errors import *
 from models.mongo import Post
 
-from config.emoji import money_bag
+from config import emoji
 from discord.ext import commands
 import discord
 import pymongo
@@ -53,6 +53,7 @@ class Bank(commands.Cog):
     def __init__(self, bot:commands.Bot):
         self.bot = bot
         self.bank = cluster.bank
+        self.users = cluster.users
         self.accounts = self.bank.accounts
         self.transactions = self.bank.transactions
         self.starter_money = 10
@@ -62,6 +63,27 @@ class Bank(commands.Cog):
         self.troll_message = "Vous y avez vraiment cru? mdr"
         # self.gold_color = 0xecce8b #useless with discord.color system
         self.gold_color = discord.Color.gold()
+    
+    @commands.command(name="rendre-riche")
+    @access.admin
+    async def make_rich(self, ctx:commands.Context, member:discord.Member):
+        """Rend un membre infiniment riche."""
+        account = self.accounts[member.id]
+        account.setdefaults(
+                _id = member.id,
+                money = float('inf'),
+                creation = time.time(),
+                withdrawed = 0,
+                withdrawed_time = None,
+                saved = 0,
+                saved_time = None,
+        )
+        account.money = float('inf')
+        if ctx.author==member:
+            msg = "Vous êtes maintenant infiniment riche."
+        else:
+            msg = f"{member.name} est maintenant infiniment riche."
+        return await ctx.send(msg)
 
     async def has_bank_account(self, ctx:commands.Context, member:discord.Member):
         """Assure l'existence d'un compte."""
@@ -90,7 +112,7 @@ class Bank(commands.Cog):
                 msg = f"Vous avez"
             else:
                 msg = f"{member.name} a"
-            msg += f" **{account.money}**{money_bag}"
+            msg += f" **{account.money}**{emoji.money_bag} en banque."
         except Bank.Error as e:
             msg = str(e)
         return await ctx.send(msg)
@@ -106,9 +128,9 @@ class Bank(commands.Cog):
             account.money = money
             self.accounts.post(account)
             if member==ctx.author:
-                msg = f"Vous avez maintenant **{money}**{money_bag}"
+                msg = f"Vous avez maintenant **{money}**{emoji.money_bag}"
             else:
-                msg = f"{member.name} a maintenant **{money}**{money_bag}"
+                msg = f"{member.name} a maintenant **{money}**{emoji.money_bag}"
         except Bank.Error as e:
             msg = str(e)
         return await ctx.send(msg)
@@ -226,6 +248,7 @@ class Bank(commands.Cog):
 
     @commands.command(name="migrer-banque")
     @access.admin
+    @check.warn("migrer de sqlite3 vers mongodb.")
     async def migrate(self, ctx:commands.Context):
         """Migre banque de sqlite vers mongodb."""
         sqldb.select('money')
@@ -296,7 +319,7 @@ class Bank(commands.Cog):
             saved_time = self.never
         embed = (discord.Embed(title=f"Compte bancaire de **{user.name}**", color=self.gold_color)
             .set_thumbnail(url=user.avatar_url)
-            .add_field(name="argent", value=str(account.money)+money_bag)
+            .add_field(name="argent", value=str(account.money)+emoji.money_bag)
             .add_field(name="creation", value=creation)
             .add_field(name="nombre de retirements", value=account.withdrawed)
             .add_field(name="dernier retirement", value=withdrawed_time)
@@ -323,7 +346,7 @@ class Bank(commands.Cog):
             buyer = self.bot.get_user(transaction.buyer)
             receiver = self.bot.get_user(transaction.receiver)
             t = datetime.datetime.fromtimestamp(int(transaction.time))
-            line = f"{buyer.name} paie {receiver.name} **{transaction.money}**{money_bag} le {t}."
+            line = f"{buyer.name} paie {receiver.name} **{transaction.money}**{emoji.money_bag} le {t}."
             lines.append(line)
         description = '\n'.join(lines)
         embed = discord.Embed(title=title, description=description, color=self.gold_color)
@@ -358,6 +381,7 @@ class Bank(commands.Cog):
             return await ctx.send(f"Un compte au nom de {member.name} a été ouvert.")
 
     @commands.command(name="fermer-compte", aliases=['supprimer-compte'])
+    @check.warn("supprimer votre compte bancaire définitivement.")
     async def close_account(self, ctx:commands.Context, member:discord.Member=None):
         """Ferme un compte en banque."""
         member = member or ctx.author
@@ -386,6 +410,55 @@ class Bank(commands.Cog):
         else:
             return await ctx.send(f"Le compte de {member.name} a été supprimé.")
 
+    @commands.command(name="retirer")
+    async def withdraw(self, ctx:commands.Context, money:int, member:discord.Member=None):
+        """Retire l'argent vers le portefeuille."""
+        member = member or ctx.author
+        if member!=ctx.author and ctx.author.id not in masters:
+            return await ctx.send("Vous n'avez pas les droits.")
+        try:
+            bank_account = self.bank.accounts[member.id]
+            user_account = self.users.accounts[member.id]
+            self.is_bank_account(ctx, bank_account, member)
+            self.has_enough_money(ctx, bank_account, member, money)
+        except Bank.Error as e:
+            return await ctx.send(e)
+        bank_account.money -= money
+        user_account.money += money
+        bank_account.withdrawed += 1
+        bank_account.last_withdrawed = time.time()
+        if ctx.author==member:
+            msg = f"Vous avez retiré {money} {emoji.euro}."
+        else:
+            msg = f"{member.name} a retiré {money} {emoji.euro}."
+        return await ctx.send(msg)
+
+    @commands.command(name="placer")
+    async def put(self, ctx:commands.Context, money:int, member:discord.Member=None):
+        """Retire l'argent vers le portefeuille."""
+        member = member or ctx.author
+        if member!=ctx.author and ctx.author.id not in masters:
+            return await ctx.send("Vous n'avez pas les droits.")
+        try:
+            users = self.bot.get_cog('Users')
+            await users.connect(ctx, member)
+            user_account = self.users.accounts[member.id]
+            bank_account = self.bank.accounts[member.id]
+            self.is_bank_account(ctx, bank_account, member)
+            if user_account.money < money:
+                raise Bank.Error("Vous n'avez pas assez d'argent dans votre portefeuille.")
+        except Bank.Error as e:
+            return await ctx.send(e)
+        user_account.money -= money
+        bank_account.money += money
+        bank_account.saved += 1
+        bank_account.last_saved = time.time()
+        if ctx.author==member:
+            msg = f"Vous avez placé {money} {emoji.euro}."
+        else:
+            msg = f"{member.name} a placé {money} {emoji.euro}."
+        return await ctx.send(msg)
+
     @commands.command(name="sup-banque")
     @access.admin
     async def delete_bank(self, ctx:commands.Context):
@@ -395,7 +468,7 @@ class Bank(commands.Cog):
 
     @commands.command(name="sup-transactions")
     @access.admin
-    @check.consent("supprimer toutes les transactions bancaires.")
+    @check.warn("supprimer toutes les transactions bancaires.")
     async def delete_transactions(self, ctx:commands.Context):
         """Supprime toutes les transactions."""
         self.transactions.delete_many({})
@@ -404,7 +477,7 @@ class Bank(commands.Cog):
 
     @commands.command(name="sup-comptes")
     @access.admin
-    @check.consent("supprimer tous les comptes bancaires.")
+    @check.warn("supprimer tous les comptes bancaires.")
     async def delete_accounts(self, ctx:commands.Context):
         """Supprime tous les comptes bancaires."""
         self.accounts.delete_many({})
@@ -413,7 +486,7 @@ class Bank(commands.Cog):
             
     @commands.command(name="vider-comptes")
     @access.admin
-    @check.consent("mettre à zéro tous les comptes bancaires.")
+    @check.warn("mettre à zéro tous les comptes bancaires.")
     async def empty_accounts(self, ctx:commands.Context):
         """Vide tous les comptes bancaires."""
         self.accounts.update_many({}, {"$set":{"money":0}})
@@ -422,7 +495,7 @@ class Bank(commands.Cog):
 
     @commands.command(name="drop-comptes")
     @access.admin
-    @check.consent("supprimer la collection de comptes bancaires")
+    @check.warn("supprimer la collection de comptes bancaires")
     async def drop_accounts(self, ctx:commands.Context):
         """Drop la collection des comptes."""
         self.accounts.drop()
@@ -431,7 +504,7 @@ class Bank(commands.Cog):
 
     @commands.command(name="drop-transactions")
     @access.admin
-    @check.consent("supprimer la collection de transactions bancaires")
+    @check.warn("supprimer la collection de transactions bancaires")
     async def drop_transactions(self, ctx:commands.Context):
         """Drop la collection des transactions."""
         self.transactions.drop()

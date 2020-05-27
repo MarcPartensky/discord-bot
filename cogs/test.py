@@ -1,4 +1,5 @@
-from config.config import masters, access, check, shop
+from config.config import masters, access, check
+from config import shops
 from utils import tools
 
 from discord.ext import commands
@@ -43,13 +44,13 @@ class Test(commands.Cog):
 
 
     @commands.command(hidden=False)
-    @shop.sell_for(2)
+    # @shop.sell_for(2)
     async def test_selling_for(self, ctx):
         """Test la vente de commande."""
         await ctx.send("Adjugé vendu.")
 
-    @shop.sell
     @commands.command(hidden=False)
+    @shops.commands.sell
     async def test_selling(self, ctx:commands.Context):
         """Test la vente automatique."""
         await ctx.send("Adjugé vendu.")

@@ -3,6 +3,7 @@ import discord
 from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.collection import Collection
+from pymongo.son_manipulator import ObjectId
 import pymongo
 
 # from pymongo.cursor import Cursor
@@ -10,10 +11,217 @@ import pymongo
 class DictObject(dict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.__dict__ = self
+        super().__setattr__('__dict__', self)
+
+class CommitPost:
+    
+    @classmethod
+    def fromkeys(cls, *args, **kwargs):
+        return cls(_dict.fromkeys(*args, **kwargs))
+
+    def __init__(self, *args, **kwargs):
+        self._collection = kwargs.pop('_collection')
+        self._dict = dict(*args ,**kwargs)
+        self.post()
+
+    def clear(self):
+        self._dict.clear()
+
+    def copy(self):
+        return self._dict.copy()
+
+    def get(self, key):
+        return self._dict.get(key)
+
+    def items(self):
+        return self._dict.items()
+
+    def keys(self):
+        return self._dict.keys()
+
+    def values(self):
+        return self._dict.values()
+
+    def pop(self, key):
+        return self._dict.pop(key)
+
+    def popitem(self):
+        return self._dict.popitem()
+
+    def setdefault(self, key, value):
+        self._dict.setdefault(key, value)
+
+    def setdefaults(self, *args, **kwargs):
+        dicts = args+(kwargs,)
+        for d in dicts:
+            for k,v in d.items():
+                self.setdefault(k, v)
+
+    def update(self, _dictionary:dict):
+        self._dict.update(_dictionary)
+
+    def __str__(self):
+        return str(self._dict)
+
+    def __contains__(self, key):
+        return key in self._dict
+
+    def __getattribute__(self, key):
+        if key in ['_collection', '_dict']:
+            return super().__getattribute__(key)
+        else:
+            if key in self._dict:
+                return self._dict[key]
+            else:
+                return super().__getattribute__(key)
+
+    def __setattr__(self, key, value):
+        if key in ['_collection', '_dict']:
+            super().__setattr__(key, value)
+        else:
+            self._dict[key] = value
+            self.post()
+
+    def __getitem__(self, key):
+        return self._dict[key]
+
+    def __setitem__(self, key, value):
+        self._dict[key] = value
+
+    def __len__(self):
+        return len(self._dict)
+
+    def post(self):
+        self._collection.post(self._dict)
+
+class BindPost:
+    @classmethod
+    def fromkeys(cls, *args, **kwargs):
+        return cls(_dict.fromkeys(*args, **kwargs))
+
+    def __init__(self, *args, **kwargs):
+        if args: kwargs.update(args[0])
+        self._collection:MongoCollection = kwargs.pop('_collection')
+        if '_id' in kwargs:
+            self._id = kwargs.get('_id')
+        else:
+            self._id = ObjectId()
+        if not self._dict:
+            d = {'_id':self._id}
+            self._collection.insert_one(d)
+
+    @property
+    def collection(self):
+        return self._collection
+
+    @property
+    def _dict(self):
+        return Collection.find_one(self._collection, {'_id':self._id})
+
+    def clear(self):
+        d = {'_id':self._id}
+        self._collection.replace_one(d, d)
+
+    def copy(self): # Create raw dictionary
+        return self._dict.copy()
+
+    def get(self, key):
+        return self._dict[key]
+
+    def items(self):
+        return self._dict.items()
+
+    def keys(self):
+        return self._dict.keys()
+
+    def values(self):
+        return self._dict.values()
+
+    def pop(self, key):
+        d = self._dict
+        item = d.pop(key)
+        self._collection.replace_one({'_id':self._id}, d)
+        return item
+
+    def popitem(self):
+        dictionary = self._dict.copy()
+        item = dictionary.popitem()
+        return item
+
+    def setdefault(self, key, value):
+        d = self._dict
+        d.setdefault(key, value)
+        self._collection.replace_one({'_id':self._id}, d)
+
+    def setdefaults(self, *args, **kwargs):
+        dicts = args+(kwargs,)
+        for d in dicts:
+            for k,v in d.items():
+                self.setdefault(k, v)
+
+    def update(self, _dictionary:dict):
+        d = self._dict
+        d.update(_dictionary)
+        self._collection.replace_one({'_id':self._id}, d)
+
+    def __str__(self):
+        return str(self._dict)
+
+    def __contains__(self, key):
+        return key in self._dict
+
+    def __delattr__(self, key):
+        self._collection.update_one({'_id':self._id}, {"$unset": {key:""}})
+
+    def __getattribute__(self, key):
+        if key in ['_collection', '_id', 'collection', '_dict']:
+            return super().__getattribute__(key)
+        else:
+            d = self._dict
+            if key in d:
+                return d[key]
+            else:
+                return super().__getattribute__(key)
+
+    def __setattr__(self, key, value):
+        if key in ['_collection', '_id']:
+            super().__setattr__(key, value)
+        else:
+            d = self._dict
+            d[key] = value
+            self._collection.replace_one({'_id':self._id}, d)
+
+    def __getitem__(self, key):
+        return self._dict[key]
+
+    def __setitem__(self, key, value):
+        self._dict[key] = value
+
+    def __len__(self):
+        return len(self._dict)
 
 class Post(DictObject):
     """Mongo Post class."""
+    def __setattr__(self, key, value):
+        self[key] = value
+        self.post()
+
+    def __str__(self):
+        collection = self.collection
+        del self.collection
+        string = super().__str__()
+        super().__setattr__('collection', collection)
+        return string
+
+    def post(self):
+        """Post a post."""
+        collection = self.pop('collection')
+        collection[self._id] = self
+        super().__setattr__('collection', collection)
+
+
+class SuperPost(DictObject):
+    """Pass"""
 
 class User(DictObject):
     """Mongo collection for a user."""
@@ -96,17 +304,43 @@ class MongoCollection(Collection):
                 return
         self.insert_one(post)
 
+    def treat(self, post):
+        p = post.copy()
+        if 'collection' in post:
+            p.pop('collection')
+        return p
+
+    def replace_one(self, filter, post, **kwargs):
+        post = self.treat(post)
+        super().replace_one(filter, post, **kwargs)
+
+    def insert_one(self, post, **kwargs):
+        post = self.treat(post)
+        super().insert_one(post, **kwargs)
+
+    def insert(self, arg, **kwargs):
+        if isinstance(arg, list) or isinstance(arg, tuple):
+            self.insert_many(arg, **kwargs)
+        else:
+            self.insert_one(arg, **kwargs)
+
+    def insert_many(self, posts, **kwargs):
+        posts = [self.treat(post) for post in posts]
+        super().insert_many(post)
+
     def __contains__(self, id):
         return self.seek(_id=id)!=None
 
     def __len__(self):
-        return len(list(self.find({})))
+        return self.count_documents({})
 
-    def find_one(self, conditions):
-        post = super().find_one(conditions)
+    def find_one(self, conditions, **kwargs):
+        post = super().find_one(conditions, **kwargs)
         if post:
-            return Post(post)
-        return None
+            post = BindPost(post, _collection=self)
+        else:
+            post = BindPost(conditions, _collection=self)
+        return post
 
     @classmethod
     def from_collection(cls, collection):
@@ -121,8 +355,9 @@ class MongoCollection(Collection):
     def __getitem__(self, id):
         return self.find_one({'_id':id})
 
-    def __setitem__(self, id, value):
-        self.post(id, value)
+    def __setitem__(self, id, post):
+        post['_id'] = id
+        self.post(post)
 
     def post(self, post):
         """Replace or insert a post."""

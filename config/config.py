@@ -1,5 +1,5 @@
 from .credentials import mongo_url
-from utils import access, check, shop
+from utils import access, check
 
 import itertools
 
@@ -22,4 +22,3 @@ delete_after_time = 10
 status = itertools.cycle(["développer la science infuse", "évoluer au delà de l'espèce humaine", "comploter contre l'humanité", "finaliser la théorie quantique"])
 access = access.Access(masters) #Create access for commands
 check = check.Check()
-shop = shop.Shop(masters, cluster)

@@ -1,10 +1,26 @@
-from config.config import access, cluster
+from config.config import access, cluster, prefix
 from models.mongo import MongoCollection, MongoDatabase, Post
 from discord.ext import commands
 import discord
+from config import emoji
 
 class Item(Post):
     """Shop item."""
+
+def ensure_shop(func):
+    async def decorated(self, ctx:commands.Context, *args, **kwargs):
+        """Il faut être dans une boutique."""
+        if ctx.author.id in self.shop_dict:
+            print("yes")
+            return await func(self, ctx, *args, **kwargs)
+        else:
+            msg = (f"{emoji.warning}Vous devez d'abord vous rendre dans une boutique!"
+                f"\nPour cela utiliser la commande: `{prefix}shopping [nom]`."
+                f"\nPour voir la liste des boutiques: `{prefix}boutiques`."
+            )
+            return await ctx.send(msg)
+    return decorated
+
 
 class Shop(commands.Cog):
     #in a soon future, everyone will be able to sell items
@@ -12,57 +28,99 @@ class Shop(commands.Cog):
     #and it's only for commands
     def __init__(self, bot):
         self.bot = bot
-        self.shops = {}
-        self.shop:MongoDatabase = cluster.shop
-        self.aisle:MongoCollection = None
+        self.shop_dict = {}
+        self.shops:MongoDatabase = cluster.shops
 
-    def getShops(self, id):
-        """Renvoie les boutiques disponibles pour un utilisateur."""
-        pass
+    @commands.command(name="shopping")
+    async def shopping(self, ctx:commands.Context, *, name:str):
+        """Choisi la boutique pour le shopping."""
+        if not name in self.shops.collection_names():
+            msg = "Cette boutique n'existe pas."
+            return await ctx.send(msg)
+        self.shop_dict[ctx.author.id] = self.shops[name]
+        msg = f"Vous êtes dans la boutique **{name}**."
+        return await ctx.send(msg)
 
-    @commands.command("rayon")
-    @access.admin
-    async def aisle(self, ctx:commands.Context, *, aisle:str):
-        """Choisi la collection d'items."""
-        if aisle: self.aisle = self.shop[aisle]
-        if self.aisle:
-            msg = f"Vous êtes dans le rayon {self.aisle.name}."
-        else:
-            msg = f"Ce rayon n'existe pas en magasin."
-        await ctx.send(msg)
+    @commands.command(name="boutiques")
+    async def shops(self, ctx:commands.Context):
+        """Affiche les boutiques disponibles."""
+        names = self.shops.collection_names()
+        msg = '\n'.join(names)
+        return await ctx.send(msg)
+
+    @commands.command(name="boutique")
+    async def shop(self, ctx:commands.Context):
+        """Affiche sa boutique courante."""
+        shop = self.get_shop(ctx)
+        if not shop:
+            msg = "Vous n'êtes dans aucune boutique."
+            return await ctx.send(msg)
+
+    def get_shop(self, ctx:commands.Context):
+        """Renvoie sa boutique courante."""
+        id = ctx.author.id
+        return self.shop_dict[id]
 
     @commands.command("jeter")
     @access.admin
-    async def delete(self, ctx:commands.Context, id):
+    async def delete(self, ctx:commands.Context, name:str):
         """Supprime un item."""
+        shop = self.get_shop(ctx)
         try:
-            self.aisle.find_one_and_delete(id)
+            shop.find_one_and_delete(name)
             msg = "Item jeté avec succès."
         except:
             msg = "Item introuvable."
         await ctx.send(msg)
 
-    @commands.command("vendre")
+    @commands.command(name="vendre")
+    @ensure_shop
     @access.admin
-    async def sell(self, ctx:commands.Context, id, price:int):
+    async def sell(self, ctx:commands.Context, name:str, price:int):
         """Vend un item."""
-        item = self.aisle[id]
-        if not item:
-            item = self.createNewItem(id, price)
-        self.aisle.post(item)
-        msg = f"{id} se vend maintenant à {price}."
+        shop = self.get_shop(ctx)
+        item = shop[name]
+        item.price = price
+        msg = f"{name} se vend maintenant à {price}."
         await ctx.send(msg)
 
-    @commands.command("items")
-    @access.admin
+    @commands.command(name="prix")
+    @ensure_shop
+    async def price(self, ctx:commands.Context, name:str):
+        """Affiche le prix d'un item."""
+        shop = self.get_shop(ctx)
+        item = shop[name]
+        msg = f"{name} se vend à {item.price}."
+        await ctx.send(msg)
+
+    @commands.command(name="items")
+    @ensure_shop
     async def items(self, ctx:commands.Context):
         """Liste tous les items du rayon."""
+        shop = self.get_shop(ctx)
         lines = []
-        for post in self.aisle.find():
-            line = str(post)
-            lines.append(line)
+        for post in shop.find({}):
+            post = Post(post)
+            line = post._id
+            lines.append(str(line))
         msg = '\n'.join(lines)
+        print('les items')
         await ctx.send(msg)
+
+    def embed_item(self, item):
+        """Return an embed for an item."""
+        pass
+
+    def embed_shop(self, shop):
+        """Return an embed for a shop."""
+        pass
+
+    def embed_shops(self, shops):
+        """Return an embed for shops."""
+        pass
+
+
+
 
 
 def setup(bot):

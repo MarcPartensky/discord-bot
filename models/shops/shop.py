@@ -2,36 +2,50 @@ from discord.ext import commands
 from models.mongo import Post
 import inspect
 import time
+from config import emoji
 
-"""
-Shops(Cluster)
-- shop1
-- shop2
-...
+"""Summary
+# Shops(Cluster)
+# - shop1
+# - shop2
+# ...
 
-Shop(Database)
-- rayon1
-- rayon2
-- rayon3
-...
-- info
-- owners
+# Shop(Database)
+# - rayon1
+# - rayon2
+# - rayon3
+# ...
+# - info
+# - owners
 
-Rayon(Collection)
-- item1
-- item2
-- item3
-...
-- info
-- owners
+# Rayon(Collection)
+# - item1
+# - item2
+# - item3
+# ...
+# - info
+# - owners
+
+Shops(Database)
+ - shop1
+ - shop2
+ - shop3
+ ...
+
+Shop(Collection)
+ - item1
+ - item2
+ - item3
+ ...
+ - _info
 
 Item(Post)
-- id
-- name
-- description
-- value
-- price
-...
+ - id
+ - name
+ - description
+ - value
+ - price
+ ...
 - info
 - owners
 """
@@ -59,57 +73,51 @@ class Item(Post):
             message = message or type(self).__doc__
             super().__init__(message)
 
-    @classmethod
-    def new(
-        cls,
-        post,
-        value=None
-        price:int=None
+    def fill(
+        self,
+        price:int=None,
+        value=None,
         name:str=None,
-        description:str=None
+        description:str=None,
         creation:int=time.time(),
-        stock:int=None
+        stock:int=None,
         sold:int=0,
         last_bought:int=None,
         last_buyer:int=None,
         price_updates:int=0,
         last_price_update:int=time.time(),
         last_price:int=None,
-        promotion:int=None
+        promotion:int=None,
+        post:Post=None,
         ):
-        item = cls(post)
-        if not 'price' in item:
-            item.price = price
-        if not 'value' in item:
-            item.value = value
-        if not 'name' in item:
-            item.name = name
-        if not 'description' in item:
-            item.description = description
-        if not 'creation' in item:
-            item.creation = creation
-        if not 'stock' in item:
-            item.stock = stock
-        if not 'sold' in item:
-            item.sold = sold
-        if not 'last_bought' in item:
-            item.last_bought = last_bought
-        if not 'last_buyer' in item:
-            item.last_buyer = last_buyer
-        if not 'price_updates' in item:
-            item.price_updates = price_updates
-        if not 'last_price_update' in item:
-            item.last_price_update = last_price_update
-        if not 'last_price' in item:
-            item.last_price = last_price
-        return item
-
-@shop.commands.sell
+        if not 'price' in self:
+            self.price = price
+        if not 'value' in self:
+            self.value = value
+        if not 'name' in self:
+            self.name = name
+        if not 'description' in self:
+            self.description = description
+        if not 'creation' in self:
+            self.creation = creation
+        if not 'stock' in self:
+            self.stock = stock
+        if not 'sold' in self:
+            self.sold = sold
+        if not 'last_bought' in self:
+            self.last_bought = last_bought
+        if not 'last_buyer' in self:
+            self.last_buyer = last_buyer
+        if not 'price_updates' in self:
+            self.price_updates = price_updates
+        if not 'last_price_update' in self:
+            self.last_price_update = last_price_update
+        if not 'last_price' in self:
+            self.last_price = last_price
 
 # @etienne.boulangerie.sell("pain", 10)
-@shop.boulangerie.sell("pain", 10)
 
-class Aisle:
+class Shop:
     class Error:
         """Shop error."""
     class NoItemFound(Error):
@@ -122,20 +130,25 @@ class Aisle:
         self.shop = shop
         self.users = users
         self.shop_emoji = emoji
-        # self.premium_members = masters
-        # self.users = cluster.users
-        # self.shop = cluster.shop
+        self.makePremium()
 
-    def sell(self, name:str):
+    def makePremium(self):
+        self.shop.info.premium = self.masters
+        self.premium = self.shop.info.premium
+    
+# @shops.commands.sell(**kwargs)(function)
+
+    def sell(self, *args, **kwargs):
         """Vend un item."""
-        item = self.collection[item]
+        item = Item.new(*args, **kwargs)
+        self.shop.post(item)
 
     def sell_for(self, price:int=None):
         """Vend une commande pour un prix donné."""
         price = price or self.default_price
         def decorator(func):
             async def decorated(command, ctx:commands.Context, *args, **kwargs):
-                if ctx.author.id in self.premium_members:
+                if ctx.author.id in self.masters:
                     # await ctx.send(
                     #     "Comme vous êtes premium, "
                     #     "vous n'avez pas eu à payer la commande "

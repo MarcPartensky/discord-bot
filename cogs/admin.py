@@ -1,5 +1,6 @@
 
 from config.config import access, status, delete_after_time, masters
+from config import shops
 from utils import tools
 
 from discord.ext import commands, tasks
@@ -54,10 +55,24 @@ class Admin(commands.Cog):
         reason = reason or self.kick_reason
         try:
             await member.kick(reason=reason)
-            await ctx.send(f"{member.name} a été kick de {ctx.guild} parce que {reason}.")
         except discord.Forbidden:
-            await ctx.send(f"Je n'ai pas le droit de ban.")
+            return await ctx.send(f"Je n'ai pas le droit de ban.")
+        await ctx.send(f"{member.name} a été kick de {ctx.guild} parce que {reason}.")
+        await member.send(f"Vous avez été kick de {ctx.guild} parce que {reason}.")
         
+    @commands.command(name='kick-invite')
+    @access.admin
+    async def kick_and_invite(self, ctx, member:discord.Member, *, reason:str=None):
+        "Expulse puis réinvite un membre."
+        reason = reason or self.kick_reason
+        try:
+            await member.kick(reason=reason)
+        except discord.Forbidden:
+            return await ctx.send(f"Je n'ai pas le droit de kick.")
+        await ctx.send(f"{member.name} a été kick de {ctx.guild} parce que {reason}.")
+        await member.send(f"Vous avez été kick de {ctx.guild} parce que {reason}.")
+        url = await ctx.guild.create_invite()
+        await member.send(f"Heuresement vous avez encore le droit de rejoindre:\n{url}.")
 
     @commands.command()
     @access.admin
@@ -86,7 +101,7 @@ class Admin(commands.Cog):
                 break
             
     @commands.command()
-    @access.admin
+    @shops.commands.sell
     async def clear(self, ctx, limit:int=None, included=True):
         """Nettoie le chat."""
         limit = limit or self.clear_limit
@@ -149,13 +164,13 @@ class Admin(commands.Cog):
         await self.kick_from_voice_channel(ctx, member)
 
     @commands.command(name="déplacer", aliases=['mettre', 'move-to', 'move'])
-    @access.admin
+    @shops.commands.sell
     async def move_to(self, ctx:commands.Context, member:discord.Member, channel:discord.VoiceChannel):
         """Déplace vers dans un salon vocal."""
         await member.move_to(channel)
 
     @commands.command(name="kick-vocal", aliases=['kick-du-vocal', 'shut-up', 'ftg', 'tg'])
-    @access.admin
+    @shops.commands.sell
     async def kick_from_voice_channel(self, ctx:commands.Context, member:discord.Member=None):
         """Kick un membre du salon vocal."""
         if not member:
