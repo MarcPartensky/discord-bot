@@ -25,6 +25,13 @@ class Casino(commands.Cog):
         self.refill_coins = 10
         self.refill_wait_time = 24*60*60 #1 day
 
+    @commands.command(name='claim')
+    async def claim(self, ctx:commands.Context):
+        """Claime les coins quotidiens."""
+        account = self.accounts[ctx.author.id]
+        if time.time()-account.time>self.refill_wait_time:
+            self.refill(ctx)
+        await self.coins(ctx)
 
     @commands.command(name='vendre-coins')
     async def sell_coins(self, ctx:commands.Context):
@@ -32,10 +39,14 @@ class Casino(commands.Cog):
         await ctx.send("Vos coins ont été échangés.")
 
     @commands.command(name='coins')
-    async def coins(self, ctx:commands.Context,):
+    async def coins(self, ctx:commands.Context, member:discord.Member):
         """Affiche son nombre de coins."""
-        account = self.accounts[ctx.author.id]
-        msg = f"Vous avez {account.coins} coins au casino."
+        member = member or ctx.author
+        account = self.accounts[member.id]
+        if member==ctx.author:
+            msg = f"Vous avez {account.coins} coins au casino."
+        else:
+            msg = f"{member.name} a {account.coins} au casino."
         await ctx.send(msg)
 
     @commands.command(name='temps-refill')
@@ -59,21 +70,20 @@ class Casino(commands.Cog):
         await ctx.send(msg)
 
     @commands.command(name='trouve-chiffre')
-    async def find_the_digit(self, ctx:commands.Context, bet:int):
+    async def find_the_digit(self, ctx:commands.Context, n:int, bet:int):
         """Deviner un chiffre entre 0 et 9."""
         account = self.accounts[ctx.author.id]
         coins = account.coins
         if coins<bet:
             await ctx.send(f"Vous n'avez pas assez de coins pour miser {bet}.")
             return
-        n = random.randint(0, 9)
-        if n==bet:
+        r = random.randint(0, 9)
+        if n==r:
             account.coins += 10*bet
             await ctx.send(f"Vous gagnez {10*bet} coins.")
         else:
             account.coins -= bet
             await ctx.send(f"Vous perdez {bet} coins.")
-        self.accounts.post(ctx.author.id, account)
 
     @commands.command(name='compte-casino')
     async def account(self, ctx:commands.Context,):
@@ -89,9 +99,6 @@ class Casino(commands.Cog):
         account = self.accounts[ctx.author.id]
         if not account:
             self.accounts[ctx.author.id] = {'coins': self.coins_starter, 'creation':time.time(), 'time':time.time()}
-        else:
-            if time.time()-account.time>self.refill_wait_time:
-                self.refill(ctx)
 
     def refill(self, ctx):
         """Rajoute des coins régulièrement."""

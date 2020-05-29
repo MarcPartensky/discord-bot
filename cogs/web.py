@@ -7,6 +7,7 @@ from utils import html_parser
 from discord.ext import commands, tasks
 from translate import Translator
 from bs4 import BeautifulSoup
+import wikipedia; wikipedia.set_lang("fr")
 import requests
 import datetime
 import discord
@@ -51,6 +52,19 @@ class Web(commands.Cog):
             await ctx.send(msg)
 
     @commands.command()
+    async def deepai(self, ctx:commands.Context, *, msg:str):
+        """Envoie des requêtes à api.deepai.org."""
+        r = requests.post(
+            "https://api.deepai.org/api/text-generator",
+            data={
+                'text': msg,
+            },
+            headers={'api-key': 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K'}
+        )
+        resp = r.json()
+        await ctx.send(str(resp['output'])[:2000])
+
+    @commands.command()
     async def bitcoin(self, ctx:commands.Context):
         """Donne la valeur du bitcoin en dollar."""
         url = 'https://api.coindesk.com/v1/bpi/currentprice/BTC.json'
@@ -72,8 +86,22 @@ class Web(commands.Cog):
         url = "http://strategicalblog.com/liste-dinsultes-francaises-pas-trop-vulgaires/"
         await ctx.send(random.choice(re.findall("\n•\t(.*)<br />", requests.get(url).text))+" "+name)
 
-    @commands.command(name="wikipedia", aliases=["wiki"])
-    async def wikipedia(self, ctx, *search_list, n=500, d=5):
+    @commands.command(name="wikipedia", aliases=['wiki'])
+    async def wikipedia(self, ctx:commands.Context, *, search:str):
+        """Fais une recherche sur wikipedia."""
+        result = wikipedia.page(search)
+        ctn = result.content
+        await ctx.send(ctn[:2000])
+
+    @commands.command(name="langue-wiki", aliases=['lwiki'])
+    async def set_wikipedia_language(self, ctx:commands.Context, *, lang:str):
+        """Fais une recherche sur wikipedia."""
+        wikipedia.set_lang(lang)
+        msg = f"Wikipedia est en {lang} maintenant."
+        await ctx.send(msg)
+
+    @commands.command(name="wikipedia2", aliases=["wiki2"], hidden=True)
+    async def wikipedia2(self, ctx, *search_list, n=500, d=5):
         """Fais une recherche sur wikipédia."""
         languages = ["fr", "en"]
         for language in languages:
