@@ -1,7 +1,9 @@
+
 from config.credentials import token, client_id
 from config.config import prefix, masters, delete_after_time, status, access
 
 from discord.ext import commands, tasks
+import progressbar
 import warnings
 warnings.filterwarnings("ignore")
 import requests
@@ -37,9 +39,12 @@ class Main(commands.Cog):
 
     def load_cogs(self):
         """Charge tous les cogs."""
-        for filename in os.listdir('./cogs'):
-            if filename.endswith('.py'):
-                self.bot.load_extension(f"cogs.{filename[:-3]}")
+        cogs = os.listdir('./cogs')
+        with progressbar.ProgressBar(max_value=len(cogs)) as bar:
+            for i,filename in enumerate(cogs):
+                bar.update(i)
+                if filename.endswith('.py'):
+                    self.bot.load_extension(f"cogs.{filename[:-3]}")
 
     @commands.command(name="décharge-tous")
     @access.admin

@@ -2,12 +2,14 @@ from config.config import access, status, delete_after_time
 from utils.date import days, months
 from utils import tools
 from utils import html_parser
-
+from libs.google import google
 
 from discord.ext import commands, tasks
 from translate import Translator
 from bs4 import BeautifulSoup
 import wikipedia; wikipedia.set_lang("fr")
+import html2text
+import argparse
 import requests
 import datetime
 import discord
@@ -44,21 +46,56 @@ class Web(commands.Cog):
             await ctx.send(translation)
         except Exception as e:
             msg = str(e)
-            msg += "\nVous devez tapez: '.traduit [langue iso] [message]'. Il y a 2 options:"
-            msg += "\n1) .traduit `fr` without the origin language => sans le langage d'origine."
-            msg += "\n2) .traduit `en/fr` with the origin language => avec le langage d'origine."
-            msg += "\n\nRegarder ce lien pour connaître le code iso en 2 lettres d'une langue."
-            msg += "\nhttps://en.wikipedia.org/wiki/ISO_639-1"
+            msg += ("\nVous devez tapez: '.traduit [langue iso] [message]'. Il y a 2 options:"
+                    "\n1) .traduit `fr` without the origin language => sans le langage d'origine."
+                    "\n2) .traduit `en/fr` with the origin language => avec le langage d'origine."
+                    "\n\nRegarder ce lien pour connaître le code iso en 2 lettres d'une langue."
+                    "\nhttps://en.wikipedia.org/wiki/ISO_639-1")
             await ctx.send(msg)
+
+    @commands.command()
+    async def google(self, ctx:commands.Context, *,msg:str, n=1):
+        """Fais une recherche sur google."""
+        parser = argparse.ArgumentParser()
+        parser.add_argument('search', type=str, nargs='+', help='your google search')
+        parser.add_argument('-n', type=int, help='number of search', default=n)
+        try:
+            parsed = parser.parse_args(msg.split(' '))
+        except SystemExit as e:
+            with tools.Capturing() as out:
+                parser.print_help()
+            msg = "**Erreur d'utilisation:**\n> "
+            msg += '\n> '.join(out)
+            return await ctx.send(msg)
+        n = parsed.n or n
+        search = ' '.join(parsed.search)
+        results = google.search(search)[:n]
+        for result in results:
+            embed = self.embed_google_result(result)
+            await ctx.send(embed=embed)
+
+    def embed_google_result(self, result):
+        """Crée une intégration pour le résultat de la recherche google."""
+        embed = (discord.Embed(title=result.name, color=discord.Color.blue())
+        .add_field(name='link', value=result.link)
+        .add_field(name='name', value=result.name)
+        .add_field(name='description', value=result.description))
+        return embed
+
+    @commands.command()
+    async def web(self, ctx:commands.Context, url:str):
+        """Consulte une page web avec l'url."""
+        r = requests.get(url)
+        h = html2text.HTML2Text()
+        text = h.handle(r.text)
+        await ctx.send(text[:2000])
 
     @commands.command()
     async def deepai(self, ctx:commands.Context, *, msg:str):
         """Envoie des requêtes à api.deepai.org."""
         r = requests.post(
             "https://api.deepai.org/api/text-generator",
-            data={
-                'text': msg,
-            },
+            data={'text': msg},
             headers={'api-key': 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K'}
         )
         resp = r.json()
@@ -81,7 +118,7 @@ class Web(commands.Cog):
         await ctx.send(response['title']+'\n'+response['url'])
 
     @commands.command(name="insulte")
-    async def insult(self, ctx, name=""):
+    async def insult(self, ctx, name:str=""):
         """Insulte une personne."""
         url = "http://strategicalblog.com/liste-dinsultes-francaises-pas-trop-vulgaires/"
         await ctx.send(random.choice(re.findall("\n•\t(.*)<br />", requests.get(url).text))+" "+name)
@@ -90,7 +127,7 @@ class Web(commands.Cog):
     async def wikipedia(self, ctx:commands.Context, *, search:str):
         """Fais une recherche sur wikipedia."""
         result = wikipedia.page(search)
-        ctn = result.content
+        ctn = result.content.replace('\n', '')
         await ctx.send(ctn[:2000])
 
     @commands.command(name="langue-wiki", aliases=['lwiki'])
