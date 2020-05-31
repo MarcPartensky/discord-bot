@@ -30,10 +30,28 @@ class Shop(commands.Cog):
         self.bot = bot
         self.shop_dict = {}
         self.shops:MongoDatabase = cluster.shops
+        self.item_color = discord.Color.dark_green()
+        self.collection_color = discord.Color.dark_blue()
+        self.database_color = discord.Color.dark_red()
 
-    @commands.command(name="shopping")
-    async def shopping(self, ctx:commands.Context, *, name:str):
+
+    @commands.command(name="boutique", aliases=['shop'])
+    async def shop(self, ctx:commands.Context, *, name:str=None):
         """Choisi la boutique pour le shopping."""
+        if not name:
+            await get_shop(ctx)
+        else:
+            await set_shop(ctx, name)
+
+    async def get_shop(self, ctx:commands.Context):
+        """Affiche la boutique courante."""
+        shop = self.get_shop(ctx)
+            if not shop:
+                msg = "Vous n'êtes dans aucune boutique."
+                return await ctx.send(msg)
+
+    async def set_shop(self, ctx:commands.Context, name:str):
+        """Choisi la boutique courante."""
         if not name in self.shops.collection_names():
             msg = "Cette boutique n'existe pas."
             return await ctx.send(msg)
@@ -47,14 +65,6 @@ class Shop(commands.Cog):
         names = self.shops.collection_names()
         msg = '\n'.join(names)
         return await ctx.send(msg)
-
-    @commands.command(name="boutique")
-    async def shop(self, ctx:commands.Context):
-        """Affiche sa boutique courante."""
-        shop = self.get_shop(ctx)
-        if not shop:
-            msg = "Vous n'êtes dans aucune boutique."
-            return await ctx.send(msg)
 
     def get_shop(self, ctx:commands.Context):
         """Renvoie sa boutique courante."""
@@ -107,13 +117,28 @@ class Shop(commands.Cog):
         print('les items')
         await ctx.send(msg)
 
+    @commands.command(name="item")
+    @ensure_shop
+    async def item(self, ctx:commands.Context, name:str):
+        """Affiche un item et ses informations."""
+        shop = self.get_shop(ctx)
+        item = shop[name]
+        embed = self.embed_item(item)
+        await ctx.send(embed=embed)
+
     def embed_item(self, item):
         """Return an embed for an item."""
-        pass
+        embed = discord.Embed(title=item.name, color=self.item_color)
+        for k,v in item.items():
+            embed.add_field(name=k, value=v)
+        return embed
 
     def embed_shop(self, shop):
         """Return an embed for a shop."""
-        pass
+        embed = discord.Embed(title=item.name, color=self.item_color)
+        for k,v in item.items():
+            embed.add_field(name=k, value=v)
+        return embed
 
     def embed_shops(self, shops):
         """Return an embed for shops."""
