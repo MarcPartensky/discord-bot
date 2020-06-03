@@ -43,7 +43,7 @@ class Users(commands.Cog):
 
     @commands.command(name="lui", aliases=["elle"])
     async def him(self, ctx:commands.Context, member:discord.Member):
-        """Affiche mes informations."""
+        """Affiche les informations d'un membre."""
         await self.connect(ctx, member)
         account = self.accounts[member.id]
         title = f"Informations sur {member.name}"

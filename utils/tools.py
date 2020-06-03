@@ -1,5 +1,6 @@
 from io import StringIO 
 import sys
+from discord.ext import commands
 import discord
 
 def parse(cmd, *args, key="$"):
@@ -21,7 +22,7 @@ class Capturing(list):
         del self._stringio    # free up some memory
         sys.stdout = self._stdout
 
-def name_to_id(ctx:discord.ext.commands.Context, name):
+def name_to_id(ctx:commands.Context, name):
     """Convert a name to id."""
     member = discord.utils.get(ctx.guild.members, name=name)
     return member.id
@@ -66,3 +67,18 @@ def for_all_cog_methods(decorator_method):
         cls.__new__ = decorator__new__(cls.__new__)
         return cls
     return decorate
+
+def keep(t:dict, l:list):
+    nt = t.copy()
+    results = []
+    for k,v in t.items():
+        if isinstance(v, dict):
+            results.extend(keep(v, l))
+        elif isinstance(v, list):
+            for e in v:
+                results.extend(keep(e, l))
+        elif k in l:
+            results.append((k,v))
+    return results
+
+

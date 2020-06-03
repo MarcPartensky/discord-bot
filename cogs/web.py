@@ -1,4 +1,4 @@
-from config.config import access, status, delete_after_time
+from config.config import access, status, delete_after_time, wolfram
 from utils.date import days, months
 from utils import tools
 from utils import html_parser
@@ -67,6 +67,18 @@ class Web(commands.Cog):
         else:
             msg = "https://youtube-downloader-of-marc.herokuapp.com/download?id="+id
         return await ctx.send(msg)
+
+    @commands.command(name="math", aliases=['maths', 'mathématiques', 'm', 'wolfram', 'wolfram-alpha'])
+    async def math(self, ctx:commands.Context, *, msg:str):
+        """Calcule avec wolfram alpha."""
+        res = wolfram.query(msg)
+        for k,v in tools.keep(res, ['@src', 'plaintext']):
+            if k == '@src':
+                embed = discord.Embed(title=msg, color=discord.Color.orange())
+                embed.set_image(url=v)
+            elif k == 'plaintext':
+                embed.title = v
+                await ctx.send(embed=embed)
 
     @commands.command()
     async def google(self, ctx:commands.Context, *,msg:str, n=1):

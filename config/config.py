@@ -1,4 +1,4 @@
-from .credentials import mongo_url
+from .credentials import mongo_url, wolfram_alpha_id
 from utils import access, check
 
 import itertools
@@ -6,6 +6,7 @@ import itertools
 from pymongo import MongoClient
 import pymongo
 import os
+import wolframalpha
 
 from models.mongo import MongoCluster
 
@@ -15,6 +16,7 @@ db = cluster.esclave
 link = "https://discordapp.com/oauth2/authorize?&client_id=703347349623144549&scope=bot&permissions=8"
 prefix = os.environ['DISCORD_PREFIX']
 masters = [478552571510915072]#, 219949869220102147]
+wolfram = wolframalpha.Client(wolfram_alpha_id)
 
 roles = ["@Maître", "@Admin"]
 
