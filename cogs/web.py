@@ -80,6 +80,20 @@ class Web(commands.Cog):
                 embed.title = v
                 await ctx.send(embed=embed)
 
+    @commands.command(name="wikipedia", aliases=['wiki'])
+    async def wikipedia(self, ctx:commands.Context, *, search:str):
+        """Fais une recherche sur wikipedia."""
+        result = wikipedia.page(search)
+        ctn = result.content.replace('\n', '')
+        await ctx.send(ctn[:2000])
+
+    @commands.command(name="langue-wiki", aliases=['lwiki'])
+    async def set_wikipedia_language(self, ctx:commands.Context, *, lang:str):
+        """Fais une recherche sur wikipedia."""
+        wikipedia.set_lang(lang)
+        msg = f"Wikipedia est en {lang} maintenant."
+        await ctx.send(msg)
+
     @commands.command()
     async def google(self, ctx:commands.Context, *,msg:str, n=1):
         """Fais une recherche sur google."""
@@ -150,50 +164,37 @@ class Web(commands.Cog):
         url = "http://strategicalblog.com/liste-dinsultes-francaises-pas-trop-vulgaires/"
         await ctx.send(random.choice(re.findall("\n•\t(.*)<br />", requests.get(url).text))+" "+name)
 
-    @commands.command(name="wikipedia", aliases=['wiki'])
-    async def wikipedia(self, ctx:commands.Context, *, search:str):
-        """Fais une recherche sur wikipedia."""
-        result = wikipedia.page(search)
-        ctn = result.content.replace('\n', '')
-        await ctx.send(ctn[:2000])
 
-    @commands.command(name="langue-wiki", aliases=['lwiki'])
-    async def set_wikipedia_language(self, ctx:commands.Context, *, lang:str):
-        """Fais une recherche sur wikipedia."""
-        wikipedia.set_lang(lang)
-        msg = f"Wikipedia est en {lang} maintenant."
-        await ctx.send(msg)
-
-    @commands.command(name="wikipedia2", aliases=["wiki2"], hidden=True)
-    async def wikipedia2(self, ctx, *search_list, n=500, d=5):
-        """Fais une recherche sur wikipédia."""
-        languages = ["fr", "en"]
-        for language in languages:
-            if search_list[-1][:1] == "/":
-                n = int(search_list[-1][1:])
-                search_list = search_list[:-1]
-            search_list = [search[0].upper()+search[1:] for search in search_list]
-            search = "_".join(search_list)
-            resp = requests.get(f"https://{language}.wikipedia.org/wiki/{search}")
-            parser = html_parser.Parser('div', 'class', 'mw-parser-output', fetched_tags=["p", "li", "a"])
-            parser.load(resp.text)
-            lines = parser.result.split('\n')
-            deleting = ["wiki", "wikti", "ne cite pas suffisamment ses sources", "quelles sources sont attendues ?", "testez votre navigateur"]
-            new_lines = []
-            for line in lines:
-                found = False
-                for s in deleting:
-                    if s in line.lower():
-                        found = True
-                        break;
-                if not found and line.strip()!="":
-                    new_lines.append(line)
-            parser.result = "\n".join(new_lines)
-            if len(parser.result):
-                await ctx.send(parser.result[:n]+"...")
-                return
-        await ctx.send(f"La page {search} n'existe pas sur Wikipedia.")
-        # session = requests.Session()
+    # @commands.command(name="wikipedia2", aliases=["wiki2"], hidden=True)
+    # async def wikipedia2(self, ctx, *search_list, n=500, d=5):
+    #     """Fais une recherche sur wikipédia."""
+    #     languages = ["fr", "en"]
+    #     for language in languages:
+    #         if search_list[-1][:1] == "/":
+    #             n = int(search_list[-1][1:])
+    #             search_list = search_list[:-1]
+    #         search_list = [search[0].upper()+search[1:] for search in search_list]
+    #         search = "_".join(search_list)
+    #         resp = requests.get(f"https://{language}.wikipedia.org/wiki/{search}")
+    #         parser = html_parser.Parser('div', 'class', 'mw-parser-output', fetched_tags=["p", "li", "a"])
+    #         parser.load(resp.text)
+    #         lines = parser.result.split('\n')
+    #         deleting = ["wiki", "wikti", "ne cite pas suffisamment ses sources", "quelles sources sont attendues ?", "testez votre navigateur"]
+    #         new_lines = []
+    #         for line in lines:
+    #             found = False
+    #             for s in deleting:
+    #                 if s in line.lower():
+    #                     found = True
+    #                     break;
+    #             if not found and line.strip()!="":
+    #                 new_lines.append(line)
+    #         parser.result = "\n".join(new_lines)
+    #         if len(parser.result):
+    #             await ctx.send(parser.result[:n]+"...")
+    #             return
+    #     await ctx.send(f"La page {search} n'existe pas sur Wikipedia.")
+    #     # session = requests.Session()
         # url = "https://fr.wikipedia.org/w/api.php"
         # search = " ".join(search)
         # params = {"action":"query", "format":"json", "list":"search", "srsearch":search}
