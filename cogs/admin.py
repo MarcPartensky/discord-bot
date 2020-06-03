@@ -9,6 +9,7 @@ import discord
 import random
 import time
 import os
+import typing
 
 muted_role_name = "Muet"
 
@@ -32,6 +33,7 @@ class Admin(commands.Cog):
         self.mute_reason = "tu parles trop mec"
         self.demute_reason = "on veut entendre le doux son de ta voix"
         self.clear_limit = 10
+        self.invite_duration = 10*60 #in seconds
         self.muted_role_name = muted_role_name
         self.victims_channel_name = "Victimes"
         self.terminal = False
@@ -49,9 +51,16 @@ class Admin(commands.Cog):
             await ctx.send("Votre terminal est fermé.")
 
     @commands.command()
+    @shops.commands.sell
+    async def rename(self, ctx:commands.Context, member:discord.Member, *, nickname:str):
+        """Renomme un membre."""
+        await member.edit(nick=nickname)
+        await ctx.send(f'Le pseudo de {member.name} est maintenant {member.mention}.')
+
+    @commands.command()
     @access.admin
     async def kick(self, ctx, member:discord.Member, *, reason:str=None):
-        "Expulse un member du serveur."
+        "Expulse un membre du serveur."
         reason = reason or self.kick_reason
         try:
             await member.kick(reason=reason)
@@ -59,11 +68,19 @@ class Admin(commands.Cog):
             return await ctx.send(f"Je n'ai pas le droit de ban.")
         await ctx.send(f"{member.name} a été kick de {ctx.guild} parce que {reason}.")
         await member.send(f"Vous avez été kick de {ctx.guild} parce que {reason}.")
-        
-    @commands.command(name='kick-invite')
+
+    @commands.command()
     @access.admin
-    async def kick_and_invite(self, ctx, member:discord.Member, *, reason:str=None):
-        "Expulse puis réinvite un membre."
+    async def invite(self, ctx:commands.Context, user:discord.User, duration:int=None):
+        """Invite un utilisateur au serveur."""
+        duration = duration or self.invite_duration
+        link = await ctx.channel.create_invite(max_age = duration)
+        await user.send(link)
+
+    @commands.command(name='kick-invite')
+    @shops.commands.sell
+    async def kick_and_invite(self, ctx:commands.Context, member:discord.Member, duration:typing.Optional[int]=None, *, reason:str=None):
+        "Kick puis réinvite un membre."
         reason = reason or self.kick_reason
         try:
             await member.kick(reason=reason)
@@ -71,21 +88,21 @@ class Admin(commands.Cog):
             return await ctx.send(f"Je n'ai pas le droit de kick.")
         await ctx.send(f"{member.name} a été kick de {ctx.guild} parce que {reason}.")
         await member.send(f"Vous avez été kick de {ctx.guild} parce que {reason}.")
-        url = await ctx.guild.create_invite()
-        await member.send(f"Heuresement vous avez encore le droit de rejoindre:\n{url}.")
-
+        await member.send(f"Heuresement vous avez encore le droit de rejoindre.")
+        await self.invite(ctx, member, duration)
+    
     @commands.command()
     @access.admin
-    async def ban(self, ctx, member:discord.Member, *, reason:str=None):
+    async def ban(self, ctx, members: commands.Greedy[discord.Member], delete_days:typing.Optional[int]=0, *, reason:str=None):
         """Banni un membre du serveur."""
         reason = reason or self.ban_reason
-        try:
-            await member.ban(reason=reason)
-            await ctx.send(f"{member.name} a été ban de {ctx.guild} parce que {reason}.")
-        except discord.Forbidden:
-            await ctx.send(f"Je n'ai pas le droit de ban.")
+        for member in members:
+            try:
+                await member.ban(delete_message_days=delete_days, reason=reason)
+                await ctx.send(f"> **{member.name}** a été ban de {ctx.guild} parce que {reason}.")
+            except discord.Forbidden:
+                await ctx.send(f"Je n'ai pas le droit de ban.")
         
-
     @commands.command()
     @access.admin
     async def unban(self, ctx, *, member, reason:str=None):
@@ -99,6 +116,14 @@ class Admin(commands.Cog):
                 await ctx.guild.unban(user)
                 await ctx.send(f"{name} a été débanni de {ctx.guild} parce que {reason}.")
                 break
+
+    @commands.command()
+    async def banned(self, ctx:commands.Context):
+        """Liste les membre bannis sur le serveur."""
+        msg = "> **Liste des membres bannis:**\n"
+        msg += '\n'.join([f">       - **{ban.user.name}#{ban.user.discriminator}** car **{ban.reason}**." for ban in await ctx.guild.bans()])
+        return await ctx.send(msg)
+
             
     @commands.command()
     @shops.commands.sell

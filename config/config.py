@@ -19,6 +19,6 @@ masters = [478552571510915072]#, 219949869220102147]
 roles = ["@Maître", "@Admin"]
 
 delete_after_time = 10
-status = itertools.cycle(["développer la science infuse", "évoluer au delà de l'espèce humaine", "comploter contre l'humanité", "finaliser la théorie quantique"])
+status = itertools.cycle(["ajoute-moi à ton serv "+link, "développer la science infuse", "évoluer au delà de l'espèce humaine", "comploter contre l'humanité", "finaliser la théorie quantique"])
 access = access.Access(masters) #Create access for commands
 check = check.Check()

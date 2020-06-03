@@ -1,8 +1,9 @@
 from config.config import access, cluster, prefix
 from models.mongo import MongoCollection, MongoDatabase, Post
+from config import emoji
 from discord.ext import commands
 import discord
-from config import emoji
+import inspect
 
 class Item(Post):
     """Shop item."""
@@ -11,7 +12,6 @@ def ensure_shop(func):
     async def decorated(self, ctx:commands.Context, *args, **kwargs):
         """Il faut être dans une boutique."""
         if ctx.author.id in self.shop_dict:
-            print("yes")
             return await func(self, ctx, *args, **kwargs)
         else:
             msg = (f"{emoji.warning}Vous devez d'abord vous rendre dans une boutique!"
@@ -19,6 +19,9 @@ def ensure_shop(func):
                 f"\nPour voir la liste des boutiques: `{prefix}boutiques`."
             )
             return await ctx.send(msg)
+        decorated.__doc__ = func.__doc__
+        decorated.__name__ = func.__name__
+        decorated.__signature__ = inspect.signature(func)
     return decorated
 
 
@@ -39,16 +42,18 @@ class Shop(commands.Cog):
     async def shop(self, ctx:commands.Context, *, name:str=None):
         """Choisi la boutique pour le shopping."""
         if not name:
-            await get_shop(ctx)
+            await self.get_shop(ctx)
         else:
-            await set_shop(ctx, name)
+            await self.set_shop(ctx, name)
 
     async def get_shop(self, ctx:commands.Context):
         """Affiche la boutique courante."""
-        shop = self.get_shop(ctx)
-            if not shop:
-                msg = "Vous n'êtes dans aucune boutique."
-                return await ctx.send(msg)
+        if ctx.author.id not in self.shop_dict:
+            msg = "Vous n'êtes dans aucune boutique."
+        else:
+            shop = self.shop_dict[ctx.author.id]
+            msg = f"Vous êtes dans la boutique **{shop.name}**."
+        return await ctx.send(msg)
 
     async def set_shop(self, ctx:commands.Context, name:str):
         """Choisi la boutique courante."""
@@ -59,23 +64,27 @@ class Shop(commands.Cog):
         msg = f"Vous êtes dans la boutique **{name}**."
         return await ctx.send(msg)
 
-    @commands.command(name="boutiques")
+    @commands.command(name="boutiques", aliases=['shops'])
     async def shops(self, ctx:commands.Context):
         """Affiche les boutiques disponibles."""
         names = self.shops.collection_names()
         msg = '\n'.join(names)
         return await ctx.send(msg)
 
-    def get_shop(self, ctx:commands.Context):
-        """Renvoie sa boutique courante."""
-        id = ctx.author.id
-        return self.shop_dict[id]
+    @commands.command(name="créer-boutique")
+    @access.admin
+    async def create_shop(self, ctx:commands.Context, name:str):
+        """Créer une boutique."""
+        shop = self.shops[name]
+        msg = f"Uen nouvelle boutique du nom de {shop.name} a été ouverte."
+        return await ctx.send(msg)
+
 
     @commands.command("jeter")
     @access.admin
     async def delete(self, ctx:commands.Context, name:str):
         """Supprime un item."""
-        shop = self.get_shop(ctx)
+        shop = self.shop_dict[ctx.author.id]
         try:
             shop.find_one_and_delete(name)
             msg = "Item jeté avec succès."
@@ -88,7 +97,7 @@ class Shop(commands.Cog):
     @access.admin
     async def sell(self, ctx:commands.Context, name:str, price:int):
         """Vend un item."""
-        shop = self.get_shop(ctx)
+        shop = self.shop_dict[ctx.author.id]
         item = shop[name]
         item.price = price
         msg = f"{name} se vend maintenant à {price}."
@@ -98,7 +107,7 @@ class Shop(commands.Cog):
     @ensure_shop
     async def price(self, ctx:commands.Context, name:str):
         """Affiche le prix d'un item."""
-        shop = self.get_shop(ctx)
+        shop = self.shop_dict[ctx.author.id]
         item = shop[name]
         msg = f"{name} se vend à {item.price}."
         await ctx.send(msg)
@@ -107,12 +116,12 @@ class Shop(commands.Cog):
     @ensure_shop
     async def items(self, ctx:commands.Context):
         """Liste tous les items du rayon."""
-        shop = self.get_shop(ctx)
+        shop = self.shop_dict[ctx.author.id]
         lines = []
         for post in shop.find({}):
             post = Post(post)
-            line = post._id
-            lines.append(str(line))
+            line = f"> {post._id}:{post.price}{emoji.euro}"
+            lines.append(line)
         msg = '\n'.join(lines)
         print('les items')
         await ctx.send(msg)
@@ -121,7 +130,7 @@ class Shop(commands.Cog):
     @ensure_shop
     async def item(self, ctx:commands.Context, name:str):
         """Affiche un item et ses informations."""
-        shop = self.get_shop(ctx)
+        shop = self.shop_dict[ctx.author.id]
         item = shop[name]
         embed = self.embed_item(item)
         await ctx.send(embed=embed)

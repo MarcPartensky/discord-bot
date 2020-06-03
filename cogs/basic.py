@@ -5,7 +5,6 @@ from utils.date import days, months
 from utils import tools
 
 from discord.ext import commands, tasks
-from discord.ext.commands import Bot
 from translate import Translator
 from discord.utils import get
 from discord import Message, PartialEmoji, Emoji
@@ -13,9 +12,6 @@ from bs4 import BeautifulSoup
 import datetime
 import discord
 import random
-
-# e = Emoji()
-# rock = PartialEmoji(name=":rock:")
 
 
 class Basic(commands.Cog):
@@ -48,6 +44,7 @@ class Basic(commands.Cog):
 
     @commands.command(name="masquer", aliases=['mask'])
     async def mask(self, ctx:commands.Context, *, message):
+        """Masque un message."""
         message = f"||{message}||"
         await ctx.message.delete()
         await ctx.send(content=message)
@@ -271,49 +268,6 @@ class Basic(commands.Cog):
             description = "Tout le monde est sympa."
         embed = discord.Embed(title=title, description=description, color=color)
         await ctx.send(embed=embed)
-
-    @commands.command(name="eval", aliases=["v"])
-    @access.admin
-    async def evaluate(self, ctx, *, cmd):
-        """Evalue une commande."""
-        if '|' in cmd:
-            cmd, args = cmd.split('|')
-            args = args.split(',')
-            cmd = tools.parse(cmd, *args)
-        try:
-            await ctx.send(eval(cmd))
-        except Exception as e:
-            await ctx.send(e)
-
-    @commands.command(name="exec", aliases=["exe", "x"])
-    @access.admin
-    async def execute(self, ctx, *, cmd):
-        """Exécute une commande."""
-        if '|' in cmd:
-            cmd, args = cmd.split('|')
-            args = args.split(',')
-            cmd = tools.parse(cmd, *args)
-        with tools.Capturing() as out:
-            exec(cmd, globals(), locals())
-        await ctx.send("\n".join(out))
-
-    @commands.command(aliases=["c"])
-    @access.admin
-    async def code(self, ctx, *, cmd):
-        """Evalue ou exécute une commande."""
-        if '|' in cmd:
-            cmd, args = cmd.split('|')
-            args = args.split(',')
-            cmd = tools.parse(cmd, *args)
-        try:
-            await ctx.send(eval(cmd))
-        except Exception as e:
-            try:
-                with tools.Capturing() as out:
-                    exec(cmd, globals(), locals())
-                await ctx.send("\n".join(out))
-            except Exception as e:
-                await ctx.send(cmd)
 
     @commands.command(name="historique")
     @access.admin

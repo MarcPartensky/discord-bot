@@ -26,26 +26,14 @@ class CommandsShop(Shop):
     def sell_for(self, *args, **kwargs):
         pass
 
-    def test(self, func):
-        func.qualifed_name = "yeaaaahhhhhhhh"
-        # func.short_doc = "c'est ma doc wesh"
-        return func
-
     def sell(self, func):
         item = self.shop[func.__qualname__]
-        if not item:
-            item.setdefault('_id',func.__qualname__)
-            item.setdefault('name',func.__name__)
-            item.setdefault('description', func.__doc__)
-            item.setdefault('price', self.default_price)
-        # if not item:
-        #     item = Item(
-        #         _id=func.__qualname__,
-        #         name=func.__name__,
-        #         description=func.__doc__,
-        #         price=self.default_price,
-        #     )
-        #     self.shop.post(item)
+        item.setdefaults(
+            _id=func.__qualname__,
+            name=func.__name__,
+            description=func.__doc__,
+            price=self.default_price,
+        )
         async def decorated(cmd, ctx:commands.Context, *args, **kwargs):
             item = self.shop[func.__qualname__]
             if ctx.author.id in self.masters:

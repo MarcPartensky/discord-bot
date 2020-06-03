@@ -12,6 +12,7 @@ import discord
 import sqlite3
 import asyncio
 import random
+import itertools
 import time
 import re
 import os
@@ -23,12 +24,28 @@ client = commands.Bot(command_prefix=prefix, case_insensitive=True)
 client.id = client_id
 
 class Main(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot:commands.Bot):
         self.bot = bot
         self.invited = "invité"
         self.good_invited = "bon invité"
         self.bad_invited = "mauvais invité"
+        self.help_every = 5
         self.load_cogs()
+        self.load_status()
+
+    def load_status(self):
+        """Charge les statuts."""
+        self.status = []
+        for command in self.bot.commands:
+            msg = prefix+command.name+":"+command.short_doc
+            self.status.append(msg)
+        random.shuffle(self.status)
+        i = 0
+        while i < len(self.status):
+            msg = prefix+"help:"+"voir les commandes."
+            self.status.insert(i, msg)
+            i += self.help_every
+        self.status = itertools.cycle(self.status)
 
     @commands.command(name="charge-tous")
     @access.admin
@@ -76,7 +93,7 @@ class Main(commands.Cog):
     @tasks.loop(seconds = 10)
     async def change_status(self):
         """Change le statut."""
-        await self.bot.change_presence(activity = discord.Game(next(status)))
+        await self.bot.change_presence(activity = discord.Game(next(self.status)))
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -87,7 +104,7 @@ class Main(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         """Venue un nouveau membre."""
-        await member.add_roles(invited)
+        await member.add_roles(self.invited)
         await ctx.send(f"{member.name} à été promu en {role.name}.")
 
         timeout = 60
@@ -108,12 +125,12 @@ class Main(commands.Cog):
                 try:
                     msg = await self.bot.wait_for('message', check=check, timeout=timeout)
                     await channel.send("T'es un bon toi. T'iras loin!")
-                    await member.add_roles(good_invited)
+                    await member.add_roles(self.good_invited)
                     await ctx.send(f"{member.name} à été promu en {role.name}.")
 
                 except Exception:
                     await channel.send(f"Ça fait déjà {timeout} secondes.\nT'es un mauvais toi. T'iras pas loin.")
-                    await member.add_roles(bad_invited)
+                    await member.add_roles(self.bad_invited)
                     await ctx.send(f"{member.name} à été promu en {role.name}.")
 
     @commands.Cog.listener()
@@ -125,19 +142,24 @@ class Main(commands.Cog):
                 await channel.send(f"Une pensée pour {member} qui a rage quit le serveur.")
                 await channel.send(f"Faisons une minute de silence.")
                 try:
-                    msg = await self.bot.wait_for('message', check=lambda ctx:True, timeout=timeout)
+                    check = lambda ctx:not ctx.author.bot
+                    msg = await self.bot.wait_for('message', check=check, timeout=timeout)
                     await channel.send(f"On a dit une minute de silence!")
                 except Exception:
                     await channel.send("La minute est passée. Vous pouvez retournez à vos activités.")
                     
     @commands.Cog.listener()
-    async def on_command_error(self, ctx, error, translating=False):
+    async def on_command_error(self, ctx, error, translating=None):
         """Envoie l'erreur aux utilisateurs."""
+        if not translating:
+            translating = ctx.author.id not in masters
         if translating:
             from translate import Translator
             translator = Translator(to_lang='fr', from_lang='en')
             message = translator.translate(str(error)).replace('&quot;','\"').replace('&#39;',"'")
-        message = str(error)
+        else:
+            message = str(error)
+        if message[-1]!=".": message+="."
         await ctx.send(message)
         raise error
 

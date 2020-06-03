@@ -53,6 +53,21 @@ class Web(commands.Cog):
                     "\nhttps://en.wikipedia.org/wiki/ISO_639-1")
             await ctx.send(msg)
 
+    @commands.command(name="télécharger", aliases=['download', 'dl', 'tl'])
+    async def download(self, ctx:commands.Context, *, url:str):
+        """Télécharge une musique sur youtube avec le lien youtube."""
+        pattern = re.compile(r"https://www.youtube.com/watch\?v=(\w{11})")
+        results = pattern.findall(url)
+        if len(results)==0:
+            msg = "Ce n'est pas un url de vidéo youtube."
+            return await ctx.send(msg)
+        id = results[0]
+        if not id:
+            msg = "Ce n'est pas un url de vidéo youtube."
+        else:
+            msg = "https://youtube-downloader-of-marc.herokuapp.com/download?id="+id
+        return await ctx.send(msg)
+
     @commands.command()
     async def google(self, ctx:commands.Context, *,msg:str, n=1):
         """Fais une recherche sur google."""

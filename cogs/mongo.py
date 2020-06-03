@@ -1,6 +1,7 @@
 # from config.credentials import mongo_url
 
 from discord.ext import commands, tasks
+from models.mongo import Post, MongoCollection, MongoDatabase
 import discord
 
 from config.config import cluster, access
@@ -16,8 +17,9 @@ from utils.tools import for_all_cog_methods
 class Mongo(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.database = None
-        self.collection = None
+        self.database:MongoDatabase = None
+        self.collection:MongoCollection = None
+        self.post_color = discord.Color.dark_green()
 
     @commands.command(name='mg-collections')
     @access.admin
@@ -69,14 +71,48 @@ class Mongo(commands.Cog):
         self.collection.update_one(post)
         await ctx.send(f"{id}:{value} mis à jour dans {self.collection.name}.")
 
-    @commands.command(name="mg-find-one")
+    # @commands.command(name="mg-find-one")
+    # @access.admin
+    # async def find_one(self, ctx:commands.Context, *, conditions:str):
+    #     """Trouve un post dans mongo."""
+    #     conditions = conditions.split(',')
+    #     conditions = dict([string.strip() for string in condition.strip().split('=')] for condition in conditions)
+    #     post = self.collection.find_one(conditions)
+    #     title = f"Trouvé: {post._id}."
+    #     embed = self.lazy_embed(title, self.post_color, post)
+    #     await ctx.send(embed=embed)
+
+    @commands.command(name="mg-delete-one")
     @access.admin
-    async def find_one(self, ctx:commands.Context, *, conditions:str):
+    async def delete_one(self, ctx:commands.Context, *, conditions:str):
         """Trouve un post dans mongo."""
         conditions = conditions.split(',')
         conditions = dict([string.strip() for string in condition.strip().split('=')] for condition in conditions)
+        # try:
+        print(conditions)
+        self.collection.find_and_delete_one(conditions)
+        msg = f"Document supprimé."
+        # except Exception as e:
+        #     print(e)
+        #     msg = f"Document introuvable."
+        await ctx.send(msg)
+
+    def lazy_embed(self, title, color, d):
+        """Lazy embed a dictionary."""
+        embed = discord.Embed(title=title, color=color)
+        for k,v in d.items():
+            embed.add_field(name=k, value=v)
+        return embed
+
+    @commands.command(name="mg-find-one")
+    @access.admin
+    async def find_one(self, ctx:commands.Context, *, conditions:str):
+        """Trouve des posts dans mongo."""
+        conditions = conditions.split(',')
+        conditions = dict([string.strip() for string in condition.strip().split('=')] for condition in conditions)
         post = self.collection.find_one(conditions)
-        await ctx.send(f"Trouvé: {post}.")
+        embed = self.lazy_embed(post._id, self.post_color, post)
+        await ctx.send(embed=embed)
 
     @commands.command(name="mg-find")
     @access.admin
@@ -84,15 +120,19 @@ class Mongo(commands.Cog):
         """Trouve des posts dans mongo."""
         conditions = conditions.split(',')
         conditions = dict([string.strip() for string in condition.strip().split('=')] for condition in conditions)
-        posts = list(self.collection.find(conditions))
-        await ctx.send(f"Trouvé: {posts}.")   
+        for post in self.collection.find(conditions):
+            post = Post(post)
+            embed = self.lazy_embed(post._id, self.post_color, post)
+            await ctx.send(embed=embed)
 
     @commands.command(name="mg-find-all")
     @access.admin
-    async def find(self, ctx:commands.Context, n:int=10):
+    async def find_all(self, ctx:commands.Context, n:int=10):
         """Trouve des posts dans mongo."""
-        posts = list(self.collection.find({}, limit=n))
-        await ctx.send(f"Trouvé: {posts}.")
+        for post in self.collection.find({}, limit=n):
+            post = Post(post)
+            embed = self.lazy_embed(post._id, self.post_color, post)
+            await ctx.send(embed=embed)
 
     @commands.command(name="mg-back")
     @access.admin
