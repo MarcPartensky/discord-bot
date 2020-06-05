@@ -63,21 +63,42 @@ class Bank(commands.Cog):
         self.troll_message = "Vous y avez vraiment cru? mdr"
         # self.gold_color = 0xecce8b #useless with discord.color system
         self.gold_color = discord.Color.gold()
+
+    @property
+    def account_defaults(self):
+        return dict(
+            money = float('inf'),
+            creation = time.time(),
+            withdrawed = 0,
+            withdrawed_time = None,
+            saved = 0,
+            saved_time = None,
+        )
+
+    @commands.command(name="nettoie-compte")
+    async def clean_account(self, ctx:commands.Context, member:discord.Member=None):
+        """Nettoie les champs inutiles d'un compte.
+        Les champs inutiles dans mongo sont supprimés."""
+        member = member or ctx.author
+        keys = list(self.account_defaults.keys())+['_id']
+        account = self.accounts[member.id]
+        if 'creation' not in account:
+            if ctx.author==member:
+                msg = "Vous n'avez pas de compte bancaire."
+            else:
+                msg = f"{member.name} n'a pas de compte bancaire."
+            return await ctx.send(msg)
+        for key in account.keys():
+            if key not in keys:
+                del account[key]
+        await ctx.send("Compte bancaire nettoyé.")
     
     @commands.command(name="rendre-riche")
     @access.admin
     async def make_rich(self, ctx:commands.Context, member:discord.Member):
         """Rend un membre infiniment riche."""
         account = self.accounts[member.id]
-        account.setdefaults(
-                _id = member.id,
-                money = float('inf'),
-                creation = time.time(),
-                withdrawed = 0,
-                withdrawed_time = None,
-                saved = 0,
-                saved_time = None,
-        )
+        account.setdefaults(self.account_defaults)
         account.money = float('inf')
         if ctx.author==member:
             msg = "Vous êtes maintenant infiniment riche."
@@ -94,9 +115,12 @@ class Bank(commands.Cog):
         """Détermine si un compte bancaire est valide."""
         if not account:
             raise Bank.NoAccount(member, ctx.author)
+        elif len(account)==1:
+            raise Bank.NoAccount(member, ctx.author)
         
     def has_enough_money(self, ctx:commands.Context, account, member:discord.Member, money:int):
         """Assure la capacité de payer."""
+        account.setdefaults(money=0)
         if account.money < money:
             raise Bank.NotEnoughMoney(member, ctx.author)
 
@@ -253,15 +277,7 @@ class Bank(commands.Cog):
         """Migre banque de sqlite vers mongodb."""
         sqldb.select('money')
         for (id, money, datetime) in sqldb.fetchall():
-            account = Bank.Account(
-                _id = id,
-                money = money,
-                creation = datetime,
-                withdrawed = 0,
-                withdrawed_time = None,
-                saved = 0,
-                saved_time = None,
-            )
+            account = Bank.Account(self.account_defaults)
             self.accounts.post(account)
         sqldb.select('transactions')
         for (buyer, receiver, money, datetime) in sqldb.fetchall():
@@ -309,11 +325,12 @@ class Bank(commands.Cog):
         """Décrit un compte bancaire."""
         user = user or self.bot.get_user(account._id)
         creation = datetime.datetime.fromtimestamp(int(account.creation))
-        if account.withdrawed:
+        if account.withdrawed_time:
             withdrawed_time = datetime.datetime.fromtimestamp(int(account.withdrawed_time))
         else:
+            print(account.withdrawed_time)
             withdrawed_time = self.never
-        if account.saved:
+        if account.saved_time:
             saved_time = datetime.datetime.fromtimestamp(int(account.saved_time))
         else:
             saved_time = self.never
@@ -359,7 +376,7 @@ class Bank(commands.Cog):
         if ctx.author!=member and not ctx.author.id in masters:
             return await ctx.send("Vous n'êtes pas autorisés à ouvrir le compte de cette personne.")
         account = self.accounts[member.id]
-        if account:
+        if len(account)>1:
             if ctx.author==member:
                 msg = "Vous avez déjà un compte en banque."
             else:
@@ -388,23 +405,7 @@ class Bank(commands.Cog):
         
         if ctx.author!=member and not ctx.author.id in masters:
             return await ctx.send(f"Vous n'êtes pas autorisés à fermer le compte de {member.name}.")
-        post = self.accounts.find_one({'_id':member.id})
-        if not post:
-            if member==ctx.author:
-                return await ctx.send("Vous n'avez pas de compte.")
-            else:
-                return await ctx.send(f"{member.name} n'as pas de compte.")
-            return
-        if member==ctx.author:
-            return await ctx.send("Votre compte a été trouvé. "
-                "Êtes-vous sur de vouloir le supprimer?")
-        else:
-            return await ctx.send(f"Le compte de {member.name} a été trouvé. "
-                "Êtes-vous sur de vouloir le supprimer?")
-        success = await check.wait_for_check(ctx)
-        if not success:
-            return
-        self.accounts.delete_one({'_id':member.id})
+        self.accounts.find_one_and_delete(dict(_id=member.id))
         if member==ctx.author:
             return await ctx.send("Votre compte a été supprimé.")
         else:
@@ -426,7 +427,7 @@ class Bank(commands.Cog):
         bank_account.money -= money
         user_account.money += money
         bank_account.withdrawed += 1
-        bank_account.last_withdrawed = time.time()
+        bank_account.withdrawed_time = time.time()
         if ctx.author==member:
             msg = f"Vous avez retiré {money} {emoji.euro}."
         else:
@@ -452,7 +453,7 @@ class Bank(commands.Cog):
         user_account.money -= money
         bank_account.money += money
         bank_account.saved += 1
-        bank_account.last_saved = time.time()
+        bank_account.saved_time = time.time()
         if ctx.author==member:
             msg = f"Vous avez placé {money} {emoji.euro}."
         else:

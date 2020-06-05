@@ -82,6 +82,7 @@ class Admin(commands.Cog):
     async def kick_and_invite(self, ctx:commands.Context, member:discord.Member, duration:typing.Optional[int]=None, *, reason:str=None):
         "Kick puis réinvite un membre."
         reason = reason or self.kick_reason
+        roles = member.roles
         try:
             await member.kick(reason=reason)
         except discord.Forbidden:
@@ -89,6 +90,7 @@ class Admin(commands.Cog):
         await ctx.send(f"{member.name} a été kick de {ctx.guild} parce que {reason}.")
         await member.send(f"Vous avez été kick de {ctx.guild} parce que {reason}.")
         await member.send(f"Heuresement vous avez encore le droit de rejoindre.")
+        member.add_roles(roles)
         await self.invite(ctx, member, duration)
     
     @commands.command()

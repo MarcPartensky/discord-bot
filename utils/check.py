@@ -37,13 +37,13 @@ class Check:
     
     def consent(self, message):
         message = self.consent_message + " " + message
-        return tools.post_passer(self.validation, message)
+        return tools.post_passer(self.validation, message=message)
 
     def validate(self, message):
-        return tools.post_passer(self.validation, message)
+        return tools.post_passer(self.validation, message=message)
 
     def warn(self, message):
-        return tools.post_passer(tools.post_passer(self.validation, message), True)
+        return tools.post_passer(self.validation, message=message, warning=True)
 
     def validation(self, func, message=None, warning=False):
         async def decorated(command, ctx:commands.Context, *args):

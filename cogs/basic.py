@@ -12,22 +12,29 @@ from bs4 import BeautifulSoup
 import datetime
 import discord
 import random
+import html
 
 
 class Basic(commands.Cog):
     def __init__(self, bot:commands.Bot, **kwargs):
         super().__init__(**kwargs)
         self.bot = bot
+    
+    @commands.command()
+    async def id(self, ctx:commands.Context, member:discord.Member=None):
+        """Affiche l'id d'un membre."""
+        member = member or ctx.author
+        await ctx.send(member.id)
 
     @commands.command()
     @access.admin
-    async def admin(self, ctx):
+    async def admin(self, ctx:commands.Context):
         """Détermine si vous êtes admin."""
         await ctx.send("Vous êtes admin.")
 
     @commands.command()
     @access.admin
-    async def master(self, ctx):
+    async def master(self, ctx:commands.Context):
         """Détermine si vous êtes master."""
         await ctx.send("Vous êtes master.")
 
@@ -101,13 +108,6 @@ class Basic(commands.Cog):
         else:
             await ctx.send(f"Salut {ctx.author}!")
 
-    # @commands.command(name="historique")
-    # @access.admin
-    # async def history(self, ctx, limit=5):
-    #     """Donne l'historique des messages."""
-    #     async for message in ctx.author.history(limit=limit):
-    #         await ctx.send(message)
-
     @commands.command(name="est-amis")
     async def is_friend(self, ctx):
         """Détermine si vous êtes amis."""
@@ -164,20 +164,26 @@ class Basic(commands.Cog):
         if translating:
             from translate import Translator
             t = Translator(to_lang='fr', from_lang='en')
-        user = user or ctx.author
+        user:discord.User = user or ctx.author
         if not isinstance(user, discord.Member):
             if user == ctx.author:
-                await ctx.send("Vous n'avez pas de permissions sur une conversation privée!")
+                msg = "Vous n'avez pas de permissions sur une conversation privée!"
             else:
-                await ctx.send(f"{user.name} n'a pas de permissions sur une conversation privée!")
-        else:
-            permissions = ', '.join([str(p[0]).replace('_',' ') for p in user.guild_permissions if p[1]])
-            if translating:
-                permissions = t.translate(permissions).lower().replace('&#39;',"'")
-            if user == ctx.author:
-                await ctx.send(f"Vos permissions sont:\n{permissions}.")
-            else:
-                await ctx.send(f"{user.name} a les permissions:\n{permissions}.")        
+                msg = f"{user.name} n'a pas de permissions sur une conversation privée!"
+            return await ctx.send(msg)
+        embed = discord.Embed(title=f"Permissions de {user.name}", color=discord.Color.red())
+        embed.set_author(icon_url=user.avatar_url, name=user.name)
+        permissions = ''.join(["\n- "+str(p[0]).replace('_',' ') for p in user.guild_permissions if p[1]])
+        if translating:
+            translation = t.translate(permissions)
+            if not translation.startswith("QUERY"):
+                permissions = html.unescape(translation)
+                embed.add_field(name=f"{user.name} peut:", value=permissions)
+                return await ctx.send(embed=embed)
+        embed.add_field(name=f"{user.name} peut:", value=permissions)
+        embed.set_footer(text="Pas de traduction.")
+        return await ctx.send(embed=embed)
+        
 
     @commands.command()
     async def role(self, ctx, user:discord.Member=None):
@@ -297,34 +303,10 @@ class Basic(commands.Cog):
         embed = discord.Embed(title="title", description=message, color=color)
         await ctx.send(embed=embed)
 
-    @commands.Cog.listener(name="on_message")
-    async def on_message(self, msg):
-        """Lis tout les messages"""
-        if msg.author == self.bot.user: return
-        elif msg.content.startswith('```python\n'):
-            code = msg.content.replace('```','').replace('python\n','')
-            class ctx:
-                send = msg.channel.send
-                author = msg.author
-            def check(reaction, user):
-                print(emoji.play, reaction.emoji)
-                return user==msg.author and str(reaction.emoji)==emoji.play 
-            try:
-                user, reaction = await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
-                await self.execute(ctx, code)
-            except:
-                pass
-
-    @commands.Cog.listener(name="reaction_add")
-    async def reaction_add(self, reaction, user):
-        print(reaction, user)
-        # await msg.channel.send("je vois")    
-
-
-
-
-
-
+    # @commands.Cog.listener(name="reaction_add")
+    # async def reaction_add(self, reaction, user):
+    #     print(reaction, user)
+    #     # await msg.channel.send("je vois")    
 
 
 def setup(bot):

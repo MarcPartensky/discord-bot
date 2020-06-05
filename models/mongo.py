@@ -53,12 +53,13 @@ class CommitPost:
 
     def setdefaults(self, *args, **kwargs):
         dicts = args+(kwargs,)
-        for d in dicts:
-            for k,v in d.items():
-                self.setdefault(k, v)
+        for dict_ in dicts:
+            self._dict.update(dict_)
+            # for k,v in d.items():
+            #     self.setdefault(k, v)
 
-    def update(self, _dictionary:dict):
-        self._dict.update(_dictionary)
+    def update(self, dictionary_:dict):
+        self._dict.update(dictionary_)
 
     def __str__(self):
         return str(self._dict)
@@ -172,6 +173,8 @@ class BindPost:
 
     def __delattr__(self, key):
         self._collection.update_one({'_id':self._id}, {"$unset": {key:""}})
+
+    __delitem__ = __delattr__
 
     def __getattribute__(self, key):
         if key in ['_collection', '_id', 'collection', '_dict']:

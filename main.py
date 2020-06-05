@@ -13,12 +13,27 @@ import sqlite3
 import asyncio
 import random
 import itertools
+import html
 import time
 import re
 import os
 
 #TODO
 #command prefix
+
+# def get_prefix(bot, message):
+#     """A callable Prefix for our bot. This could be edited to allow per server prefixes."""
+
+#     # Notice how you can use spaces in prefixes. Try to keep them simple though.
+#     prefixes = ['>?', 'lol ', '!?']
+
+#     # Check to see if we are outside of a guild. e.g DM's etc.
+#     if not message.guild:
+#         # Only allow ? to be used in DMs
+#         return '?'
+
+#     # If we are in a guild, we allow for the user to mention us or use any of the prefixes in our list.
+#     return commands.when_mentioned_or(*prefixes)(bot, message)
 
 client = commands.Bot(command_prefix=prefix, case_insensitive=True)
 client.id = client_id
@@ -37,12 +52,12 @@ class Main(commands.Cog):
         """Charge les statuts."""
         self.status = []
         for command in self.bot.commands:
-            msg = prefix+command.name+":"+command.short_doc
+            msg = prefix+command.name+" "+command.short_doc
             self.status.append(msg)
         random.shuffle(self.status)
         i = 0
         while i < len(self.status):
-            msg = prefix+"help:"+"voir les commandes."
+            msg = prefix+"help Voir les commandes."
             self.status.insert(i, msg)
             i += self.help_every
         self.status = itertools.cycle(self.status)
@@ -156,7 +171,8 @@ class Main(commands.Cog):
         if translating:
             from translate import Translator
             translator = Translator(to_lang='fr', from_lang='en')
-            message = translator.translate(str(error)).replace('&quot;','\"').replace('&#39;',"'")
+            message = translator.translate(str(error))
+            message = html.unescape(message)
         else:
             message = str(error)
         if message[-1]!=".": message+="."

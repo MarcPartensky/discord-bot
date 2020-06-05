@@ -74,10 +74,10 @@ class Commandes(commands.Cog):
             return await ctx.send(f"La commande {command} n'existe pas.")
         post.use += 1
         post.user = ctx.author.id
-        basic = self.bot.get_cog("Basic")
+        code = self.bot.get_cog("Code")
         ctx.authorized = True
         if post.author in masters:
-            await basic.code(ctx, cmd=post.result)
+            await code.code(ctx, cmd=post.result)
         else:
             await ctx.send(post.result)
         self.commands.replace_one({'_id':command}, post)

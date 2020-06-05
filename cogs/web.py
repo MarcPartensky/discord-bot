@@ -15,6 +15,8 @@ import datetime
 import discord
 import random
 import aiohttp
+import urllib
+import html
 import json
 import re
 
@@ -23,14 +25,14 @@ class Web(commands.Cog):
     def __init__(self, bot, **kwargs):
         super().__init__(**kwargs)
         self.bot = bot
+        self.joke_color = discord.Color.magenta()
         # self.to_language = "fr"
         # self.from_language = "en"
         # self.translator = Translator(to_lang=to_language, from_lang=from_language)
 
     @commands.command(name="traduit", aliases=['t', 'trad'])
-    async def translate(self,ctx, languages:str, *, message:str):
+    async def translate(self, ctx:commands.Context, languages:str, *, message:str):
         """Traduit un message."""
-
         try:
             if '/'in languages:
                 from_lang, to_lang = languages.split('/')
@@ -43,6 +45,7 @@ class Web(commands.Cog):
                     raise Exception("Ce n'est pas un langage du code ISO.")
                 translator = Translator(to_lang=to_lang)
             translation = translator.translate(message)
+            translation = html.unescape(translation)
             await ctx.send(translation)
         except Exception as e:
             msg = str(e)
@@ -56,7 +59,7 @@ class Web(commands.Cog):
     @commands.command(name="télécharger", aliases=['download', 'dl', 'tl'])
     async def download(self, ctx:commands.Context, *, url:str):
         """Télécharge une musique sur youtube avec le lien youtube."""
-        pattern = re.compile(r"https://www.youtube.com/watch\?v=(\w{11})")
+        pattern = re.compile(r"https://www.youtu.?be.com/watch\?v=(\w{11})")
         results = pattern.findall(url)
         if len(results)==0:
             msg = "Ce n'est pas un url de vidéo youtube."
@@ -67,6 +70,56 @@ class Web(commands.Cog):
         else:
             msg = "https://youtube-downloader-of-marc.herokuapp.com/download?id="+id
         return await ctx.send(msg)
+
+    @commands.command(name="chuck-norris", aliases=['chuck', 'norris'])
+    async def chuck_norris(self, ctx:commands.Context):
+        """API sur chuck norris."""
+        params = dict(type='txt', nb=1, page=random.randint(0, 100))
+        params = ";".join([f"{k}:{v}" for k,v in params.items()])
+        url = "https://www.chucknorrisfacts.fr/api/get?data="
+        res = requests.get(url=url+params)
+        msg = html.unescape(res.json()[0]['fact'])
+        await ctx.send(msg)
+
+    @commands.command(name="chat")
+    async def cat(self, ctx:commands.Context):
+        """Affiche une image de chat."""
+        res = requests.get('http://aws.random.cat/meow').json()
+        embed = discord.Embed()
+        embed.set_image(url=res['file'])
+        await ctx.send(embed=embed)
+
+    @commands.command(name="blague", aliases=['joke', 'j'])
+    async def joke(self, ctx:commands.Context):
+        """Fais un blague."""
+        url = "https://joke3.p.rapidapi.com/v1/joke"
+        headers = {
+            'x-rapidapi-host': "joke3.p.rapidapi.com",
+            'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7"
+            }
+        r = requests.request("GET", url, headers=headers).json()
+        translator = Translator(from_lang='en', to_lang='fr')
+        content = html.unescape(translator.translate(r['content']))
+        embed = (discord.Embed(title=content, color=self.joke_color)
+        .add_field(name="original", value=r['content'])
+        .add_field(name="likes", value=r['upvotes'])
+        .add_field(name="dislikes", value=r['downvotes']))
+        await ctx.send(embed=embed)
+
+        # like and dislike support
+        # await self.bot.add_reaction(emoji=emoji.like)
+        # await self.bot.add_reaction(emoji=emoji.like)
+
+
+        # await ctx.bot.
+        # payload = ""
+        # headers = {
+        #     'x-rapidapi-host': "joke3.p.rapidapi.com",
+        #     'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7",
+        #     'content-type': "application/x-www-form-urlencoded"
+        #     }
+
+        # response = requests.request("POST", url, data=payload, headers=headers)
 
     @commands.command(name="math", aliases=['maths', 'mathématiques', 'm', 'wolfram', 'wolfram-alpha'])
     async def math(self, ctx:commands.Context, *, msg:str):

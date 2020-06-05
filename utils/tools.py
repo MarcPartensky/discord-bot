@@ -51,7 +51,6 @@ def post_passer(func, *passed_args, **passed_kwargs):
         return func(*args, **kwargs)
     return decorated
 
-
 def for_all_cog_methods(decorator_method):
     def decorate(cls):
         def decorator__new__(new):
@@ -81,4 +80,16 @@ def keep(t:dict, l:list):
             results.append((k,v))
     return results
 
+import signal
+from contextlib import contextmanager
 
+@contextmanager
+def time_limit(seconds):
+    def signal_handler(signum, frame):
+        raise TimeoutError("Timed out!")
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(seconds)
+    try:
+        yield
+    finally:
+        signal.alarm(0)
