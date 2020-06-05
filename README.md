@@ -43,6 +43,9 @@ Casino system to play all types of games
 - tell date, hour
 ...
 
+**Sell your commands.**
+- choose commands prices
+
 **and lots of other things...**
 
 **More info**
