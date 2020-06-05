@@ -18,11 +18,16 @@ class Messenger(commands.Cog):
     async def messenger(self, ctx:commands.Context):
         """Utilise messenger."""
         if not self.client:
-            mail = os.environ['FACEBOOK_MAIL']
-            password = os.environ['FACEBOOK_PASSWORD']
-            msg = await ctx.send(f"Connexion au messenger de {mail}.")
-            self.client = MessengerClient(mail, password)
-            await msg.delete()
+            await self.connect(ctx)
+
+    @messenger.command(aliases=['reconnect'])
+    async def connect(self, ctx:commands.Context):
+        """Se connecte à un compte facebook."""
+        mail = os.environ['FACEBOOK_MAIL']
+        password = os.environ['FACEBOOK_PASSWORD']
+        msg = await ctx.send(f"Connexion au messenger de {mail}.")
+        self.client = MessengerClient(mail, password)
+        await msg.delete()
 
     @messenger.command(name="messages")
     async def messages(self, ctx:commands.Context, *, limit:int=20):
