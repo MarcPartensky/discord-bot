@@ -1,3 +1,4 @@
+aenum==2.2.3
 aiohttp==3.6.2
 appdirs==1.4.3
 async-timeout==3.0.1
@@ -14,6 +15,7 @@ discord.py==1.3.3
 distlib==0.3.0
 dnspython @ git+git://github.com/rthalley/dnspython.git@26642eb9e77e4c44ee6852016ec14d7d748db8fc
 fake-useragent==0.1.11
+fbchat==1.9.6
 filelock==3.0.12
 future==0.18.2
 html2text==2020.1.16
@@ -28,6 +30,7 @@ multidict==4.7.5
 nodeenv==1.3.5
 numpy==1.18.4
 packaging==20.3
+paho-mqtt==1.5.0
 pluggy==0.13.1
 pre-commit==2.3.0
 profanity-check==1.0.3
