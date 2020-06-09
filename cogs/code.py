@@ -1,10 +1,12 @@
 from discord.ext import commands
 import discord
 
+from github import Github
 from utils import tools
 from config.config import access, masters
 from config import emoji
 import asyncio
+import os
 
 
 class Code(commands.Cog):
@@ -175,14 +177,6 @@ class Code(commands.Cog):
         msg = '\n'.join(reversed(lines))
         await ctx.send(msg)
 
-    @commands.group()
-    async def git(ctx):
-        if ctx.invoked_subcommand is None:
-            await ctx.send('Invalid git command passed...')
-
-    @git.command()
-    async def push(ctx, remote: str, branch: str):
-        await ctx.send('Pushing to {} {}'.format(remote, branch))
 
 def setup(bot):
     bot.add_cog(Code(bot))

@@ -31,13 +31,12 @@ class Web(commands.Cog):
         # self.from_language = "en"
         # self.translator = Translator(to_lang=to_language, from_lang=from_language)
 
-    @commands.command(name='dire', aliases=[prefix, 'ask', 'tell', 'demander'])
-    async def tell(self, ctx:commands.Context, *, msg:str):
-        """Parle en français avec le bot."""
+    @commands.command(name='bot', aliases=[prefix])
+    async def french_bot(self, ctx:commands.Context, *, msg:str):
+        """Parle français avec un bot."""
         translator = Translator(from_lang='fr', to_lang='en')
         msg = translator.translate(msg)
         msg = html.unescape(msg)
-        """Parle avec le bot."""
         url = "https://acobot-brainshop-ai-v1.p.rapidapi.com/get"
         querystring = {
             "bid":"49023",
@@ -54,9 +53,9 @@ class Web(commands.Cog):
         msg = html.unescape(msg)
         await ctx.send(msg)
 
-    @commands.command(name="dire-anglais", aliases=[prefix*2])
-    async def tell_original(self, ctx:commands.Context, *, msg:str):
-        """Parle avec le bot."""
+    @commands.command(name="bot-en", aliases=[prefix*2])
+    async def  english_bot(self, ctx:commands.Context, *, msg:str):
+        """Parle anglais avec un bot."""
         url = "https://acobot-brainshop-ai-v1.p.rapidapi.com/get"
         querystring = {
             "bid":"49023",
@@ -68,6 +67,57 @@ class Web(commands.Cog):
             'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7"}
         response = requests.request("GET", url, headers=headers, params=querystring)
         await ctx.send(response.json()['cnt'])
+
+    @commands.command(name='bot-dumb', aliases=['idiot'])
+    async def french_dumb_bot(self, ctx:commands.Context, msg:str):
+        """Parle français avec un bot idiot."""
+        translator = Translator(from_lang='fr', to_lang='en')
+        msg = translator.translate(msg)
+        msg = html.unescape(msg)
+        url = "https://robomatic-ai.p.rapidapi.com/api.php"
+        payload = f"ChatSource=RapidAPI&SessionID=RapidAPI1&in={msg}&op=in&cbid=1&cbot=1&key=RHMN5hnQ4wTYZBGCF3dfxzypt68rVP"
+        headers = {
+            'x-rapidapi-host': "robomatic-ai.p.rapidapi.com",
+            'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7",
+            'content-type': "application/x-www-form-urlencoded"
+            }
+        response = requests.request("POST", url, data=payload, headers=headers)
+        translator = Translator(from_lang='en', to_lang='fr')
+        msg = translator.translate(msg)
+        msg = html.unescape(msg)
+        await ctx.send(response.json()['out'])
+
+    @commands.command(name='bot-dumb-en', aliases=['idiot-anglais'])
+    async def english_dumb_bot(self, ctx:commands.Context, msg:str):
+        """Parle anglais avec un bot idiot."""
+        url = "https://robomatic-ai.p.rapidapi.com/api.php"
+        payload = f"ChatSource=RapidAPI&SessionID=RapidAPI1&in={msg}&op=in&cbid=1&cbot=1&key=RHMN5hnQ4wTYZBGCF3dfxzypt68rVP"
+        headers = {
+            'x-rapidapi-host': "robomatic-ai.p.rapidapi.com",
+            'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7",
+            'content-type': "application/x-www-form-urlencoded"
+            }
+        response = requests.request("POST", url, data=payload, headers=headers)
+        await ctx.send(response.json()['out'])
+
+    @commands.command(name="google-trad", aliases=['google-traduction'])
+    async def google_translate(self, ctx:commands.Context, source:str, target:str, *, msg:str):
+        """Traduit avec google traduction."""
+        url = "https://google-translate1.p.rapidapi.com/language/translate/v2"
+        data = {
+            'source': source,
+            'q': msg,
+            'target': target,
+        }
+        headers = {
+            'x-rapidapi-host': "google-translate1.p.rapidapi.com",
+            'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7",
+            'accept-encoding': "application/gzip",
+            'content-type': "application/x-www-form-urlencoded"
+            }
+        response = requests.request("POST", url, data=data, headers=headers)
+        text = '\n'.join([html.unescape(tr['translatedText']) for tr in response.json()['data']['translations']])
+        await ctx.send(text)
 
     @commands.command(name="traduit", aliases=['t', 'trad'])
     async def translate(self, ctx:commands.Context, languages:str, *, message:str):
@@ -97,7 +147,7 @@ class Web(commands.Cog):
 
     @commands.command(name="télécharger", aliases=['download', 'dl', 'tl'])
     async def download(self, ctx:commands.Context, *, url:str):
-        """Télécharge une musique sur youtube avec le lien youtube."""
+        """Télécharge une musique ytb avec un lien."""
         pattern = re.compile(r"https://www.youtu.?be.com/watch\?v=(\w{11})")
         results = pattern.findall(url)
         if len(results)==0:
@@ -318,6 +368,119 @@ class Web(commands.Cog):
                 inp += html.body.find(class_='mw-parser-output').find_all('p')[i].text
                 i+=1
             await ctx.send(response)
+
+
+    @commands.command(name="cat-fact")
+    async def cat_fact(self, ctx:commands.Context):
+        """Donne un fait à propos des chats."""
+        url = "https://brianiswu-cat-facts-v1.p.rapidapi.com/facts"
+        headers = {
+            'x-rapidapi-host': "brianiswu-cat-facts-v1.p.rapidapi.com",
+            'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7"
+            }
+        response = requests.request("GET", url, headers=headers)
+        msg = random.choice(response.json()['all'])['text']
+        await ctx.send(msg)
+
+    @commands.command(name='ip')
+    async def ip(self, ctx:commands.Context, ip:str):
+        """Donne des informations avec un ip."""
+        url = "https://ip-geolocation-ipwhois-io.p.rapidapi.com/json/"
+        querystring = {"ip":ip}
+        headers = {
+            'x-rapidapi-host': "ip-geolocation-ipwhois-io.p.rapidapi.com",
+            'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7"
+            }
+        response = requests.request("GET", url, headers=headers, params=querystring)
+        embed = discord.Embed(title=f"Informations sur {ip}", color=discord.Color.dark_grey())
+        url = response.json()['country_flag']
+        print(url)
+        embed.set_thumbnail(url=url)
+        for k,v in response.json().items():
+            embed.add_field(name=str(k), value=str(v) or "aucun")
+        await ctx.send(embed=embed)
+
+    @commands.command(name='captcha')
+    async def captcha(self, ctx:commands.Context, img:str):
+        """Resolveur de captcha."""
+        url = "https://metropolis-api-captcha.p.rapidapi.com/solve"
+        querystring = {"image":img}
+        headers = {
+            'x-rapidapi-host': "metropolis-api-captcha.p.rapidapi.com",
+            'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7"
+        }
+        response = requests.request("GET", url, headers=headers, params=querystring)
+        msg = response.text
+        if 'captcha' in msg:
+            msg = response.json()['captcha']
+        await ctx.send(msg)
+
+    @commands.command(name='résume', aliases=['résumer', 'summarize', 'sum-up'])
+    async def summarize(self, ctx:commands.Context, *, msg:str):
+        """Summarize a text or an url."""
+        url = "https://text-monkey-summarizer.p.rapidapi.com/nlp/summarize"
+        headers = {
+            'x-rapidapi-host': "text-monkey-summarizer.p.rapidapi.com",
+            'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7",
+            'content-type': "application/json",
+            'accept': "application/json"
+            }
+        pattern = re.compile(r'\d{4}-\d{2}-\d{2}')
+        if msg.startswith("http"):
+            payload = "{ \"url\": \"" + msg + "\"}"
+        else:
+            payload = "{ \"text\": \"" + msg + "\"}"
+        response = requests.request("POST", url, data=payload, headers=headers)
+        d = response.json()
+        title = (d['title'] if 'title' in d else 'Résumé')
+        footer = (re.search(pattern, d['datePublished']).group() if 'datePublished' in d else 'date inconnue')
+        snippets = html.unescape('\n'.join(d['snippets']))
+        embed = (discord.Embed(title=title, color=discord.Color.blurple())
+        .add_field(name='résumé', value=snippets)
+        .set_footer(text=footer)
+        )
+        await ctx.send(embed=embed)
+
+    @commands.command(name='sentiment')
+    async def sentiment(self, ctx:commands.Context, *, msg:str):
+        """Analyse les sentiments d'un message."""
+        url = "https://microsoft-text-analytics1.p.rapidapi.com/sentiment"
+        # msg = urllib.parse.quote(msg)
+
+        payload = "{ \"documents\": [  {   \"id\": \"1\",   \"language\": \"fr\",   \"text\": \"" + msg + "\"  } ]}"
+        headers = {
+            'x-rapidapi-host': "microsoft-text-analytics1.p.rapidapi.com",
+            'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7",
+            'content-type': "application/json",
+            'accept': "application/json"
+            }
+
+        response = requests.request("POST", url, data=payload, headers=headers)
+        if 'documents' in response.json():
+            msg = response.json()['documents'][0]['sentiment']
+        else:
+            msg = response.text
+        await ctx.send(msg)
+
+
+    @commands.command(name='synonymes', aliases=['syn'])
+    async def synonyms(self, ctx:commands.Context, word:str, lang:str='fr'):
+        """Trouve des synonymes."""
+        r = requests.get(f'https://wordsimilarity.com/{lang}/{word}')
+        syn_pattern = re.compile(f'/{lang}/[^"]+\">([^"]+)</a>')
+        synonyms = re.findall(syn_pattern, r.text)
+        sim_pattern = re.compile(r"&nbsp;&nbsp;&nbsp;&nbsp;(\d\.\d+)")
+        similarities = re.findall(sim_pattern, r.text)
+        embed = discord.Embed(title=f"Synonymes de {word}:", color=discord.Color.greyple())
+        for k,v in zip(synonyms, similarities):
+            embed.add_field(name=k, value=v)
+        await ctx.send(embed=embed)        
+
+    @commands.group(name='bible')
+    async def bible(self, ctx:commands.Context):
+        """Cite la bible."""
+        
+
 
 
 
