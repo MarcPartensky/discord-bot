@@ -1,4 +1,4 @@
-from config.config import access, status, delete_after_time, wolfram
+from config.config import access, status, delete_after_time, wolfram, prefix
 from utils.date import days, months
 from utils import tools
 from utils import html_parser
@@ -16,6 +16,7 @@ import discord
 import random
 import aiohttp
 import urllib
+import urllib.parse
 import html
 import json
 import re
@@ -29,6 +30,44 @@ class Web(commands.Cog):
         # self.to_language = "fr"
         # self.from_language = "en"
         # self.translator = Translator(to_lang=to_language, from_lang=from_language)
+
+    @commands.command(name='dire', aliases=[prefix, 'ask', 'tell', 'demander'])
+    async def tell(self, ctx:commands.Context, *, msg:str):
+        """Parle en français avec le bot."""
+        translator = Translator(from_lang='fr', to_lang='en')
+        msg = translator.translate(msg)
+        msg = html.unescape(msg)
+        """Parle avec le bot."""
+        url = "https://acobot-brainshop-ai-v1.p.rapidapi.com/get"
+        querystring = {
+            "bid":"49023",
+            "key":"2UeOjV0fHoFtn6i2",
+            "uid":"Mazex",
+            "msg":msg}
+        headers = {
+            'x-rapidapi-host': "acobot-brainshop-ai-v1.p.rapidapi.com",
+            'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7"}
+        response = requests.request("GET", url, headers=headers, params=querystring)
+        msg = response.json()['cnt']
+        translator = Translator(from_lang='en', to_lang='fr')
+        msg = translator.translate(msg)
+        msg = html.unescape(msg)
+        await ctx.send(msg)
+
+    @commands.command(name="dire-anglais", aliases=[prefix*2])
+    async def tell_original(self, ctx:commands.Context, *, msg:str):
+        """Parle avec le bot."""
+        url = "https://acobot-brainshop-ai-v1.p.rapidapi.com/get"
+        querystring = {
+            "bid":"49023",
+            "key":"2UeOjV0fHoFtn6i2",
+            "uid":"Mazex",
+            "msg":msg}
+        headers = {
+            'x-rapidapi-host': "acobot-brainshop-ai-v1.p.rapidapi.com",
+            'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7"}
+        response = requests.request("GET", url, headers=headers, params=querystring)
+        await ctx.send(response.json()['cnt'])
 
     @commands.command(name="traduit", aliases=['t', 'trad'])
     async def translate(self, ctx:commands.Context, languages:str, *, message:str):
@@ -88,6 +127,13 @@ class Web(commands.Cog):
         embed = discord.Embed()
         embed.set_image(url=res['file'])
         await ctx.send(embed=embed)
+
+    @commands.command(name="fausse-personne", aliases=['fake-person', 'dude', 'guy', 'someone', 'thispersondoesnotexist'])
+    async def fake_person(self, ctx:commands.Context):
+        """Affiche une fausse personne."""
+        r = requests.get('https://thispersondoesnotexist.com/')
+        print(r.text)
+        raise NotImplementedError
 
     @commands.command(name="blague", aliases=['joke', 'j'])
     async def joke(self, ctx:commands.Context):

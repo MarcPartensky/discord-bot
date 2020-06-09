@@ -9,7 +9,7 @@ import datetime
 class Messenger(commands.Cog):
     def __init__(self, bot:commands.Bot):
         self.bot = bot
-        self.client = None
+        self.client:MessengerClient = None
         self.color = discord.Color.blue()
         self.threads = {}
 
@@ -20,7 +20,7 @@ class Messenger(commands.Cog):
         if not self.client:
             await self.connect(ctx)
 
-    @messenger.command(aliases=['reconnect'])
+    @messenger.command(name="connecter", aliases=['connect', 'reconnect'])
     async def connect(self, ctx:commands.Context):
         """Se connecte à un compte facebook."""
         mail = os.environ['FACEBOOK_MAIL']
@@ -28,6 +28,13 @@ class Messenger(commands.Cog):
         msg = await ctx.send(f"Connexion au messenger de {mail}.")
         self.client = MessengerClient(mail, password)
         await msg.delete()
+
+    @messenger.command(name="déconnecter", aliases=['déconnexion', 'disconnect', 'logout'])
+    async def disconnect(self, ctx:commands.Context):
+        """Se déconnecte de messenger."""
+        self.client.logout()
+        msg = f"{ctx.author.name} est déconnecté de messenger."
+        await ctx.send(msg)
 
     @messenger.command(name="messages")
     async def messages(self, ctx:commands.Context, *, limit:int=20):
@@ -91,6 +98,25 @@ class Messenger(commands.Cog):
         for thread in threads:
             if thread.uid == id:
                 return thread.name
+
+    @messenger.group(name="contacts", aliases=['users', 'all-users', 'utilisateurs'])
+    async def contacts(self, ctx:commands.Context):
+        """Utilise les contacts."""
+
+    @contacts.command(name="afficher", alises=['show'])
+    async def show(self, ctx:commands.Context, limit:int=None):
+        """Affiche tous les utilisateurs."""
+        users = self.client.fetchAllUsers()
+        for user in users[:limit]:
+            embed = self.embed_user_thread(user)
+            await ctx.send(embed=embed)
+
+    @contacts.command(name="nombre", aliases=['number'])
+    async def number(self, ctx:commands.Context):
+        """Affiche tous les utilisateurs."""
+        users = self.client.fetchAllUsers()
+        msg = f"{ctx.author.name} a {len(users)} contacts."
+        await ctx.send(msg)
     
     @messenger.command(name="conversation", aliases=['conv'])
     async def thread(self, ctx:commands.Context, *, name:str=None):
