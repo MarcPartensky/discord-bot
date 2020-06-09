@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from discord.ext import commands
+from utils import tools
 from config.config import access
 
 from github import Github
@@ -76,25 +77,28 @@ class Git(commands.Cog):
             await ctx.send('Commande git invalide.')
 
     @git.command()
-    async def add(self, ctx:commands.Context):
+    async def add(self, ctx:commands.Context, msg:str="."):
         """Ajoute dans git."""
-        cmd = 'git add .'
-        os.system(cmd)
-        await ctx.send(cmd)
+        cmd = f'git add {msg}'
+        with tools.Capturing() as out:
+            os.system(cmd)
+        await ctx.send(cmd+'\n'+'\n'.join(out))
 
     @git.command()
     async def commit(self, ctx:commands.Context, msg:str):
         """Commit dans git."""
-        cmd = 'git commit -m {msg}'
-        os.system(cmd)
-        await ctx.send(cmd)
+        cmd = f'git commit -m {msg}'
+        with tools.Capturing() as out:
+            os.system(cmd)
+        await ctx.send(cmd+'\n'+'\n'.join(out))
 
     @git.command()
     async def push(self, ctx:commands.Context, remote:str, branch:str="master"):
         """Push dans git."""
-        cmd = 'git push {remote} {branch}'
-        os.system(cmd)
-        await ctx.send(cmd)
+        cmd = f'git push {remote} {branch}'
+        with tools.Capturing() as out:
+            os.system(cmd)
+        await ctx.send(cmd+'\n'+'\n'.join(out))
 
 
 def setup(bot):
