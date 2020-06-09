@@ -82,7 +82,8 @@ class Git(commands.Cog):
         cmd = f'git add {msg}'
         with tools.Capturing() as out:
             os.system(cmd)
-        await ctx.send(cmd+'\n'+'\n'.join(out))
+        print(out)
+        await ctx.send('\n'.join([cmd]+out))
 
     @git.command()
     async def commit(self, ctx:commands.Context, msg:str):
@@ -90,7 +91,8 @@ class Git(commands.Cog):
         cmd = f'git commit -m {msg}'
         with tools.Capturing() as out:
             os.system(cmd)
-        await ctx.send(cmd+'\n'+'\n'.join(out))
+        print(out)
+        await ctx.send('\n'.join([cmd]+out))
 
     @git.command()
     async def push(self, ctx:commands.Context, remote:str, branch:str="master"):
@@ -98,7 +100,8 @@ class Git(commands.Cog):
         cmd = f'git push {remote} {branch}'
         with tools.Capturing() as out:
             os.system(cmd)
-        await ctx.send(cmd+'\n'+'\n'.join(out))
+        print(out)
+        await ctx.send('\n'.join([cmd]+out))
 
 
 def setup(bot):
