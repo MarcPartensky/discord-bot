@@ -179,19 +179,6 @@ class Main(commands.Cog):
         await ctx.send(message)
         raise error
 
-# @client.event
-# if ctn.startswith('joke'):
-#     url = "https://joke3.p.rapidapi.com/v1/joke"
-#     payload = "{ \"content\": \"A joke here\", \"nsfw\": \"false\"}"
-#     headers = {
-#         'x-rapidapi-host': "joke3.p.rapidapi.com",
-#         'x-rapidapi-key': "c8657e166emsh302e8584f57b1abp1e41a4jsnf726d8d0c1c7",
-#         'content-type': "application/json",
-#         'accept': "application/json"
-#         }
-#     response = requests.request("POST", url, data=payload, headers=headers)
-#     print(response.text)
-#     await chn.send(response.text)
 # elif ctn.startswith('bot'):
 #     ctn = ctn.replace('bot', '', 1).strip()
 #     user = client.get_user(270904126974590976)
