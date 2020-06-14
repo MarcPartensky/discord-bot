@@ -400,6 +400,53 @@ class Web(commands.Cog):
             embed.add_field(name=str(k), value=str(v) or "aucun")
         await ctx.send(embed=embed)
 
+    # @commands.command(name='who-is')
+    # async def who_is(self, ctx:commands.Context, url:str):
+    #     """Vérifie l'identité d'un site.
+    #     La recherche est possible grâce à l'api:
+    #     https://api.domaintools.com/v1/domaintools.com/whois/"
+    #     """
+    #     base = "https://api.domaintools.com/v1/domaintools.com/whois/"
+    #     r = requests.get(base+url)
+    #     d = r.json()['response']
+    #     embed = discord.Embed(title=d['registrant'], color=discord.Color.dark_orange())
+    #     for k,v in d['registration'].items():
+    #         embed.add_field(name=str(k), value=str(v) or "aucun")
+    #     embed.add_field(name='servers', value='\n'.join(d['name_servers']))
+    #     for e in d['whois']['record'].split('\n'):
+    #         try:
+    #             k, v = e.split(': ')
+    #             embed.add_field(name=str(k), value=str(v) or "aucun")
+    #         except:
+    #             pass
+    #     embed.set_footer(text=d['whois']['date'])
+    #     await ctx.send(embed=embed)
+
+    @commands.command(name='who-is')
+    async def who_is(self, ctx:commands.Context, domain:str):
+        """Vérifie l'identité d'un site."""
+        url = "https://zozor54-whois-lookup-v1.p.rapidapi.com/"
+        querystring = {"format":"json","domain":domain}
+        headers = {
+            'x-rapidapi-host': "zozor54-whois-lookup-v1.p.rapidapi.com",
+            'x-rapidapi-key': "564f5dcf9cmshfb697b99056338ap1ad2efjsn13ec11f2ef5b"
+            }
+        d = requests.request("GET", url, headers=headers, params=querystring).json()
+        embed = discord.Embed(title=d['name'], color=discord.Color.dark_orange())
+        for k,v in d.items():
+            if k in ['status', 'registrar', 'contacts', 'rawdata', 'whoisserver', 'ask_whois', 'parsedContacts']:
+                continue
+            if not v:
+                continue
+            embed.add_field(name=k, value=v)
+        if 'owner' in d['contacts']:
+            for e in d['contacts']['owner']:
+                for k,v in e.items():
+                    if not v or k in ['email']:
+                        continue            
+                    embed.add_field(name=k, value=v)
+        await ctx.send(embed=embed)
+
     @commands.command(name='captcha')
     async def captcha(self, ctx:commands.Context, img:str):
         """Resolveur de captcha."""
@@ -475,6 +522,22 @@ class Web(commands.Cog):
         for k,v in zip(synonyms, similarities):
             embed.add_field(name=k, value=v)
         await ctx.send(embed=embed)        
+
+    @commands.command(name='dns', aliases=['dns-lookup'])
+    async def dns(self, ctx:commands.Context, url:str):
+        """Effectue une recherche dns par sécurité.
+        La recherche est effectuée avec  https://dns.google.com."""
+        if not url.startswith("http"):
+            url = "http://"+url
+        check = f"https://dns.google.com/resolve?name={url}&type=A"
+        r = requests.get(check)
+        embed = discord.Embed(title=f"Recherche DNS de {url}:", color=0x0000cc)
+        embed.add_field(name='check', value=check)
+        d = r.json()['Authority'][0]
+        for k,v in d.items():
+            embed.add_field(name=k, value=v)
+        embed.set_footer(text="Recherche effectuée sur https://dns.google.com.")
+        await ctx.send(embed=embed)
 
     @commands.group(name='bible')
     async def bible(self, ctx:commands.Context):
