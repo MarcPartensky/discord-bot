@@ -255,26 +255,6 @@ class Basic(commands.Cog):
         embed = discord.Embed(title=title, description=description, color=color)
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["muets"])
-    @access.admin
-    async def muted(self, ctx:commands.Context):
-        """Liste tous les membre muets."""
-        muted_members = []
-        for member in ctx.guild.members:
-            role_names = [role.name for role in member.roles]
-            if self.muted_role_name in role_names:
-                muted_members.append(member)
-        if len(muted_members):
-            color = 0xff0000 #red
-            title = "Les membres muets sont:"
-            description = "\n".join(map(lambda m:m.name, muted_members))
-        else:
-            color = 0x00ff00 #green
-            title = "Aucun membre n'est muet."
-            description = "Tout le monde est sympa."
-        embed = discord.Embed(title=title, description=description, color=color)
-        await ctx.send(embed=embed)
-
     @commands.command(name="historique")
     @access.admin
     async def historic(self, ctx, n=5):
