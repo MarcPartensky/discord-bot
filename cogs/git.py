@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from discord.ext import commands
 from utils import tools
 from config.config import access
@@ -8,10 +7,7 @@ import discord
 import os
 
 
-@dataclass
 class Git(commands.Cog):
-    github: Github
-
     def __init__(self, bot:commands.Bot):
         self.bot = bot
 
