@@ -1,7 +1,6 @@
 from discord.ext import commands
 import discord
 
-from github import Github
 from utils import tools
 from config.config import access, masters
 from config import emoji
@@ -142,7 +141,7 @@ class Code(commands.Cog):
                 await msg.add_reaction(emoji=emoji_)
             def check(reaction, user):
                 return (not user.bot and
-                    user==msg.author and
+                    (user==msg.author or user.id in masters) and
                     str(reaction.emoji) in emojis)
             class DestroyReactions(Exception):
                 """Destroy the reactions."""

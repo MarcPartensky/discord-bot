@@ -492,8 +492,6 @@ class Web(commands.Cog):
     async def sentiment(self, ctx:commands.Context, *, msg:str):
         """Analyse les sentiments d'un message."""
         url = "https://microsoft-text-analytics1.p.rapidapi.com/sentiment"
-        # msg = urllib.parse.quote(msg)
-
         payload = "{ \"documents\": [  {   \"id\": \"1\",   \"language\": \"fr\",   \"text\": \"" + msg + "\"  } ]}"
         headers = {
             'x-rapidapi-host': "microsoft-text-analytics1.p.rapidapi.com",
@@ -501,7 +499,6 @@ class Web(commands.Cog):
             'content-type': "application/json",
             'accept': "application/json"
             }
-
         response = requests.request("POST", url, data=payload, headers=headers)
         if 'documents' in response.json():
             msg = response.json()['documents'][0]['sentiment']

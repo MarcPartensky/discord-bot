@@ -27,14 +27,14 @@ class CommandsShop(Shop):
         pass
 
     def sell(self, func):
-        item = self.shop[func.__qualname__]
-        item.setdefaults(
-            _id=func.__qualname__,
-            name=func.__name__,
-            description=func.__doc__,
-            price=self.default_price,
-        )
         async def decorated(cmd, ctx:commands.Context, *args, **kwargs):
+            item = self.shop[func.__qualname__]
+            item.setdefaults(
+                _id=func.__qualname__,
+                name=func.__name__,
+                description=func.__doc__,
+                price=self.default_price,
+            )
             item = self.shop[func.__qualname__]
             if ctx.author.id in self.masters:
                 return await func(cmd, ctx, *args, **kwargs)
@@ -46,6 +46,8 @@ class CommandsShop(Shop):
             user.money -= item.price
             self.users.accounts.post(user)
             return await checkfunc(cmd, ctx, *args, **kwargs)
+        item = self.shop[func.__qualname__]
+        item.setdefaults(price=self.default_price)
         decorated.__doc__ = str(item.price)+emoji.money_bag + func.__doc__
         decorated.__name__ = func.__name__
         decorated.__signature__ = inspect.signature(func)

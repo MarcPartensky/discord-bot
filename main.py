@@ -47,6 +47,14 @@ class Main(commands.Cog):
         self.help_every = 5
         self.load_cogs()
         self.load_status()
+        self.load_icloud()
+        self.api:PycloudService = None
+
+
+    def load_icloud(self):
+        """Charge l'api d'icloud."""
+        pass
+
 
     def load_status(self):
         """Charge les statuts."""
@@ -76,6 +84,7 @@ class Main(commands.Cog):
             for i,filename in enumerate(cogs):
                 bar.update(i)
                 if filename.endswith('.py'):
+                    print(filename)
                     self.bot.load_extension(f"cogs.{filename[:-3]}")
 
     @commands.command(name="décharge-tous")
