@@ -20,7 +20,7 @@ class TextToSpeech(commands.Cog):
             for file in os.listdir("tts"):
                 os.remove(os.path.join("tts", file))
             if e:
-                print(f'Erreur de lecture du fichier audio {file}: %s' % e)
+                print(f'Erreur de lecture du fichier audio {file}: {e}')
         ctx.voice_client.play(source, after=after)
 
 
