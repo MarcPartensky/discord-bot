@@ -9,6 +9,9 @@ class TextToSpeech(commands.Cog):
     @commands.command(name="dire")
     async def say(self, ctx:commands.Context, *, msg:str):
         """Dit un message à l'oral dans une conversation."""
+        discord.opus.load_opus()
+        if not discord.opus.is_loaded():
+            raise RunTimeError("Echec du chargement de l'Opus.")
         from gtts import gTTS
         tts = gTTS(msg, lang="fr")
         file = f'tts/{msg}.mp3'
