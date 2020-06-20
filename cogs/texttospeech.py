@@ -20,7 +20,8 @@ class TextToSpeech(commands.Cog):
             return await ctx.send("Je ne suis pas dans un salon vocal.")
         def after(e):
             for file in os.listdir("tts"):
-                os.remove(os.path.join("tts", file))
+                if file.endswith('mp3'):
+                    os.remove(os.path.join("tts", file))
             if e:
                 print(f'Erreur de lecture du fichier audio {file}: {e}')
         ctx.voice_client.play(source, after=after)
