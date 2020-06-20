@@ -95,6 +95,7 @@ class Leekwars(commands.Cog):
             "farmer/set-in-garden",
             boolean,
         )
+        print(url)
         params=dict(token=self.token)
         r = requests.get(url=url,params=params).json()
         embed = self.lazy_embed(r, "Placer dans Potager Leekwars")
