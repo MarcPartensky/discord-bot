@@ -1,4 +1,5 @@
 from discord.ext import commands
+
 import discord
 import os
 
@@ -6,13 +7,36 @@ class TextToSpeech(commands.Cog):
     def __init__(self, bot:commands.Bot):
         self.bot = bot
 
+    async def cog_before_invoke(self, ctx: commands.Context):
+        """Assure que l'opus est chargé."""
+        if os.environ.get('DEVELOPMENT'):
+            if not discord.opus.is_loaded():
+                discord.opus.load_opus('libopus.so')
+
+    @commands.command(name="speech")
+    async def speech(self, ctx:commands.Context, lang, *, msg:str):
+        """Dit un message dans une langue en vocal."""
+        await self.say(ctx, msg, lang)
+
     @commands.command(name="dire")
-    async def say(self, ctx:commands.Context, *, msg:str):
-        """Dit un message à l'oral dans une conversation."""
-        if not discord.opus.is_loaded():
-            discord.opus.load_opus('libopus.so')
+    async def french_say(self, ctx:commands.Context, *, msg:str):
+        """Dit un message français en vocal."""
+        await self.say(ctx, msg, "fr")
+
+    @commands.command(name="say")
+    async def english_say(self, ctx:commands.Context, *, msg:str):
+        """Dit un message anglais en vocal."""
+        await self.say(ctx, msg, "en")
+
+    @commands.command(name="decir")
+    async def spanish_say(self, ctx:commands.Context, *, msg:str):
+        """Dit un message espagnol en vocal."""
+        await self.say(ctx, msg, "es")
+
+    async def say(self, ctx:commands.Context, msg, lang):
+        """Dit un message."""
         from gtts import gTTS
-        tts = gTTS(msg, lang="fr")
+        tts = gTTS(msg, lang=lang)
         file = f'tts/{msg}.mp3'
         tts.save(file)
         source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(file))
