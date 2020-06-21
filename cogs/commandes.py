@@ -76,10 +76,11 @@ class Commandes(commands.Cog):
         post.user = ctx.author.id
         code = self.bot.get_cog("Code")
         ctx.authorized = True
+        cmd = tools.parse(post.result, *args)
         if post.author in masters:
-            await code.code(ctx, cmd=post.result)
+            await code.code(ctx, cmd=cmd)
         else:
-            await ctx.send(post.result)
+            await ctx.send(cmd)
         self.commands.replace_one({'_id':command}, post)
 
     @commands.command(name="info-commande")
@@ -172,7 +173,7 @@ class Commandes(commands.Cog):
             await self.learn(ctx, req.strip(), resp.strip())
         elif msg.content.startswith(self.search_prefix):
                 req = msg.content.replace(self.search_prefix,'',1)
-                await self.search(ctx, req.strip())
+                await self.search(ctx, *map(lambda r:r.strip(), req.strip().split('|')))
             
 def setup(bot:commands.Bot):
     bot.add_cog(Commandes(bot))
