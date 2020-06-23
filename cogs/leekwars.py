@@ -1,24 +1,24 @@
+from models.leekwars import APILeekwars
+
 from discord.ext import commands
 import discord
 
-import os
 import requests
+import os
+
+print('here i am')
+
 
 class Leekwars(commands.Cog):
     def __init__(self, bot:commands.Bot):
         self.bot = bot
-        self.api = "https://leekwars.com/api/"
+        self.url = "https://leekwars.com/api/"
         self.color = discord.Color.dark_green()
-        self.profile:dict = None
+        self.api = APILeekwars()
+        self.farmer:dict = None
         self.leek_id_ = None
-
-    @property
-    def farmer(self):
-        return self.profile['farmer']
-
-    @property
-    def token(self):
-        return self.profile['token']
+        self.token = None
+        print('leekwars api init')
 
     @property
     def leek_id(self):
@@ -30,390 +30,124 @@ class Leekwars(commands.Cog):
     def leek_id(self, id):
         self.leek_id_ = id
 
-    @property
-    def leek(self):
-        return self.farmer['leeks'][self.leek_id]
-
-    def lazy_embed(self, json:dict, title:str="Leekwars"):
-        """Fait une intégration paresseuse."""
-        embed = discord.Embed(title=title, color=self.color)
-        for (k,v) in json.items():
-            if isinstance(v, dict):
-                continue
-            if isinstance(v, list):
-                continue
-            embed.add_field(name=k, value=str(v)[:1024] or "None")
-        return embed
-
-
-    @commands.command(name="connection")
-    async def login(self):
-        """pass."""
-
-    @commands.group(name="leekwars", aliases=['lk'])
+    @commands.group(aliases=['lk'])
     async def leekwars(self, ctx:commands.Context):
-        """Groupe de commandes pour Leekwars."""
-        if not self.profile:
+        """API Leekwars."""
+        if not self.token:
             url = os.path.join(
-                self.api,
+                self.url,
                 "farmer/login-token",
-                # "farmer/login",
                 os.environ['LEEKWARS_USERNAME'],
                 os.environ['LEEKWARS_PASSWORD'],
-                # "true",
             )
-            # params = dict(
-            #     login=os.environ['LEEKWARS_USERNAME'],
-            #     password=os.environ['LEEKWARS_PASSWORD'],
-            #     keep_connected=True
-            # )
-            print(url)
-            self.profile = requests.get(url=url).json()
-            print(self.profile)
+            profile = requests.get(url=url).json()
+            self.farmer = profile['farmer']
+            self.token = profile['token']
+        if ctx.invoked_subcommand is None:
+            await ctx.send("Aucune commande n'est précisée.")
 
-    @leekwars.command(name="profil")
-    async def profile(self, ctx:commands.Context, id:str=""):
-        """Profil leekwars."""
-        if not id:
-            pf = self.farmer
-        else:
-            url = os.path.join(
-                self.api,
-                "farmer/get",
-                id,
-            )
-            print(url)
-            pf = requests.get(url).json()['farmer']
-        embed = self.lazy_embed(pf, "Profil Leekwars")
-        return await ctx.send(embed=embed)
+    @leekwars.command()
+    async def activate(self, ctx:commands.Context):
+        """Activer le compte."""
+        r = self.api.farmer.activate(self.farmer['id'])
+        await ctx.send(r)
 
-    @leekwars.command(name="placer-dans-potager")
-    async def set_in_garden(self, ctx:commands.Context, boolean:str=""):
-        """Placer dans le potager."""
-        url = os.path.join(
-            self.api,
-            "farmer/set-in-garden",
-            boolean,
-        )
-        print(url)
-        params=dict(token=self.token)
-        r = requests.get(url=url,params=params).json()
-        embed = self.lazy_embed(r, "Placer dans Potager Leekwars")
-        return await ctx.send(embed=embed)
-
-    @leekwars.command(name="potager")
+    @leekwars.group(name="jardin", aliases=['potager'])
     async def garden(self, ctx:commands.Context):
-        """Potager leekwars."""
-        url = os.path.join(
-            self.api,
-            "garden/get",
-            self.token,
-        )
+        """Jardin de leekwars."""
+        if ctx.invoked_subcommand is None:
+            await self.get_farmer_opponnents(ctx)
+
+    @garden.command(name="récupérer")
+    async def get(self, ctx:commands.Context):
+        """Récupère le jarding de leekwars."""
+        r = self.api.garden.get(self.token)
+        await ctx.send(r)
+
+    @garden.command(name="défi-solo")
+    async def get_solo_challenge(self, ctx:commands.Context, target_id:str):
+        """Liste les défis solo."""
+        url = self.api.garden.url + "/get-solo-challenge/" + str(self.leek_id)
+        # r = requests.get(url, auth=(
+        #     os.environ['LEEKWARS_USERNAME'],
+        #     os.environ['LEEKWARS_PASSWORD']
+        # ))
+        # print(url)
+        # r = self.api.session.get(url).json()
+        print(r)
+        await ctx.send(r)
+
+    @garden.command(name="combat-solo")
+    async def get_solo_fight(self, ctx:commands.Context):
+        """Liste les combat solo."""
+        url = self.api.garden.url + "/get-solo-fight/" + str(self.leek_id)
+        r = requests.get(url, auth=(
+            os.environ['LEEKWARS_USERNAME'],
+            os.environ['LEEKWARS_PASSWORD']
+        ))
+        print(r.text)
+        print(r)
+        await ctx.send(r)
+
+
+    @garden.command(name="opposants-fermier")
+    async def get_farmer_opponnents(self, ctx:commands.Context):
+        """Renvoie la liste des opposants d'un fermier."""
+        from requests.auth import HTTPBasicAuth
+        url = self.api.garden.url + "/get-farmer-opponnents/" + str(self.leek_id)# +"/"+token
+        # r = self.api.session.get(url).json()
+        result = requests.get(
+            url,
+            auth=HTTPBasicAuth(
+                os.environ['LEEKWARS_USERNAME'],
+                os.environ['LEEKWARS_PASSWORD']
+            ))
+        await ctx.send(result)
+    
+    @garden.command(name="opposants-poireau")
+    async def get_leek_opponnents(self, ctx:commands.Context):
+        """Renvoie la liste des opposants du poireau."""
+        # result = self.api.garden.get_leek_opponents(self.leek_id) #, self.token)
+        url = os.path.join(self.url, 'garden',
+            'get-leek-opponents', str(self.leek_id))
+        headers = {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+            'Upgrade-Insecure-Requests': str(1),
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36'
+        }
         print(url)
-        r = requests.get(url=url).json()
-        embed = self.lazy_embed(r, "Potager Leekwars")
-        return await ctx.send(embed=embed)
+        print(headers)
+        result = requests.get(url, headers=headers)
+        print(result.request.__dict__)
+        print(result.raw.__dict__)
+        import json
+        await ctx.send(result.request.__dict__)
+        await ctx.send(result.raw.__dict__)
 
-    @leekwars.command(name="poireaux")
-    async def leeks(self, ctx:commands.Context):
-        """Affiche les poireaux du profil leekwars."""
-        for (id, leek) in self.farmer['leeks'].items():
-            embed = self.lazy_embed(leek, f"Poireau {leek['name']}")
-            return await ctx.send(embed=embed)
+    @leekwars.command(name="valide")
+    async def check(self, ctx:commands.Context):
+        """Vérifie la validité d'un token."""
+        r = self.api.token.check(self.token)
+        await ctx.send(r)
 
-    @leekwars.command(name="ennemis-poireau")
-    async def opponents(self, ctx:commands.Context, leek_id:str=""):
-        """Affiche les ennemis."""
-        leek_id = leek_id or self.leek_id
-        url = os.path.join(
-            self.api,
-            "garden/get-leek-opponents",
-            leek_id,
-            # self.token
-        )
-        print(url)
-        r = requests.get(url=url).json()
-        embed = self.lazy_embed(r, f"Ennemis du poireau {self.leek['name']}")
-        return await ctx.send(embed=embed)
+    @leekwars.command(name="version")
+    async def version(self, ctx:commands.Context):
+        """Donne la version."""
+        await ctx.send(self.api.leekWars.version())
 
-
-        
-
-
-
+    @leekwars.command(name="connectés")
+    async def get_connected(self, ctx:commands.Context):
+        """Se connected."""
+        r = self.api.farmer.get_connected()
+        lines = []
+        for p in r['farmers']:
+            line = f"> nom:{p['name']} id:{p['id']}"
+            lines.append(line)
+        msg = '\n'.join(lines)
+        await ctx.send(msg)
 
 
-# {
-#    "farmer":{
-#       "id":64597,
-#       "login":"Mazex",
-#       "team":null,
-#       "name":"Mazex",
-#       "talent":100,
-#       "leeks":{
-#          "69649":{
-#             "id":69649,
-#             "name":"Mazex",
-#             "color":"#00aa00",
-#             "capital":15,
-#             "level":21,
-#             "talent":125,
-#             "skin":1,
-#             "hat":null,
-#             "ai":318588,
-#             "weapon":null,
-#             "title":[
 
-#             ]
-#          }
-#       },
-#       "avatar_changed":0,
-#       "talent_more":0,
-#       "victories":77,
-#       "draws":39,
-#       "defeats":69,
-#       "ratio":"1.12",
-#       "connected":true,
-#       "last_connection":1592656959,
-#       "register_date":1552156428,
-#       "fight_history":[
-#          {
-#             "id":31611328,
-#             "date":1592656482,
-#             "type":0,
-#             "context":2,
-#             "status":2,
-#             "winner":1,
-#             "farmer_team":null,
-#             "result":"win",
-#             "leeks1":[
-#                {
-#                   "id":69649,
-#                   "name":"Mazex"
-#                }
-#             ],
-#             "leeks2":[
-#                {
-#                   "id":76290,
-#                   "name":"EvilLeeks"
-#                }
-#             ]
-#          },
-#          {
-#             "id":31611327,
-#             "date":1592656466,
-#             "type":0,
-#             "context":2,
-#             "status":2,
-#             "winner":1,
-#             "farmer_team":null,
-#             "result":"win",
-#             "leeks1":[
-#                {
-#                   "id":69649,
-#                   "name":"Mazex"
-#                }
-#             ],
-#             "leeks2":[
-#                {
-#                   "id":76325,
-#                   "name":"BleekChain"
-#                }
-#             ]
-#          },
-#          {
-#             "id":31611326,
-#             "date":1592656406,
-#             "type":0,
-#             "context":2,
-#             "status":2,
-#             "winner":0,
-#             "farmer_team":null,
-#             "result":"draw",
-#             "leeks1":[
-#                {
-#                   "id":69649,
-#                   "name":"Mazex"
-#                }
-#             ],
-#             "leeks2":[
-#                {
-#                   "id":76367,
-#                   "name":"Lya"
-#                }
-#             ]
-#          },
-#          {
-#             "id":31611324,
-#             "date":1592656388,
-#             "type":0,
-#             "context":2,
-#             "status":2,
-#             "winner":0,
-#             "farmer_team":null,
-#             "result":"draw",
-#             "leeks1":[
-#                {
-#                   "id":69649,
-#                   "name":"Mazex"
-#                }
-#             ],
-#             "leeks2":[
-#                {
-#                   "id":76222,
-#                   "name":"Papeleek"
-#                }
-#             ]
-#          },
-#          {
-#             "id":31611322,
-#             "date":1592656366,
-#             "type":0,
-#             "context":2,
-#             "status":2,
-#             "winner":0,
-#             "farmer_team":null,
-#             "result":"draw",
-#             "leeks1":[
-#                {
-#                   "id":69649,
-#                   "name":"Mazex"
-#                }
-#             ],
-#             "leeks2":[
-#                {
-#                   "id":76251,
-#                   "name":"ballecMec"
-#                }
-#             ]
-#          },
-#          {
-#             "id":31611316,
-#             "date":1592656303,
-#             "type":0,
-#             "context":2,
-#             "status":2,
-#             "winner":0,
-#             "farmer_team":null,
-#             "result":"draw",
-#             "leeks1":[
-#                {
-#                   "id":69649,
-#                   "name":"Mazex"
-#                }
-#             ],
-#             "leeks2":[
-#                {
-#                   "id":76302,
-#                   "name":"Norbertdu22"
-#                }
-#             ]
-#          }
-#       ],
-#       "tournaments":[
-
-#       ],
-#       "admin":false,
-#       "moderator":false,
-#       "country":"gb",
-#       "godfather":null,
-#       "godsons":[
-
-#       ],
-#       "color":"",
-#       "banned":0,
-#       "won_solo_tournaments":0,
-#       "won_farmer_tournaments":0,
-#       "won_team_tournaments":0,
-#       "total_level":21,
-#       "leek_count":1,
-#       "in_garden":1,
-#       "fights":47,
-#       "github":null,
-#       "website":null,
-#       "forum_messages":0,
-#       "didactitiel_seen":1,
-#       "contributor":false,
-#       "trophies":20,
-#       "language":"en",
-#       "title":[
-
-#       ],
-#       "show_ai_lines":false,
-#       "habs":11240,
-#       "crystals":0,
-#       "weapons":[
-#          {
-#             "id":739249,
-#             "template":37
-#          },
-#          {
-#             "id":868852,
-#             "template":38
-#          }
-#       ],
-#       "chips":[
-#          {
-#             "id":868859,
-#             "template":18
-#          }
-#       ],
-#       "ais":[
-#          {
-#             "id":291147,
-#             "name":"Fuite ou Attaque"
-#          },
-#          {
-#             "id":318588,
-#             "name":"Github For The Win"
-#          },
-#          {
-#             "id":291151,
-#             "name":"Sans Titre"
-#          },
-#          {
-#             "id":291145,
-#             "name":"Sans Titre"
-#          },
-#          {
-#             "id":318587,
-#             "name":"Test"
-#          },
-#          {
-#             "id":291118,
-#             "name":"Tuto de base"
-#          },
-#          {
-#             "id":318585,
-#             "name":"Vive Github"
-#          }
-#       ],
-#       "potions":[
-#          {
-#             "id":739250,
-#             "template":58,
-#             "quantity":20
-#          },
-#          {
-#             "id":793442,
-#             "template":58,
-#             "quantity":10
-#          }
-#       ],
-#       "hats":[
-
-#       ],
-#       "tournament":{
-#          "registered":false,
-#          "current":null
-#       },
-#       "candidacy":null,
-#       "pomps":[
-
-#       ]
-#    },
-#    "token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9sZWVrd2Fycy5jb20iLCJhdWQiOiJodHRwOlwvXC9sZWVrd2Fycy5jb20iLCJleHAiOjE1OTI2NjQyMDIsImlkIjo2NDU5Nywia2VlcCI6ZmFsc2UsImhhc2giOiIkMnkkMTAkUHkuM1NXRUQ4VUtKMSJ9.u8VKltJVROk_w79ksmwPfXQFY0JhIsOxKmjJcVosNg0"
-# }
 
 def setup(bot):
     bot.add_cog(Leekwars(bot))
