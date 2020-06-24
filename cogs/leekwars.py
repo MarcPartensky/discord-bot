@@ -137,9 +137,9 @@ class Leekwars(commands.Cog):
 
     @leekwars.command(name="connectés")
     async def get_connected(self, ctx:commands.Context):
-        """Se connected."""
+        """Liste les joueurs connectés."""
         r = self.api.farmer.get_connected()
-        lines = []
+        lines = [f"```ini\n[Joueurs connectés {r['count']}]\n```"]
         for p in r['farmers']:
             line = f"> nom:{p['name']} id:{p['id']}"
             lines.append(line)
