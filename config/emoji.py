@@ -5,5 +5,10 @@ admin = "⚜️"
 member = "✅"
 warning = "⚠️"
 euro = "💶"
+dollar = "💵"
+heavy_dollar = "💲"
 xp = "💠"
 cross = "❌"
+
+
+money = euro
