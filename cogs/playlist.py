@@ -1,0 +1,191 @@
+from config.config import cluster
+from models.playlist import Playlist
+# print(Playlist)
+from discord.ext import commands
+import discord
+import string
+
+class PlayList(commands.Cog):
+    def __init__(self, bot:commands.Bot):
+        self.bot = bot
+        self.playlists:MongoDatabase = cluster.playlists
+        self.user_playlists = {}
+        self.user_playlist_messages = {}
+
+    @commands.group(aliases=['pl'])
+    async def playlist(self, ctx:commands.Context):
+        """Commande de base pour gérer les playlistes."""
+        if not ctx.invoked_subcommand:
+            print("Vous n'avez pas invoké de commande.")
+
+
+    def is_valid_title(self, title:str):
+        """Determine whether a title is valid or not."""
+        punctation = string.punctuation.replace('|', '')
+        for c in title:
+            if c in string.ascii_letters:
+                continue
+            elif c in string.digits:
+                continue
+            elif c in punctuation:
+                continue
+            else:
+                return False
+        return True
+
+    def check_title(self, title:str):
+        """Check whether a title is valid or not."""
+        if not title:
+            raise Exception("La playliste doit avoir un nom.")
+        if not self.is_valid_title(title):
+            raise Exception(f"Le titre n'est pas valide.\n \
+                Celui doit être composé des caractères suivants: \n \
+                    {string.ascii_letters} \
+                    {string.digits} \
+                    {string.punctuation.replace('|', '')}")
+
+    def get_playlist(self, ctx:commands.Context, title:str=None):
+        """Return a playlist with an id."""
+        if not ctx.author.id in self.user_playlists:
+            raise Exception("Utilisez 'playlist select [title]' pour sélectionner une playliste.")
+        playlist_id = self.user_playlists[ctx.author.id]
+        if not playlist_id in self.music:
+            raise Exception(f"La playliste d'id {playlist_id} n'existe pas.")
+        return Playlist(self.music[playlist_id])
+
+    def get_playlist_from_id(self, playlist_id:str):
+        """Return a playlist given its id."""
+        if playlist_id in self.music:
+            return Playlist(self.music[playlist_id])
+        else:
+            raise Exception(f"La playliste d'id {playlist_id} n'existe pas.")
+
+    def get_playlist_id(self, ctx:commands.Context, title:str=None):
+        """Return the playlist id given the context and title."""
+        if title:
+            return title #+"|"+ctx.author.id
+        elif ctx.author.id in self.user_playlists:
+            return self.user_playlists[ctx.author.id]
+        else:
+            raise Exception(f"Playliste d'id {title} inexistante.")
+
+    def select(self, ctx:commands.Context, title:str):
+        """Select a playlist."""
+        if title: self.check_title(title)
+        playlist_id = self.get_playlist_id(ctx, title)
+        playlist = self.get_playlist()
+        self.user_playlists[playlist_id] = playlist
+        return (playlist_id, playlist)
+
+    def get_playlist_and_id(self, ctx:commands.Context, title:str=None):
+        pass
+
+
+    @playlist.command(name='sauvegarder', aliases=['save'])
+    async def save(self, ctx:commands.Context, *, title:str=None):
+        """Sauvegarde une playliste."""
+        playlist_id, playlist = self.select(ctx, title)
+        music = self.bot.get_cog("Music")
+        Playlist.create(self.music[playlist_id])
+        msg = "La playliste a été sauvegardée."
+        return await ctx.send(msg)
+
+    @playlist.command()
+    async def create(self, ctx:commands.Context, *, title:str=None):
+        """Crée une nouvelle playliste."""
+
+    @playlist.command(name='get')
+    async def get_(self, ctx:commands.Context, path:str, *, title:str=None):
+        """Affiche des informations sur une playliste."""
+        playlist, playlist_id = self.select(ctx, title)
+        if not playlist.has_right(ctx.author.id, 'r'):
+            msg = "Vous n'avez pas le droit de lire cette playliste."
+            raise Exception(msg)
+        e = playlist
+        for key in path.split('/'):
+            e = e[key]
+        return await ctx.send(e)
+
+    @playlist.command(name='set')
+    async def set_(self, ctx:commands.Context, path, value, title:str=None):
+        """Modifie les informations sur une playliste."""
+        playlist, playlist_id = self.select(ctx, title)
+        if not playlist.has_right(ctx.author.id, 'e'):
+            msg = "Vous n'avez pas le droit d'éditer cette playliste."
+            raise Exception(msg)
+        e = playlist
+        for key in path.split('/'):
+            e = e[key]
+
+    @playlist.command(name='sélectionner', aliases=['select'])
+    async def select_(self, ctx:commands.Context, title:str=None):
+        """Sélectionne une playliste."""
+        self.select(ctx, title)
+
+    @playlist.command(aliases=['supprimer'])
+    async def delete(self, ctx:commands.Context, *, title:str=None):
+        """Supprime une playliste."""
+        playlist_id, playlist = self.select(ctx, title)
+        if not playlist.has_right(ctx.author.id, 'd'):
+            msg = "Vous n'avez pas le droit de supprimer cette playliste."
+            raise Exception(msg)
+        del self.music[playlist_id]
+        return await ctx.send("La playliste est supprimée")
+
+    @playlist.command()
+    async def listen(self, ctx:commands.Context, *, title:str=None):
+        """Écoute une playliste."""
+        playlist_id, playlist = self.select(ctx, title)
+        if not playlist.has_right(ctx.author.id, 'l'):
+            msg = "Vous n'avez pas le droit d'écouter cette playliste."
+            raise Exception(msg)
+        for url in playlist.urls:
+            await self.bot.get_cog('Music').play(url)
+
+    @playlist.group(name="ajouter", aliases=['add'])
+    async def add(self, ctx:commands.Context, *args):
+        """Ajoute des musiques, des rôles, des droits, ..."""
+
+    @add.command(name="musique", aliases=['music'])
+    async def add_music(self, ctx:commands.Context, *, title:str=None):
+        """Ajoute une musique à une playliste."""
+        playlist_id, playlist = self.select(ctx, title)
+        user_rights = playlist.get_user_rights(ctx.author.id)
+        if not playlist.has_right(ctx.author.id, 'a'):
+            msg = "Vous n'avez pas le droit d'ajouter de musique \
+                à cette playliste."
+            raise Exception(msg)
+
+    @add.command(name="rôle", aliases=['role'])
+    async def role(self, ctx:commands.Context, role:str, permissions:str, title:str=None):
+        """Ajoute un rôle."""
+        playlist_id, playlist = self.select(ctx, title)
+        if playlist.has_right(ctx.author.id, 'm'):
+            playlist.options.roles.append(role, permission)
+        else:
+            msg = "Vous n'avez pas le droit d'ajouter de roles à cette playliste."
+            raise Exception(msg)
+
+    @playlist.command(name="rôles", aliases=['roles'])
+    async def roles(self, ctx:commands.Context, title:str=None):
+        """Liste tous les rôles."""
+        playlist_id, playlist = self.select(ctx, title)
+        msg = ""
+        for role, members in playlist.options.roles:
+            msg += f"> {role}: {', '.join(members)}"
+        await ctx.send(msg)
+
+    @playlist.command(name="droits", aliases=['rights'])
+    async def rights(self, ctx:commands.Context, title:str=None):
+        """Liste tous les droits."""
+        playlist_id, playlist = self.select(ctx, title)
+        msg = ""
+        for role, rights in playlist.options.rights:
+            msg += f"> {role}: {rights}"
+        await ctx.send(msg)
+
+    # @playlist.command(name)
+
+
+def setup(bot):
+    bot.add_cog(PlayList(bot))

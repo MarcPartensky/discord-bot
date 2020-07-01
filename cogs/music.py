@@ -346,7 +346,19 @@ class Music(commands.Cog):
     @commands.command(name="save")
     async def _save(self, ctx:commands.Context, name:str=None):
         """Sauve la playliste avec un nom."""
-        raise NotImplemented
+        voice_state = self.voice_states[ctx.guild.id]
+        urls = [voice_state.current.source.url]
+        for song in voice_state.songs:
+            urls.append(song.source.url)
+        await ctx.send('\n'.join(urls))
+
+    def urls(self, ctx:commands.Context):
+        """Renvoie la liste des tous les urls."""
+        voice_state = self.voice_states[ctx.guild.id]
+        urls = [voice_state.current.source.url]
+        for song in voice_state.songs:
+            urls.append(song.source.url)
+        return urls
 
     @commands.command(name="time-left", aliases=['temps-restant'])
     async def _time_left(self, ctx:commands.Context):

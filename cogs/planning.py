@@ -96,7 +96,7 @@ class Planning(commands.Cog):
         date = datetime.datetime.now() - datetime.timedelta(1)
         await self.show_day_events(ctx, date, with_guid, embedding, n)
     
-    @planning.command(name="ajourdhui", aliases=['today'])
+    @planning.command(name="aujourdhui", aliases=['today'])
     async def today(self, ctx:commands.Context, with_guid=False, embedding=False, n:int=float('inf')):
         """Affiche le planning du jour."""
         now = datetime.datetime.now()
