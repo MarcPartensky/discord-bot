@@ -22,10 +22,10 @@ class Code(commands.Cog):
         self.quit_message = "Shell python déactivée."
         self.globals = globals().copy()
 
-    def get_locals(self, id):
+    def get_locals(self, ctx):
         if id not in self.locals_dict:
-            self.locals_dict[id] = {}
-        return self.locals_dict[id]
+            self.locals_dict[ctx.author.id] = dict(ctx=ctx)
+        return self.locals_dict[ctx.author.id]
 
     @commands.command(name="exec", aliases=["exe", "x"])
     @access.admin
@@ -38,7 +38,7 @@ class Code(commands.Cog):
                     args = args.split(',')
                     cmd = tools.parse(cmd, *args)
                 with tools.Capturing() as out:
-                    locals_ = self.get_locals(ctx.author.id)
+                    locals_ = self.get_locals(ctx)
                     exec(cmd, self.globals, locals_)
                 if out:
                     out = ['> '+line for line in out]
@@ -63,7 +63,7 @@ class Code(commands.Cog):
                     args = args.split(',')
                     cmd = tools.parse(cmd, *args)
                 try:
-                    locals_ = self.get_locals(ctx.author.id)
+                    locals_ = self.get_locals(ctx)
                     result = eval(cmd, self.globals, locals_)
                     await ctx.send(f"> {result}")
                 except Exception as e:
@@ -87,7 +87,7 @@ class Code(commands.Cog):
                     args = args.split(',')
                     cmd = tools.parse(cmd, *args)
                 try:
-                    locals_ = self.get_locals(ctx.author.id)
+                    locals_ = self.get_locals(ctx)
                     result = eval(cmd, self.globals, locals_)
                     await ctx.send(f"> {result}")
                 except Exception as e:

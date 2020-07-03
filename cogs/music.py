@@ -323,6 +323,7 @@ class Music(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.voice_states = {}
+        self.color = discord.Color(0xff66cc) #pink
 
     def get_voice_state(self, ctx: commands.Context):
         state = self.voice_states.get(ctx.guild.id)
@@ -446,6 +447,8 @@ class Music(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     async def _stop(self, ctx: commands.Context):
         """Stop la musique et nettoie la queue."""
+        ctx.voice_state.stop()
+        ctx.voice_state.current = None
         ctx.voice_state.songs.clear()
         if not ctx.voice_state.is_playing:
             ctx.voice_state.voice.stop()
@@ -476,16 +479,30 @@ class Music(commands.Cog):
     @commands.command(name='queue')
     async def _queue(self, ctx: commands.Context, *, page: int = 1):
         """Affiche la queue à une page."""
-        if len(ctx.voice_state.songs) == 0:
+        voice_state = self.voice_states[ctx.guild.id]
+        if voice_state.current:
+            songs = [voice_state.current]
+        else:
+            songs = []
+        songs += list(voice_state.songs)
+        if len(songs) == 0:
             return await ctx.send('Queue vide.')
         items_per_page = 10
-        pages = math.ceil(len(ctx.voice_state.songs) / items_per_page)
+        pages = math.ceil(len(songs) / items_per_page)
         start = (page - 1) * items_per_page
         end = start + items_per_page
-        queue = ''
-        for i, song in enumerate(ctx.voice_state.songs[start:end], start=start):
-            queue += '`{0}.` [**{1.source.title}**]({1.source.url})\n'.format(i + 1, song)
-        embed = (discord.Embed(description='**{} tracks:**\n\n{}'.format(len(ctx.voice_state.songs), queue))
+        queue = []
+        for i, song in enumerate(songs[start:end], start=start):
+            if i==0:
+                queue.append('`mtn` [**{0.source.title}**]({0.source.url})'.format(song))
+            else:
+                queue.append('`{0}.` [**{1.source.title}**]({1.source.url})'.format(i, song))
+        m = len(max(queue, key=lambda s:len(s)))
+        description = f'{len(songs)} Musiques'
+        n = max((m-len(description)//2)//6, 0)
+        description = f"```fix\n{' '*n}{description}{' '*n}\n```"
+        description = '\n'.join([description] + queue)
+        embed = (discord.Embed(description=description, color=self.color)
                  .set_footer(text='Page regardée {}/{}'.format(page, pages)))
         await ctx.send(embed=embed)
 
@@ -550,6 +567,7 @@ class Music(commands.Cog):
         if ctx.voice_client:
             if ctx.voice_client.channel != ctx.author.voice.channel:
                 raise commands.CommandError('Le bot est déjà dans un salon vocal.')
+        print('voice_state ok')
 
 def setup(bot):
     bot.add_cog(Music(bot))

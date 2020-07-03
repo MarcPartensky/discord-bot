@@ -68,8 +68,6 @@ class Database:
         self.cursor.execute(cmd, row)
         return cmd
 
-
-
     def select(self, table:str, column:str="*", conditions:dict={}, orderby:str="", order:str="asc", limit:str="", offset:str="", like:str=""):
         """Sélectionne un item."""
         cmd = f"select {column} from {table}"

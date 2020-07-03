@@ -95,20 +95,162 @@ class CommitPost:
     def post(self):
         self._collection.post(self._dict)
 
-class BindPost:
+
+
+class MongoCluster(MongoClient):
+    """Rewrite of Mongo Client."""
+
+    def __getitem__(self, item):
+        item = super().__getitem__(item)
+        if isinstance(item, pymongo.database.Database):
+            return MongoDatabase.from_database(item)
+        else:
+            return item
+
+class MongoDatabase(Database):
+    @classmethod
+    def from_database(cls, database):
+        return cls(database.client, database.name)
+
+    def __getitem__(self, item):
+        item = super().__getitem__(item)
+        if isinstance(item, pymongo.collection.Collection):
+            return MongoCollection.from_collection(item)
+        else:
+            return item
+
+    def __contains__(self, collection_name):
+        return collection_name in self.collection_names()
+
+class MongoCollection(Collection):
+    keys = [
+        '_BaseObject__codec_options',
+        '_BaseObject__read_preference',
+        '_BaseObject__write_concern',
+        '_BaseObject__read_concern',
+        '_Collection__database',
+        '_Collection__name',
+        '_Collection__full_name',
+        '_Collection__write_response_codec_options'
+    ]
+
+    def __iter__(self):
+        return self.find()
+
+    def put_once(self, **post):
+        self.insert_one(post)
+
+    def put(self, **post):
+        if '_id' in post:
+            id = post['_id']
+            if id in self:
+                self.replace_one({'_id':id}, post)
+                return
+        self.insert_one(post)
+
+    def treat(self, post):
+        p = post.copy()
+        if 'collection' in post:
+            p.pop('collection')
+        return p
+
+    def replace_one(self, filter, post, **kwargs):
+        post = self.treat(post)
+        super().replace_one(filter, post, **kwargs)
+
+    def insert_one(self, post, **kwargs):
+        post = self.treat(post)
+        super().insert_one(post, **kwargs)
+
+    def insert(self, arg, **kwargs):
+        if isinstance(arg, list) or isinstance(arg, tuple):
+            self.insert_many(arg, **kwargs)
+        else:
+            self.insert_one(arg, **kwargs)
+
+    def insert_many(self, posts, **kwargs):
+        posts = [self.treat(post) for post in posts]
+        super().insert_many(post)
+
+    def __contains__(self, id):
+        return self.seek_one(_id=id)!=None
+
+    def __len__(self):
+        return self.count_documents({})
+
+    def lazy_get(self, conditions, **kwargs):
+        post = self.find_one(conditions, **kwargs)
+        if post:
+            return BindPost(_collection=self, _id=post['_id'])
+        else:
+            return BindPost(_collection=self)
+
+    @classmethod
+    def from_collection(cls, collection):
+        return cls(collection.database, collection.name)
+
+    def seek(self, **conditions):
+        return self.find(conditions)
+
+    def seek_one(self, **conditions):
+        return self.find_one(conditions)
+
+    def __getitem__(self, id):
+        return self.lazy_get({'_id':id})
+
+    def __setitem__(self, id, post):
+        post['_id'] = id
+        self.post(post)
+
+    def post(self, post):
+        """Replace or insert a post."""
+        if '_id' in post:
+            self.replace_one({'_id':post['_id']}, post, upsert=True)
+        else:
+            self.insert_one(post)
+
+    def setdefaults(self, *args, **kwargs):
+        """Set defaults posts."""
+        dicts = args+(kwargs,)
+        for d in dicts:
+            for k,v in d.items():
+                self.setdefault(k, v)
+
+    def setdefault(self, id, post):
+        """Set a default post."""
+        if id in self:
+            post.update(self[id]._dict)
+        print(1, post)
+        self[id] = post
+        print(2, self[id])
+
+    def __setattr__(self, att, value):
+        # print(att)
+        if att in type(self).keys or att in dir(self):
+            # print('setattr', att)
+            super().__setattr__(att, value)
+        else:
+            # print('setitem', att)
+            self.__setitem__(att, value)
+
+    def embed(self):
+        """Return a discord embed for a playlist."""
+        pass
+
+
+class BindPost: # More like lazy post
     @classmethod
     def fromkeys(cls, *args, **kwargs):
         return cls(_dict.fromkeys(*args, **kwargs))
 
-    def __init__(self, *args, **kwargs):
-        if args: kwargs.update(args[0])
-        self._collection:MongoCollection = kwargs.pop('_collection')
-        if '_id' in kwargs:
-            self._id = kwargs.get('_id')
+    def __init__(self, _collection:MongoCollection,  _id:object=None):
+        self._collection:MongoCollection = _collection
+        if _id:
+            self._id = _id
         else:
             self._id = ObjectId()
         if not self._dict:
-            d = {'_id':self._id}
+            d = dict(_id=self._id)
             self._collection.insert_one(d)
 
     @property
@@ -120,7 +262,7 @@ class BindPost:
         return Collection.find_one(self._collection, {'_id':self._id})
 
     def clear(self):
-        d = {'_id':self._id}
+        d = dict(_id=self._id)
         self._collection.replace_one(d, d)
 
     def copy(self): # Create raw dictionary
@@ -262,122 +404,6 @@ class User(DictObject):
     #         super().__setattr__(att, value)
 
 
-class MongoCluster(MongoClient):
-    """Rewrite of Mongo Client."""
-
-    def __getitem__(self, item):
-        item = super().__getitem__(item)
-        if isinstance(item, pymongo.database.Database):
-            return MongoDatabase.from_database(item)
-        else:
-            return item
-
-class MongoDatabase(Database):
-    @classmethod
-    def from_database(cls, database):
-        return cls(database.client, database.name)
-
-    def __getitem__(self, item):
-        item = super().__getitem__(item)
-        if isinstance(item, pymongo.collection.Collection):
-            return MongoCollection.from_collection(item)
-        else:
-            return item
-
-class MongoCollection(Collection):
-    keys = [
-        '_BaseObject__codec_options',
-        '_BaseObject__read_preference',
-        '_BaseObject__write_concern',
-        '_BaseObject__read_concern',
-        '_Collection__database',
-        '_Collection__name',
-        '_Collection__full_name',
-        '_Collection__write_response_codec_options'
-    ]
-
-    def put_once(self, **post):
-        self.insert_one(post)
-
-    def put(self, **post):
-        if '_id' in post:
-            id = post['_id']
-            if id in self:
-                self.replace_one({'_id':id}, post)
-                return
-        self.insert_one(post)
-
-    def treat(self, post):
-        p = post.copy()
-        if 'collection' in post:
-            p.pop('collection')
-        return p
-
-    def replace_one(self, filter, post, **kwargs):
-        post = self.treat(post)
-        super().replace_one(filter, post, **kwargs)
-
-    def insert_one(self, post, **kwargs):
-        post = self.treat(post)
-        super().insert_one(post, **kwargs)
-
-    def insert(self, arg, **kwargs):
-        if isinstance(arg, list) or isinstance(arg, tuple):
-            self.insert_many(arg, **kwargs)
-        else:
-            self.insert_one(arg, **kwargs)
-
-    def insert_many(self, posts, **kwargs):
-        posts = [self.treat(post) for post in posts]
-        super().insert_many(post)
-
-    def __contains__(self, id):
-        return self.seek(_id=id)!=None
-
-    def __len__(self):
-        return self.count_documents({})
-
-    def find_one(self, conditions, **kwargs):
-        post = super().find_one(conditions, **kwargs)
-        if post:
-            post = BindPost(post, _collection=self)
-        else:
-            post = BindPost(conditions, _collection=self)
-        return post
-
-    @classmethod
-    def from_collection(cls, collection):
-        return cls(collection.database, collection.name)
-
-    def seek(self, **conditions):
-        return self.find(conditions)
-
-    def seek_one(self, **conditions):
-        return self.find_one(conditions)
-
-    def __getitem__(self, id):
-        return self.find_one({'_id':id})
-
-    def __setitem__(self, id, post):
-        post['_id'] = id
-        self.post(post)
-
-    def post(self, post):
-        """Replace or insert a post."""
-        if '_id' in post:
-            self.replace_one({'_id':post['_id']}, post, upsert=True)
-        else:
-            self.insert_one(post)
-
-    def __setattr__(self, att, value):
-        if att in type(self).keys:
-            super().__setattr__(att, value)
-        else:
-            self.__setitem__(att, value)
-
-    # def find(self, *args, **kwargs):
-    #     cursor = super().find(*args, **kwargs)
-    #     return map(Post, cursor)
 
 # from config.config import mongo
 
