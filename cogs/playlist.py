@@ -23,7 +23,35 @@ class PlayList(commands.Cog):
         if not ctx.invoked_subcommand:
             await self.list_playlists(ctx)
 
-    @playlists.command()
+    @playlist.command(name='afficher', aliases=['show'])
+    async def show(self, ctx:commands.Context, title:str=None):
+        """Affiche une playliste."""
+        playlist_id, playlist = self.select(ctx, title)
+        await ctx.send(embed=playlist.embed(ctx))
+
+
+    @playlist.command(name="brute", aliases=['raw'])
+    async def raw(self, ctx:commands.Context, title:str=None):
+        """Affiche une playliste brute."""
+        playlist_id, playlist = self.select(ctx, title)
+        await ctx.send(list(playlist.collection))
+
+    @playlist.command(name="items")
+    async def items(self, ctx:commands.Context, title:str=None):
+        """Affiche les items d'une collection."""
+        playilst_id, playlist = self.select(ctx, title)
+        items = list(playlist.collection.items())
+        await ctx.send('\n'.join(map(lambda t:f"{t[0]}: {t[1]}", items)))
+
+    @playlist.command(name="indexes")
+    async def indexes(self, ctx:commands.Context, title:str=None):
+        """Affiche les indexes d'une playliste."""
+        playlist_id, playlist = self.select(ctx, title)
+        indexes = list(playlist.collection.list_indexes())
+        indexes = [index['_id'] for index in indexes]
+        await ctx.send('\n'.join(indexes))
+
+    @playlists.command(name="liste")
     async def list_playlists(self, ctx:commands.Context):
         """Liste les noms de playlistes enregistrées."""
         names = self.playlists.collection_names()
@@ -101,7 +129,7 @@ class PlayList(commands.Cog):
             raise Exception("Vous devez préciser un nom pour votre playliste.")
         playlist_id = title
         music = self.bot.get_cog("Music")
-        Playlist.create(ctx, self.playlists[playlist_id], music)
+        Playlist.create(ctx, self.playlists[playlist_id], title, music)
         self.user_playlists[ctx.author.id] = playlist_id
         msg = "La playliste a été sauvegardée."
         return await ctx.send(msg)
@@ -109,6 +137,12 @@ class PlayList(commands.Cog):
     @playlist.command()
     async def create(self, ctx:commands.Context, *, title:str=None):
         """Crée une nouvelle playliste."""
+
+
+    @playlist.command()
+    async def new(self, ctx:commands.Context, *, title:str=None):
+        """Crée une nouvelle playliste vide."""
+        
 
     @playlist.command(name='get')
     async def get_(self, ctx:commands.Context, path:str, *, title:str=None):

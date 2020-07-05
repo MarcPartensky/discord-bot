@@ -1,10 +1,11 @@
 from discord.ext import commands
 from .mongo import MongoCollection
 import time
+import discord
 
 class Playlist:
     @classmethod
-    def defaults(cls, ctx:commands.Context, music_cog:commands.Cog=None):
+    def defaults(cls, ctx:commands.Context, title:str, music_cog:commands.Cog=None):
         return dict(
             musics = cls.create_musics(ctx, music_cog),
             config = cls.create_config(ctx),
@@ -36,8 +37,12 @@ class Playlist:
         collection.setdefaults(**Playlist.defaults(ctx))
         return cls(collection)
 
-    def __init__(self, collection:MongoCollection):
+    def __init__(self,
+            collection:MongoCollection,
+            color=0xFFD700,
+        ):
         self.collection = collection
+        self.color = color
 
     def update(self, ctx:commands.Context):
         self.collection.setdefaults(**Playlist.defaults(ctx))
@@ -50,7 +55,7 @@ class Playlist:
             return dict(musics=[])
 
     @classmethod
-    def create_config(self, ctx:commands.Context):
+    def create_config(self, ctx:commands.Context, title:str):
         return {
                     'roles': {
                         'owners': [ctx.author.id],
@@ -61,7 +66,10 @@ class Playlist:
                         'collaborators': 'rewdal',
                         'everyone': 'rl',
                     },
-                    'description': f"Playliste de {ctx.author.name}."
+                    'title': title,
+                    'description': f"Playliste de {ctx.author.name}.",
+                    'color': None,
+                    'thumbnail': None,
                 }
 
     @classmethod
@@ -93,6 +101,36 @@ class Playlist:
             if not right in user_rights:
                 return False
         return True
+
+    def embed(self, ctx:commands.Context):
+        """Return a discord embed for the playlist."""
+        c = self.collection
+        description = c.config.description
+        c.musics.musics
+        if hasattr(c.config, 'title'):
+            title = c.config.title
+        else:
+            title = 'sans titre'
+        if hasattr(c.config, 'color'):
+            color = c.config.color
+        else:
+            color = self.color
+        em = discord.Embed(
+            title=title,
+            description=description or 'sans description',
+            color=color,
+        )
+        author_names = [ctx.bot.get_user(id).name for id in c.config.owners]
+        em.add_field(name='Auteurs', value=', '.join(author_names))
+        if c.config.thumbnail:
+            em.set_thumbnail(url=c.config.thumbnail)
+        n = len(c.musics.musics)
+
+        em.set_footer(text=f"{n} musiques")
+        return em
+
+    
+
 
 
 

@@ -135,9 +135,19 @@ class MongoCollection(Collection):
     ]
 
     def __iter__(self):
+        """Iterate through the connexion."""
         return self.find()
 
-    def put_once(self, **post):
+    def items(self):
+        """Liste les items."""
+        items = self.find()
+        for item in items:
+            d = item.copy()
+            k = d['_id']
+            v = d.pop('_id')
+            yield (k, d)
+
+    def put_one(self, **post):
         self.insert_one(post)
 
     def put(self, **post):
@@ -176,14 +186,12 @@ class MongoCollection(Collection):
         return self.seek_one(_id=id)!=None
 
     def __len__(self):
+        """Determine the length of the collection."""
         return self.count_documents({})
 
-    def lazy_get(self, conditions, **kwargs):
-        post = self.find_one(conditions, **kwargs)
-        if post:
-            return BindPost(_collection=self, _id=post['_id'])
-        else:
-            return BindPost(_collection=self)
+    def lazy_get(self, id):
+        """Return a bind post."""
+        return BindPost(_collection=self, _id=id)
 
     @classmethod
     def from_collection(cls, collection):
@@ -196,7 +204,7 @@ class MongoCollection(Collection):
         return self.find_one(conditions)
 
     def __getitem__(self, id):
-        return self.lazy_get({'_id':id})
+        return self.lazy_get(id)
 
     def __setitem__(self, id, post):
         post['_id'] = id
