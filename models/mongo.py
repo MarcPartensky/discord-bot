@@ -195,18 +195,23 @@ class MongoCollection(Collection):
 
     @classmethod
     def from_collection(cls, collection):
+        """Make a collection from a collection."""
         return cls(collection.database, collection.name)
 
     def seek(self, **conditions):
+        """Easier to use find method."""
         return self.find(conditions)
 
     def seek_one(self, **conditions):
+        """Easier to use find_one method."""
         return self.find_one(conditions)
 
     def __getitem__(self, id):
+        """Lazy way of getting posts."""
         return self.lazy_get(id)
 
     def __setitem__(self, id, post):
+        """Lazy way of settings posts."""
         post['_id'] = id
         self.post(post)
 
@@ -233,18 +238,10 @@ class MongoCollection(Collection):
         print(2, self[id])
 
     def __setattr__(self, att, value):
-        # print(att)
         if att in type(self).keys or att in dir(self):
-            # print('setattr', att)
             super().__setattr__(att, value)
         else:
-            # print('setitem', att)
             self.__setitem__(att, value)
-
-    def embed(self):
-        """Return a discord embed for a playlist."""
-        pass
-
 
 class BindPost: # More like lazy post
     @classmethod
