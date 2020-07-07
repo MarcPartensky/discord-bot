@@ -123,7 +123,7 @@ class Main(commands.Cog):
     async def on_ready(self):
         """Déclarer être prêt."""
         self.change_status.start()
-        print(f'{self.bot.user} has connected to Discord!')
+        print(f'{self.bot.user} is connected to Discord!')
 
     @commands.Cog.listener()
     async def on_member_join(self, member):

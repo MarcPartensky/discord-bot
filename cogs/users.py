@@ -120,7 +120,7 @@ class Users(commands.Cog):
                     break
             except Exception as e:
                 print(e)
-        await ctx.send(msg)
+        await ctx.send("> "+msg.content)
 
     @wallet.before_invoke
     @me.before_invoke
