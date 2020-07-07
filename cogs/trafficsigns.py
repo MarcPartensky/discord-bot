@@ -40,7 +40,7 @@ class TrafficSign(commands.Cog):
 
     @property
     def total(self):
-        return sum(*self.categories.values())
+        return sum(self.categories.values())
     
     @property
     def possibilities(self):
@@ -54,22 +54,16 @@ class TrafficSign(commands.Cog):
     async def sign(self, ctx:commands.Context):
         """Groupe de commandes des panneaux routier."""
         if ctx.invoked_subcommand == None:
-            await ctx.send('Aucune commande précisé')
+            await ctx.send('Aucune commande précisé')    
 
-    # def random(self):
-    #     """Choisi une catégorie aléatoire.
-    #     La loi aléatoire n'est pas uniforme selon
-    #     les catégories, mais pondérés selon les
-    #     panneaux de façon à ce que la répartition
-    #     des panneaux sélectionnés soit uniforme."""
-    
-    @sign.command(name="choisir-catégorie", aliases=['cc'])
-    async def choose_category(self, ctx:commands.Context, category:str):
-        """Choisis une catégorie de panneau."""
-        self.category = category
-
-    @sign.command(name='catégorie', aliases=['c'])
+    @sign.group(name='catégorie', aliases=['c'])
     async def category(self, ctx:commands.Context):
+        """Catégorie sélectionnée."""
+        if ctx.not_invoked:
+            await self.show_category(ctx)
+
+    @category.command(name="show")
+    async def show_category(self, ctx:commands.Context):
         """Affiche la catégorie sélectionnée."""
         if self.category:
             msg = f"Vous avez choisi la catégorie **{self.category}**."
@@ -77,11 +71,22 @@ class TrafficSign(commands.Cog):
             msg = "Vous n'avez pas sélectionné de catégorie."
         await ctx.send(msg)
 
+    @category.command(name="choisir-catégorie", aliases=['cc'])
+    async def choose_category(self, ctx:commands.Context, category:str):
+        """Choisis une catégorie de panneau."""
+        self.category = category
+
     @sign.command(name="catégories", aliases=['cs'])
     async def categories(self, ctx:commands.Context):
-        """Affiche les catégories disponibles."""
-        msg = '\n'.join(self.categories.keys())
-        await ctx.send(msg)
+        """Catégories disponibles."""
+        msg = '\n'.join([f"{k}: {v}" for k,v in self.categories.items()])
+        embed = discord.Embed(
+            title="Catégories",
+            description=msg,
+            color=self.color,
+            )
+        embed.set_footer(text=f"total: {self.total}")
+        await ctx.send(embed=embed)
 
     def get_one(self, category:str=None, number:str=None):
         """Return a traffic sign."""
@@ -127,18 +132,18 @@ class TrafficSign(commands.Cog):
         text = self.get_text(html_code, category, number)
         image = self.get_image(html_code, category, number)
         # print(text, image)
-        embed = discord.Embed(description=html.unescape(text), url=url)
+        embed = discord.Embed(
+            color=self.color,
+            description=html.unescape(text),
+            url=url)
         embed.set_image(url=image)
         footer = f"catégorie: {category},  numéro: {number}"
         embed.set_footer(text=footer)
         await ctx.send(embed=embed)
 
-    @sign.command(name="question-old", aliases=['qold', 'askold'], hidden=True)
-    async def question_old(self, ctx:commands.Context, category:str=None, number:int=None):
-        """Pose une question sur un panneau.
-        Affiche un panneau pour qu'un utilisateur
-        devine sa signification. Ce dernier peut
-        ensuite affiche la réponse et s'auto-évaluer."""
+    @sign.command(name="voir", aliases=['v', 'see'])
+    async def see(self, ctx:commands.Context, category:str=None, number:int=None):
+        """Voir une question spécifique."""
         while True:
             score = await self.show_score(ctx)
             question = await self.ask_question(ctx, category, number)
