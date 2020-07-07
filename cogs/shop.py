@@ -99,7 +99,7 @@ class Shop(commands.Cog):
         """Vend un item."""
         shop = self.shop_dict[ctx.author.id]
         item = shop[name]
-        item.price = price
+        item.price = int(price)
         msg = f"{name} se vend maintenant à {price}."
         await ctx.send(msg)
 
