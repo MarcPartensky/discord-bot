@@ -306,6 +306,12 @@ class TrafficSign(commands.Cog):
         """Affiche les scores brutes des membres."""
         return await ctx.send('\n'.join(map(str, self.scores)))
 
+    @sign.group()
+    async def competition(self, ctx:commands.Context):
+        """Compétition sous forme de quiz."""
+        
+
+
 
 def setup(bot):
     bot.add_cog(TrafficSign(bot))

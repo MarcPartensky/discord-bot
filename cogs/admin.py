@@ -220,9 +220,16 @@ class Admin(commands.Cog):
     @shops.commands.sell
     async def kick_from_voice_channel(self, ctx:commands.Context, member:discord.Member=None):
         """Kick un membre du salon vocal."""
+        # print(dir(member))
         if not member:
-            await self.quit_voice_channel(ctx)
-            return
+            # await self.quit_voice_channel(ctx)
+            # return
+            # discord.Member(data=)
+            # member = await self.bot.fetch_user(self.bot.id)
+            # print(member)
+            # member = self.bot
+            # member = self.bot.get_user(self.bot.)
+            self.bot.join
         try:
             victims_channel = await ctx.guild.create_voice_channel(name=self.victims_channel_name)
             await member.move_to(victims_channel)
