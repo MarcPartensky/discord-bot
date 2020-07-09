@@ -27,12 +27,6 @@ class Sherlock(commands.Cog):
                     embed = discord.Embed(color=ctx.author.color)
                 txt += name + value
                 embed.add_field(name=name, value=value)                
-                
-                # line = f"{name}: {result['url_user']}"
-                # lines.append(line)
-        # msg = '\n'.join(lines)
-        # embed = discord.Embed(description=msg, color=ctx.author.color)
-        # await ctx.send(msg[:4000])
         embed.set_footer(text=f"n°{n}")
         await ctx.send(embed=embed)
 
