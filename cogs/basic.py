@@ -278,10 +278,20 @@ class Basic(commands.Cog):
                 await self.execute(ctx, code, *args)
 
     @commands.command(name="couleur")
-    async def color(self, ctx, color:discord.Color, *, message):
+    async def color(self, ctx:commands.Context, color:discord.Color, *, message):
         """Colorie le message."""
         embed = discord.Embed(title="title", description=message, color=color)
         await ctx.send(embed=embed)
+
+    @commands.command(name="durée")
+    async def duration(self, ctx:commands.Context, member:discord.Member=None):
+        """Durée sur le serveur d'un membre."""
+        member = member or ctx.author
+        msg = f"{member.name} est resté {member.joined_at} sur le serveur {ctx.guild.name}."
+        await ctx.send(msg)
+
+
+
 
     # @commands.Cog.listener(name="reaction_add")
     # async def reaction_add(self, reaction, user):

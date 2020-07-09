@@ -136,7 +136,7 @@ class MongoCollection(Collection):
 
     def __iter__(self):
         """Iterate through the connexion."""
-        return self.find()
+        return map(lambda d:BindPost(_id=d['_id'], _collection=self), self.find())
 
     def items(self):
         """Liste les items."""
@@ -214,6 +214,10 @@ class MongoCollection(Collection):
         """Lazy way of settings posts."""
         post['_id'] = id
         self.post(post)
+
+    def __delitem__(self, id):
+        """Delete a post."""
+        self.delete_one(dict(_id=id))
 
     def post(self, post):
         """Replace or insert a post."""
