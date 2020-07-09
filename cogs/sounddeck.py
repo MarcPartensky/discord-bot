@@ -29,12 +29,18 @@ class SoundDeck(commands.Cog):
     @sounds.command(name="voir", aliases=['v', 'show', 'see'])
     async def list_sounds(self, ctx:commands.Context):
         """Affiche tous les sons disponibles."""
-        lines = []
+        msg = ""
         for s in self.sounds:
-            author = self.bot.get_user(s.author)
-            line = f"> {s._id} par {author.name} joue {s.url}."
-            lines.append(line)
-        msg = '\n'.join(lines)
+            if len(s.keys())==1:
+                del self.sounds[s._id]
+            else:
+                author = self.bot.get_user(s.author)
+                line = f"> **{s._id}** ajouté par *{author.name}*.\n"
+                if len(msg+line) > 2000:
+                    await ctx.send(msg)
+                    msg = ""
+                else:
+                    msg += line
         await ctx.send(msg)
 
     @sound.command(name="voir", aliases=['v', 'show', 'see'])
