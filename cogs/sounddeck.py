@@ -74,7 +74,7 @@ class SoundDeck(commands.Cog):
             last_used_time=None,
             played=0,
         )
-        await ctx.send("Son ajoutée.")
+        await ctx.send(f"Le son {name} est ajouté.")
 
     async def connect(self, ctx: commands.Context, music):
         """Connect to voice channel."""
