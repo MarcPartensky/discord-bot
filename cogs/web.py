@@ -308,10 +308,18 @@ class Web(commands.Cog):
         await ctx.send(response['title']+'\n'+response['url'])
 
     @commands.command(name="insulte")
-    async def insult(self, ctx, name:str=""):
-        """Insulte une personne."""
+    async def insult(self, ctx, *names:str):
+        """Insulte des gens."""
+        if len(names)==0: names=[""]
         url = "http://strategicalblog.com/liste-dinsultes-francaises-pas-trop-vulgaires/"
-        await ctx.send(random.choice(re.findall("\n•\t(.*)<br />", requests.get(url).text))+" "+name)
+        for name in names:
+            await ctx.send(
+                html.unescape(
+                    random.choice(
+                        re.findall("\n•\t(.*)<br />", requests.get(url).text)
+                    )
+                )+" "+name
+            )
 
 
     # @commands.command(name="wikipedia2", aliases=["wiki2"], hidden=True)

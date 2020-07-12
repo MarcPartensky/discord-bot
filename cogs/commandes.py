@@ -42,7 +42,7 @@ class Commandes(commands.Cog):
                 user = None,
             )
             self.commands[r] = post
-            msg = f"La commande {r} a été apprise."
+            msg = f"> La commande **{r}** a été apprise."
             # await ctx.send(msg)
             print(msg)
 
@@ -53,7 +53,7 @@ class Commandes(commands.Cog):
         if post:
             author = self.bot.fetch_user(post._id)
             if (not author == ctx.author.id) and (not ctx.author.id in masters):
-                return await ctx.send(f"La commande {command} est réservée par {author.name}.")
+                return await ctx.send(f"> La commande **{command}** est réservée par **{author.name}**.")
         post = Post(
             _id = command,
             author = ctx.author.id,
@@ -64,14 +64,15 @@ class Commandes(commands.Cog):
             user = None,
         )
         self.commands[command] = post
-        await ctx.send(f"La commande {command} a été apprise.")
+        await ctx.send(f"> La commande **{command}** a été apprise.")
 
     @commands.command(name='cherche')
     async def search(self, ctx:commands.Context, command, *args):
         """Cherche une commande."""
-        post = self.commands.find_one({'_id':command})
+        post = self.commands[command]
         if not post:
-            return await ctx.send(f"La commande {command} n'existe pas.")
+            return await ctx.send(f"> La commande **{command}** n'existe pas.")
+        post.setdefaults(use=0)
         post.use += 1
         post.user = ctx.author.id
         code = self.bot.get_cog("Code")
@@ -81,36 +82,35 @@ class Commandes(commands.Cog):
             await code.code(ctx, cmd=cmd)
         else:
             await ctx.send(cmd)
-        self.commands.replace_one({'_id':command}, post)
 
     @commands.command(name="info-commande")
     async def info_command(self, ctx:commands.Context, *, command:str):
         """Informe sur une commande."""
         post = self.commands[command]
         if not post:
-            return await ctx.send(f"La commande {command} n'existe pas.")
+            return await ctx.send(f"> La commande **{command}** n'existe pas.")
         creation = datetime.datetime.fromtimestamp(int(post.creation))
         time = datetime.datetime.fromtimestamp(int(post.time))
         author = self.bot.get_user(post.author)
         user = self.bot.get_user(post.user) or "personne"
         msg = [
-            f"Informations sur '{command}':",
-            f"commande: {post._id}",
-            f"réponse: {post.result}",
-            f"auteur: {author}",
-            f"crée le {creation}",
-            f"utilisée {post.use} fois",
-            f"dernière utilisation le {time}",
-            f"par {user}"
+            f"> __Informations sur **{command}**:__",
+            f"> - commande: {post._id}",
+            f"> - réponse: {post.result}",
+            f"> - auteur: {author}",
+            f"> - crée le {creation}",
+            f"> - utilisée {post.use} fois",
+            f"> - dernière utilisation le {time}",
+            f"> - par {user}"
         ]
-        msg = "\n   - ".join(msg)
+        msg = "\n".join(msg)
         await ctx.send(msg)
 
     @commands.command(name='nb-commandes')
     async def commands_number(self, ctx:commands.Context):
         """Affiche le nombre de commandes."""
         n = len(self.commands)
-        await ctx.send(f"Il y'a {n} commandes enregistrées.")
+        await ctx.send(f"> Il y'a **{n}** commandes enregistrées.")
 
     @commands.command(name='les-commandes')
     async def the_commands(self, ctx:commands.Context, n=5, order='desc'):
@@ -119,7 +119,7 @@ class Commandes(commands.Cog):
             n = min(n, self.max_commands_shown)
         posts = list(self.commands.find(limit=n, sort=[('time', pymongo.DESCENDING)]))
         if len(posts)==0:
-            return await ctx.send("Aucune commande n'est enregistrée.")
+            return await ctx.send("> Aucune commande n'est enregistrée.")
         await self.send_commands(ctx, posts)
 
     @commands.command(name='mes-commandes')
@@ -129,7 +129,7 @@ class Commandes(commands.Cog):
             n = min(n, self.max_commands_shown)
         posts = list(self.commands.find({'author':ctx.author.id}, limit=n, sort=[('time', pymongo.DESCENDING)]))
         if len(posts)==0:
-            return await ctx.send("Vous n'avez enregistré aucune commande.")
+            return await ctx.send("> Vous n'avez enregistré aucune commande.")
         await self.send_commands(ctx, posts)
 
     @commands.command(name='ses-commandes')
@@ -139,7 +139,7 @@ class Commandes(commands.Cog):
             n = min(n, self.max_commands_shown)
         posts = list(self.commands.find({'author':member.id}, limit=n, sort=[('time', pymongo.DESCENDING)]))
         if len(posts)==0:
-            return await ctx.send("Il n'a enregistré aucune commande.")
+            return await ctx.send("> Il n'a enregistré aucune commande.")
         await self.send_commands(ctx, posts)
 
     async def send_commands(self, ctx, posts):
@@ -148,7 +148,7 @@ class Commandes(commands.Cog):
             post = Post(post)
             name = self.bot.get_user(post.author)
             t = datetime.datetime.fromtimestamp(post.time)
-            line = f"{post._id} => {post.result} par {name}."
+            line = f"> {post._id} => {post.result} par {name}."
             lines.append(line)
         txt = '\n'.join(lines)
         await ctx.send(txt)
@@ -159,7 +159,7 @@ class Commandes(commands.Cog):
     async def clear_commands(self,ctx:commands.Context):
         """Supprime toutes les commandes enregistrées."""
         self.commands.delete_many({})
-        await ctx.send("Toutes les commandes ont été supprimées.")
+        await ctx.send("> Toutes les commandes ont été supprimées.")
 
     @commands.Cog.listener()
     async def on_message(self, msg:discord.Message):

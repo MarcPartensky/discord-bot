@@ -112,7 +112,7 @@ class Users(commands.Cog):
         user = member or ctx.author
         account = self.accounts[user.id]
         id = account.last_message
-        msg = "Dernier message introuvable."
+        msg = "> Dernier message introuvable."
         for channel in self.bot.get_all_channels():
             try:
                 if isinstance(channel, discord.channel.TextChannel):
