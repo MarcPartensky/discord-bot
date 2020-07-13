@@ -313,13 +313,20 @@ class Web(commands.Cog):
         if len(names)==0: names=[""]
         url = "http://strategicalblog.com/liste-dinsultes-francaises-pas-trop-vulgaires/"
         for name in names:
-            await ctx.send(
-                html.unescape(
-                    random.choice(
-                        re.findall("\n•\t(.*)<br />", requests.get(url).text)
-                    )
-                )+" "+name
-            )
+            if name.startswith('*'):
+                n = int(name[1:]) - 1
+                name = oldname
+            else: 
+                n = 1
+            for i in range(n):
+                await ctx.send(
+                    html.unescape(
+                        random.choice(
+                            re.findall("\n•\t(.*)<br />", requests.get(url).text)
+                        )
+                    )+" "+name
+                )
+            oldname = name
 
 
     # @commands.command(name="wikipedia2", aliases=["wiki2"], hidden=True)
