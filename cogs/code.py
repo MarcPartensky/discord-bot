@@ -79,7 +79,7 @@ class Code(commands.Cog):
 
     @commands.command(aliases=["c"])
     @access.admin
-    async def code(self, ctx:commands.Context, *, cmd:str):
+    async def code(self, ctx:commands.Context, *, cmd:str, args:list=[]):
         """Evalue ou exécute une commande."""
         try:
             with tools.time_limit(self.time_limit):

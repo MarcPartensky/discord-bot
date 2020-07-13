@@ -67,11 +67,11 @@ class Commandes(commands.Cog):
         await ctx.send(f"> La commande **{command}** a été apprise.")
 
     @commands.command(name='cherche')
-    async def search(self, ctx:commands.Context, command, *args):
+    async def search(self, ctx:commands.Context, command:str, *args):
         """Cherche une commande."""
-        post = self.commands[command]
-        if not post:
+        if command not in self.commands:
             return await ctx.send(f"> La commande **{command}** n'existe pas.")
+        post = self.commands[command]
         post.setdefaults(use=0)
         post.use += 1
         post.user = ctx.author.id
