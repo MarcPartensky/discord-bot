@@ -18,7 +18,11 @@ class SoundDeck(commands.Cog):
     @commands.group(name="son", aliases=['sound', 'sn'])
     async def sound(self, ctx:commands.Context):
         """Groupe des commandes pour un son."""
-
+        if not ctx.invoked_subcommand:
+            return await ctx.send(
+                f"> Commande inexistante."
+                f"\n> Écrivez `{ctx.bot.command_prefix}help son` pour voir les commandes disponibles."""
+            )
 
     @commands.group(name="sons", aliases=['sounds', 'sns'])
     async def sounds(self, ctx:commands.Context):
@@ -41,7 +45,8 @@ class SoundDeck(commands.Cog):
                     msg = ""
                 else:
                     msg += line
-        await ctx.send(msg)
+        if len(msg):
+            await ctx.send(msg)
 
     @sound.command(name="voir", aliases=['v', 'show', 'see'])
     async def show(self, ctx:commands.Context, *, name:str):
@@ -72,7 +77,7 @@ class SoundDeck(commands.Cog):
     async def add(self, ctx:commands.Context, url:str, *, name:str):
         """Ajoute un son."""
         if name in self.sounds and ctx.author.id not in masters:
-            return await ctx.send(f"Le nom {name} est déjà pris.")
+            return await ctx.send(f"> Le nom **{name}** est déjà pris.")
         self.sounds[name] = dict(
             author=ctx.author.id,
             url=url,
@@ -81,6 +86,22 @@ class SoundDeck(commands.Cog):
             played=0,
         )
         await ctx.send(f"Le son {name} est ajouté.")
+
+    @sound.command(name='supprimer', aliases=['sup', 'delete', 'd', 'remove', 'rm'])
+    async def delete(self, ctx:commands.Context, *, name:str):
+        """Supprime un son."""
+        if name not in self.sounds:
+            return await ctx.send(f"> Le son **{name}** n'existe pas.")
+        if not ctx.author.id in masters:
+            sound =  self.sounds[name]
+            if sound.author != ctx.author.id:
+                author = self.get.get_user(sound.author)
+                return await ctx.send(
+                    f"> Le son **{name}** appartient à *{author.name}*."
+                    "> Vous n'avez pas les droits."
+                )
+        del self.sounds[name]
+        return await ctx.send(f"> Le son **{name}** est supprimé.")
 
     async def connect(self, ctx: commands.Context, music):
         """Connect to voice channel."""
