@@ -554,7 +554,25 @@ class Web(commands.Cog):
     @commands.group(name='bible')
     async def bible(self, ctx:commands.Context):
         """Cite la bible."""
-        
+    
+    @commands.group(name="citation", aliases=['quote'])
+    async def quote(self, ctx:commands.Context, language='fr'):
+        """Affiche une citation."""
+        url = "https://quotes15.p.rapidapi.com/quotes/random/"
+        querystring = {"language_code":language}
+        headers = {
+            'x-rapidapi-host': "quotes15.p.rapidapi.com",
+            'x-rapidapi-key': "9f89a4d69emsh51b4e1005159b42p14a115jsn521840e553e7"
+        }
+        d = requests.request("GET", url, headers=headers, params=querystring).json()
+
+
+        embed = discord.Embed(title=d['content'],
+                              color=discord.Color.orange())
+        embed.add_field(name='id', value=d['id'])
+        embed.add_field(name='tags', value=html.unescape(' '.join(d['tags'])))
+        embed.set_footer(text=f"{d['originator']['name']}, {d['originator']['url']}")
+        await ctx.send(embed=embed)
 
 
 

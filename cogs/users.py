@@ -105,7 +105,6 @@ class Users(commands.Cog):
             msg = f"{user.name} a maintenant **{account.xp}** {emoji.xp}."
         await ctx.send(msg)
 
-
     @commands.command(name="dernier-message")
     async def last_message(self, ctx:commands.Context, member:discord.Member=None):
         """Affiche votre dernier message."""
