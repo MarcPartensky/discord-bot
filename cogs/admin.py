@@ -45,17 +45,17 @@ class Admin(commands.Cog):
         self.terminal = not self.terminal
         if self.terminal:
             self.bot.add_cog(Terminal(self.bot))
-            await ctx.send("Votre terminal est ouvert.")
+            await ctx.send("> Votre terminal est ouvert.")
         else:
             self.bot.remove_cog('Terminal')
-            await ctx.send("Votre terminal est fermé.")
+            await ctx.send("> Votre terminal est fermé.")
 
     @commands.command()
     @shops.commands.sell
     async def rename(self, ctx:commands.Context, member:discord.Member, *, nickname:str):
         """Renomme un membre."""
         await member.edit(nick=nickname)
-        await ctx.send(f'Le pseudo de {member.name} est maintenant {member.mention}.')
+        await ctx.send(f'> Le pseudo de **{member.name}** est maintenant **{member.mention}**.')
 
     @commands.command()
     @access.admin
@@ -65,9 +65,9 @@ class Admin(commands.Cog):
         try:
             await member.kick(reason=reason)
         except discord.Forbidden:
-            return await ctx.send(f"Je n'ai pas le droit de ban.")
-        await ctx.send(f"{member.name} a été kick de {ctx.guild} parce que {reason}.")
-        await member.send(f"Vous avez été kick de {ctx.guild} parce que {reason}.")
+            return await ctx.send(f"> Je n'ai pas le droit de ban.")
+        await ctx.send(f"> **{member.name}** a été kick de **{ctx.guild}** parce que **{reason}**.")
+        await member.send(f"> Vous avez été kick de **{ctx.guild}** parce que **{reason}**.")
 
     @commands.command()
     @access.admin
@@ -86,10 +86,10 @@ class Admin(commands.Cog):
         try:
             await member.kick(reason=reason)
         except discord.Forbidden:
-            return await ctx.send(f"Je n'ai pas le droit de kick.")
-        await ctx.send(f"{member.name} a été kick de {ctx.guild} parce que {reason}.")
-        await member.send(f"Vous avez été kick de {ctx.guild} parce que {reason}.")
-        await member.send(f"Heuresement vous avez encore le droit de rejoindre.")
+            return await ctx.send(f"> Je n'ai pas le droit de kick.")
+        await ctx.send(f"> **{member.name}** a été kick de **{ctx.guild}** parce que **{reason}**.")
+        await member.send(f"> Vous avez été kick de **{ctx.guild}** parce que **{reason}**.")
+        await member.send(f"> Heuresement vous avez encore le droit de rejoindre.")
         member.add_roles(roles)
         await self.invite(ctx, member, duration)
     
@@ -116,7 +116,7 @@ class Admin(commands.Cog):
             user = ban_entry.user
             if (user.name, user.discriminator) == (name, discriminator):
                 await ctx.guild.unban(user)
-                await ctx.send(f"{name} a été débanni de {ctx.guild} parce que {reason}.")
+                await ctx.send(f"> **{name}** a été débanni de **{ctx.guild}** parce que **{reason}**.")
                 break
 
     @commands.command()
@@ -144,7 +144,7 @@ class Admin(commands.Cog):
     @access.admin
     async def exit(self, ctx):
         """Arrête le programme du bot."""
-        await ctx.send("Je quitte discord. Au revoir!")
+        await ctx.send("> Je quitte discord. Au revoir!")
         raise SystemExit
 
     @commands.command()
@@ -153,9 +153,9 @@ class Admin(commands.Cog):
         """Promouvoie un membre à un rôle."""
         try:
             await member.add_roles(role)
-            await ctx.send(f"{member.name} à été promu en {role.name}.")
+            await ctx.send(f"> **{member.name}** à été promu en **{role.name}**.")
         except discord.Forbidden:
-            await ctx.send("Je n'ai pas le droit de promouvoir un membre d'un rôle.")
+            await ctx.send("> Je n'ai pas le droit de promouvoir un membre d'un rôle.")
 
     @commands.command()
     @access.admin
@@ -163,9 +163,9 @@ class Admin(commands.Cog):
         """Destitue un membre d'un rôle."""
         try:
             await member.remove_roles(role)
-            await ctx.send(f"{member.name} à été destitué et perd le rôle {role.name}.")
+            await ctx.send(f"> **{member.name}** à été destitué et perd le rôle **{role.name}**.")
         except discord.Forbidden:
-            await ctx.send("Je n'ai pas le droit de destituer un membre d'un rôle.")
+            await ctx.send("> Je n'ai pas le droit de destituer un membre d'un rôle.")
 
     @commands.command()
     @access.admin
@@ -173,7 +173,7 @@ class Admin(commands.Cog):
         """Mute un membre."""
         role_names = [role.name for role in member.roles]
         if muted_role_name in role_names:
-            return await ctx.send(f"{member} est déjà muet.")
+            return await ctx.send(f"> **{member}** est déjà muet.")
         reason = reason or self.mute_reason
         role = discord.utils.get(ctx.guild.roles, name=self.muted_role_name)
         if not role: #create a role for the muted
@@ -185,9 +185,9 @@ class Admin(commands.Cog):
                             read_message_history=False,
                             read_messages=False)
             except discord.Forbidden:
-                return await ctx.send("Je n'ai pas le droit de créer de rôle pour les muets.")
+                return await ctx.send("> Je n'ai pas le droit de créer de rôle pour les muets.")
         await member.add_roles(role)
-        await ctx.send(f"{member.name} a été mute sur tous les salons vocaux parce {reason}.")
+        await ctx.send(f"> **{member.name}** a été mute sur tous les salons vocaux parce **{reason}**.")
         await self.kick_from_voice_channel(ctx, member)
 
     @commands.command(aliases=["muets"])
@@ -246,9 +246,9 @@ class Admin(commands.Cog):
             for voice_client in self.bot.voice_clients:
                 if voice_client.guild == ctx.guild:
                     await voice_client.disconnect()
-                    await ctx.send(f"J'ai quitté **{voice_client.channel}**.")
+                    await ctx.send(f"> J'ai quitté **{voice_client.channel}**.")
                     return
-            await ctx.send(f"Je ne suis pas connecté à un salon vocal.")
+            await ctx.send(f"> Je ne suis pas connecté à un salon vocal.")
         else:
             await channel.disconnect()
 
@@ -258,7 +258,7 @@ class Admin(commands.Cog):
         """Quitte tous les salons vocaux."""
         for voice_client in self.bot.voice_clients:
                 await voice_client.disconnect()
-        await ctx.send("J'ai quitté tous les salons vocaux.")
+        await ctx.send("> J'ai quitté tous les salons vocaux.")
 
     @commands.command(aliases=["demute"])
     @access.admin
@@ -267,9 +267,9 @@ class Admin(commands.Cog):
         reason = reason or self.demute_reason
         try:
             await member.remove_roles(discord.utils.get(ctx.guild.roles, name=self.muted_role_name)) # removes muted role
-            await ctx.send(f"**{member.name}** a été démute parce que {reason}.")
+            await ctx.send(f"> **{member.name}** a été démute parce que {reason}.")
         except discord.Forbidden:
-            await ctx.send("Je n'ai pas le droit de démute des membres.")
+            await ctx.send("> Je n'ai pas le droit de démute des membres.")
 
     @commands.command(aliases=['guilds'])
     @access.admin
