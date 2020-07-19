@@ -290,6 +290,11 @@ class Basic(commands.Cog):
         msg = f"{member.name} est resté {member.joined_at} sur le serveur {ctx.guild.name}."
         await ctx.send(msg)
 
+    @commands.command(name="envoie", aliases=['send'])
+    async def send(self, ctx:commands.Context, member:discord.Member, *, msg:str):
+        """Envoie un messages à un membre sur discord."""
+        await member.send(msg)
+        await ctx.send(f"> Message **{msg}** envoyé.")
 
 
 
