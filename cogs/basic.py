@@ -296,8 +296,6 @@ class Basic(commands.Cog):
         await member.send(msg)
         await ctx.send(f"> Message **{msg}** envoyé.")
 
-
-
     # @commands.Cog.listener(name="reaction_add")
     # async def reaction_add(self, reaction, user):
     #     print(reaction, user)

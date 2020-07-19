@@ -144,6 +144,7 @@ class Casino(commands.Cog):
         await self.coins(ctx, member)
 
     @casino.command(name="coins+=")
+    @access.admin
     async def add_coins(self, ctx:commands.Context, coins:int, member:discord.Member=None):
         """Ajoute des coins à un membre."""
         member = member or ctx.author
@@ -151,8 +152,9 @@ class Casino(commands.Cog):
         await self.coins(ctx, member)
     
     @casino.command(name="coins-=")
+    @access.admin
     async def remove_coins(self, ctx:commands.Context, coins:int, member:discord.Member=None):
-        """Ajoute des coins à un membre."""
+        """Retire des coins à un membre."""
         member = member or ctx.author
         self.casino.accounts[member.id].coins -= coins
         await self.coins(ctx, member)
