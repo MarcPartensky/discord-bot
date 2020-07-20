@@ -381,7 +381,6 @@ class Music(commands.Cog):
         ctx.voice_state.voice = await destination.connect()
 
     @commands.command(name='summon', aliases=['viens'])
-    @commands.has_permissions(manage_guild=True)
     async def _summon(self, ctx: commands.Context, *, channel: discord.VoiceChannel = None):
         """Demande le bot dans le salon vocal
         Si aucun salon n'est précisé, le bot rejoins votre salon.
@@ -396,7 +395,6 @@ class Music(commands.Cog):
         ctx.voice_state.voice = await destination.connect()
 
     @commands.command(name='leave', aliases=['disconnect', 'quitte'])
-    @commands.has_permissions(manage_guild=True)
     async def _leave(self, ctx: commands.Context):
         """Nettoie la queue, quitte le salon vocal."""
         if not ctx.voice_state.voice:
@@ -428,7 +426,6 @@ class Music(commands.Cog):
             await ctx.send(f"La queue est vide.")
 
     @commands.command(name='pause')
-    @commands.has_permissions(manage_guild=True)
     async def _pause(self, ctx: commands.Context):
         """Pause la musique en cours."""
         if not ctx.voice_state.is_playing and ctx.voice_state.voice.is_playing():
@@ -436,7 +433,6 @@ class Music(commands.Cog):
             await ctx.message.add_reaction('⏯')
 
     @commands.command(name='resume', aliases=['reprends'])
-    @commands.has_permissions(manage_guild=True)
     async def _resume(self, ctx: commands.Context):
         """Reprends la musique en cours."""
         if not ctx.voice_state.is_playing and ctx.voice_state.voice.is_paused():
@@ -444,7 +440,6 @@ class Music(commands.Cog):
             await ctx.message.add_reaction('⏯')
 
     @commands.command(name='stop')
-    @commands.has_permissions(manage_guild=True)
     async def _stop(self, ctx: commands.Context):
         """Stop la musique et nettoie la queue."""
         ctx.voice_state.stop()

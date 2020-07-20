@@ -47,7 +47,7 @@ class Git(commands.Cog):
     @github.group(name='repo')
     async def repository(self, ctx:commands.Context):
         """Affiche des informations sur un répositoire."""
-        pass
+        # await ctx
 
 
     @repository.command(name='choose', aliases=['='])

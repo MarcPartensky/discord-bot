@@ -178,12 +178,17 @@ class Users(commands.Cog):
         member = member or ctx.author
         sounddeck = self.bot.get_cog('SoundDeck')
         await sounddeck.play(ctx, name='ascenceur')
-        await ctx.send(
-            f"> {member.name} va revenir dans un instant."
+        self.wait_message = await ctx.send(
+            f"> {member.name} va revenir dans quelques instants."
              "\n> Veuillez patienter.")
-        
 
-
+    @commands.command(name="re", aliases=['back'])
+    async def back(self, ctx:commands.Context):
+        """Retour de l'utilisateur."""
+        music = self.bot.get_cog('Music')
+        await music.cog_before_invoke(ctx)
+        await music._leave(ctx)
+        await self.wait_message.delete()
 
 
 def setup(bot):
