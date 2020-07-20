@@ -48,19 +48,17 @@ class BlackJack(commands.Cog):
         # await message.edit(content='truc')
 
     @blackjack.command()
-
-    @blackjack.command()
     async def start(self, ctx:commands):
         """Lance la partie de BlackJack."""
         id_
         room = self.rooms.pop(ctx.guild.id)
         bet = 5
 
-        self.accounts[ctx.author.id].coins -= bet
+        # self.accounts[ctx.author.id].coins -= bet
 
         # jouer
 
-         self.accounts[ctx.author.id].coins += 2*bet
+        #  self.accounts[ctx.author.id].coins += 2*bet
 
 
         
