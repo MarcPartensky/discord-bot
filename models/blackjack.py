@@ -1,6 +1,4 @@
-
 import random
-
 class Card:
     categories = ['coeur', 'trèfle', 'carreau', 'pique']
     number = [str(i) for i in range(10)] + ['jack', 'queen', 'king']
@@ -53,13 +51,53 @@ class BlackJack:
             self.turn += 1
             if turn == 1:
                 self.firstTurn()
+            elif turn == 2:
+                self.secondTurn()
+            else:
+                self.typicalTurn()
             self.play()
+            for player in self.players:
+                player.totalValue = 0
+                for card in player.cards:
+                    player.totalValue += card.value
 
     def firstTurn(self):
         self.burn(self,5)
         self.banker.drawAll(self, True,2)
         self.banker.draw(self, banker, False)
         return True
+    
+    def secondTurn(self):
+        for player in self.players:
+            if bool(input("Spliter ?")):
+                player.split()
+
+            elif bool(input("Doubler la mise ?")):
+                player.bet += player.bet
+                banker.draw(game, player,visible)
+
+            elif bool(input("Demander une carte ? ")):
+                banker.draw(game, player,visible)
+                player.outOfNumber()
+            
+            if bool(input("Stoper ? ")):
+                player.drawing = False
+
+        ####Tour Banker####
+    
+    def typicalTurn(self):
+        for player in self.players:
+            if player.drawing == True:
+
+                if bool(input("Demander une carte ? ")):
+                    draw = "🃏"
+                    banker.draw(game, player,visible)
+                    player.outOfNumber()
+
+                if bool(input("Stoper ? ")):
+                    stop = "❌"
+                    player.drawing = False
+
 
     def play():
         for player in self.players:
@@ -70,28 +108,47 @@ class BlackJack:
     def isDone():
         return all([not player.drawing for player in self.players])
 
+
 class Player:
+    def blackJack(self, game):
+        self.totalValue = 0
+        for card in self.cards:
+            self.totalValue += card.value
+
+        if len(self.cards) == 2 and self.totalValue == 21:
+            self.draw = False
+            self.blackJack = True
+        return self.blackJack
+
+    def outOfNumber(self, game):
+        self.totalValue = 0
+        for card in player.cards:           
+            self.totalValue += card.value
+        if totalValue > 21:
+            self.drawing = False
+        return not self.drawing
+
+
+class NormalPlayer(Player):
     def __init__(self, id:int, bet:int, cards:list=[], drawing:bool=True):
         self.bet = bet
         self.cards = cards
         self.drawing = drawing
         self.id = id
+        self.totalValue = 0
+        self.blackJack = False
 
-    def play(self, game):
-        pass
-
-    # def bet(self, game, bet):
-    #     self.bet = bet
-
-class Cheater:
+class Cheater(Player):
     def play(self, game):
         game.shuffledCards
 
 
-class Banker:
+class Banker(Player):
     def __init__(self, cards:list=[], drawing=True):
         self.cards = cards
         self.drawing = drawing
+        self.totalValue = 0
+        self.blackJack =  False
     
     def draw(self, game, player, visible):
         player.cards.append(self.cards.pop(0))
@@ -101,3 +158,5 @@ class Banker:
         for i in range(n):
             for player in self.players:
                 self.draw(self, game, player, visible)
+    
+
