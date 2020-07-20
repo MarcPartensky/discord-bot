@@ -25,11 +25,11 @@ class BlackJack:
 
     @property
     @classmethod
-    def cards(cls):
+    def allCards(cls):
         return [Card(c, n) for c in cls.categories for n in cls.number]
 
     def __init__(self, players=[]):
-        self.cards = BlackJack.cards
+        self.cards = BlackJack.allCards
         self.inGameCards = []
         self.players = players
         self.banker = Banker()

@@ -179,8 +179,8 @@ class TrafficSign(commands.Cog):
         await question.add_reaction('✅')
         await question.add_reaction('❌')
         await question.add_reaction('❔')
-        next_ = await question.add_reaction('⏭️')
-        trash = await question.add_reaction('🗑️')
+        await question.add_reaction('⏭️')
+        await question.add_reaction('🗑️')
         reactions = ['✅', '❌', '❔', '🗑️'] 
         next_question = False
         loop = True
