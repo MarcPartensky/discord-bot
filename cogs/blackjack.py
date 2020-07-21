@@ -205,13 +205,8 @@ class BlackJack(commands.Cog):
         await self.addGameReactions(ctx)
         for player, bet in room.players.items():
             self.accounts[player.id].coins -= bet 
-    
-
-
         # self.accounts[ctx.author.id].coins -= bet
-
         # jouer
-
         #  self.accounts[ctx.author.id].coins += 2*bet
 
     async def startGame(self, ctx):
