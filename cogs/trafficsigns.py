@@ -237,7 +237,6 @@ class TrafficSign(commands.Cog):
         await question_message.delete()
         await score_message.delete()
 
-
     # @tasks.loop(seconds=5.0)
     # async def question_quizz(self, ctx:commands.Context):
         # self.index += 1

@@ -212,7 +212,10 @@ class BlackJack(commands.Cog):
     async def startGame(self, ctx):
         """Lance la partie de BlackJack."""
         await self.addGameReactions(ctx)
-  
+
+
+        
+
 
     @blackjack.command()
     async def stop(self, ctx:commands.Context):
