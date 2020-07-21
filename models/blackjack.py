@@ -18,6 +18,9 @@ class Card:
         else:
             return [10]
     
+    def testCODEWTF(self):
+        pass
+    
 
 class BlackJack:
     # cards =  ["co1","co2","co3","co4","co5","co6","co7","co8","co9","co10","coJ","coQ","coK","t1","t2","t3","t4","t5","t6","t7","t8","t9","t10","tJ","tQ","tK","p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","pJ","pQ","pK","ca1","ca2","ca3","ca4","ca5","ca6","ca7","ca8","ca9","ca10","caJ","caQ","caK"]
