@@ -10,6 +10,7 @@ class Emoji:
     stop =  "❌"
     sleep = "💤"
     card = "🃏"
+    double = "2️⃣"
 
 class Room:
     def __init__(self,
@@ -40,6 +41,15 @@ class Room:
         embed.add_field(name='Joueurs', value=player_names)
         embed.set_image(url="https://worldinsport.com/wp-content/uploads/2020/04/blackjack.jpg")
         return embed
+
+    def find(self, member:discord.Member):
+        """Trouve un joueur dans la salle."""
+        i = 0
+        for player in room.blackjack.players:
+            i+= 1
+            if player.id == member.id:
+                return player
+        return None
         
 
 class BlackJack(commands.Cog):
@@ -49,12 +59,13 @@ class BlackJack(commands.Cog):
         self.rooms = {}
         self.timeout = 5*60
         self.defaultBet = 0
+
         
     @property
-    def accounts():
+    def accounts(self):
         return cluster.casino.accounts
 
-    def getRoom(self, ctx:commands.Context):
+    def getRoom(self, ctx:commands.Context) -> Room:
         """Renvoie une salle."""
         if not ctx.guild.id in self.rooms:
             self.rooms[ctx.guild.id] = Room()
@@ -81,6 +92,17 @@ class BlackJack(commands.Cog):
             await self.send(ctx, "> Erreur")
         await ctx.message.delete()
 
+    # @blackjack.error
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx:commands.Context, error):
+        """Envoie l'erreur aux utilisateurs."""
+        self.send(ctx, error)
+        print("erreur capturée")
+
+    @commands.command()
+    async def blackjack_test(self, ctx:commands.Context):
+        raise Exception("erreur du pauvre")
+
     @blackjack.command(name="créer", aliases=['create', 'c'])
     async def create(self, ctx:commands.Context, *members:discord.Member, bet:int=None):
         """Créer une partie de BlackJack."""
@@ -95,7 +117,7 @@ class BlackJack(commands.Cog):
         """Vérifie les paris de chaque joueurs."""
         for member in members:
             if self.accounts[member.id].coins < bet:
-                raise Exception("")
+                raise Exception(f"> {member.name} n'as pas assez pour pas parier {bet} coins.")
 
     async def show(self, ctx:commands.Context):
         """Affiche une intégration de BlackJack."""
@@ -107,7 +129,7 @@ class BlackJack(commands.Cog):
     async def updateEmbed(self, ctx:commands.Context):
         """Mets à jour une intégration discord."""
         room = self.getRoom(ctx)
-        embed = self.getEmbed(room)
+        embed = room.getEmbed()
         await self.send(ctx, embed=embed)
     
     async def addCreateReactions(self, ctx:commands.Context):
@@ -121,6 +143,7 @@ class BlackJack(commands.Cog):
         embed_message = self.getRoom(ctx).embed_message
         await embed_message.add_reaction(Emoji.sleep)
         await embed_message.add_reaction(Emojoi.player)
+        await embed_message.add_reaction(Emoji.double)
 
     async def react(self, ctx:commands.Context):
         """Attend une réaction."""
@@ -136,13 +159,14 @@ class BlackJack(commands.Cog):
                         await self.removeUser(ctx, user)
                     else:
                         await self.addUser(ctx, user)
-                            
-                if reaction.emoji == Emoji.play:
+                elif reaction.emoji == Emoji.play:
                     await self.start(ctx)
-                
-                if reaction.emoji == Emoji.card:
+                elif reaction.emoji == Emoji.card:
                     await self.drawCard(ctx, user)
-                
+                elif reaction.emoji == Emoji.double:
+                    await self.doubleUser(ctx,user)
+                elif reaction.emoji == Emoji.sleep:
+                    pass
             except asyncio.exceptions.TimeoutError:
                 await self.stop(ctx)
         return False
@@ -151,6 +175,7 @@ class BlackJack(commands.Cog):
     async def join(self, ctx:commands.Context, bet:int=None):
         """Rejoins la partie de BlackJack.
         Si elle n'existe pas en crée une."""
+        self.checkBet(bet, ctx.author)
         if ctx.guild.id not in self.rooms:
             await self.create(ctx, bet=bet)
         bet = bet or self.defaultBet
@@ -181,15 +206,29 @@ class BlackJack(commands.Cog):
             await self.stop(ctx)
     
     async def addUser(self, ctx:commands.Context, user:discord.User):
-        """Ajoute un utilisateur à la partie"""
+        """Ajoute un utilisateur à la partie."""
         room = self.getRoom(ctx)
         room.players[user] = self.defaultBet
         await self.send(ctx, f"> **{user.name}** a bien rejoint la salle d'attente.")
         await self.updateEmbed(ctx)
 
-    @blackjack.command(name="retirer")
+    @blackjack.command()
+    async def sleep(self, ctx:commands.Context):
+        """Se coucher."""
+        await self.sleepUser(ctx)
+    
+    async def sleepUser(self, ctx:commands.Context, member:discord.Member = None):
+        """Couche un utilisateur."""
+        member = member or ctx.author
+        room = self.getRoom(ctx)
+        player = room.find(member)
+        player.drawing = False
+        self.send(ctx, f"> {member.name} se couche.")
+
+    @blackjack.command(name="retirer", aliases=['draw', 'r', 'd'])
     async def draw(self, ctx:commands.Context):
-        self.drawCard(ctx)
+        """Retire une carte."""
+        await self.drawCard(ctx)
 
     async def drawCard(self,
             ctx:commands.Context,
@@ -200,35 +239,39 @@ class BlackJack(commands.Cog):
         member = member or ctx.author
         room = self.getRoom(ctx)
 
-        def find(ctx, room):
-            i = 0
-            for player in room.blackjack.players:
-                i+= 1
-                if player.id == member.id:
-                    return player
-            return None
-        
         player = find(ctx, room)
         if not player:
-            await self.send("> Vous n'êtes pas un joueur.")
+            return await self.send("> Vous n'êtes pas un joueur.")
         
         if not player.drawing:
-            await self.send("> Vous vous êtes couchés.")
+            return await self.send("> Vous vous êtes couchés.")
         
         room.blackjack.banker.draw(room.blackjack, player, visible)
         await self.send(f"> {ctx.author.name} a tiré une carte.")
-        
+    
+    @blackjack.command(name="doubler", aliases=["double"])
+    async def double(self, ctx:commands.Context):
+        """Double la mise."""
+        await self.doubleUser(ctx)
 
-    @blackjack.command(name="parier", aliases = ['bet'])
-    async def bet(self, ctx:commands.Context, bet:int=None):
+    async def doubleUser(self, ctx:commands.Context, user: discord.Member = None):
+        """Double la mise d'un joueur."""
+        member = user or ctx.author
+        player = room.find(ctx.author)
+        self.checkBet(player.bet, member)
+        player.bet += player.bet
+        await self.drawCard(ctx, user)
+        player.drawing = False
+
+    @blackjack.command(name="parier", aliases=['bet'])
+    async def bet(self, ctx:commands.Context, bet:int):
         """Parie un certain montant."""
         if ctx.guild.id not in self.rooms:
             await self.create(ctx)
         bet = bet or self.defaultBet
         if bet < 0:
             raise Exception("Il faut parier une somme positive.")
-        if self.accounts[player.id].coins < bet:
-            raise Exception("Vous ne pouvez pas pariez plus ce que vous avez.")
+        self.checkBet(bet, ctx.author)
         room = self.getRoom(ctx)
         room.players[ctx.author] = bet
         await self.send(ctx, f"> **{ctx.author.name}** a parié {bet} coins.")
@@ -242,7 +285,7 @@ class BlackJack(commands.Cog):
         for player, bet in room.players.items():
             self.accounts[player.id].coins -= bet #Enleve la somme misée du total des coins du joueur
             bj.Player()
-            players.append(bj.NormalPlayer(player.id,bet))
+            players.append(bj.NormalPlayer(player.id, bet))
         
         room.blackjack = bj.BlackJack(players)
         room.blackjack.main()

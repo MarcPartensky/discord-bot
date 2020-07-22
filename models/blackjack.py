@@ -77,9 +77,16 @@ class CardDeck:
     "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Playing_card_diamond_Q.svg/800px-Playing_card_diamond_Q.svg.png"
     "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Playing_card_diamond_K.svg/800px-Playing_card_diamond_K.svg.png"
 
+
+
 class Card:
     categories = ['coeur', 'trèfle', 'carreau', 'pique']
     number = [str(i) for i in range(10)] + ['jack', 'queen', 'king']
+
+    def getUrl(self, category, number):
+        """Find the the url of a given card."""
+        
+
 
     def __init__(self, category:str, number:str, visible:bool=False):
         self.category = category
@@ -95,6 +102,7 @@ class Card:
             return [n]
         else:
             return [10]
+
     
 
 class Player:
