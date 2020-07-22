@@ -140,6 +140,9 @@ class BlackJack(commands.Cog):
                 if reaction.emoji == Emoji.play:
                     await self.start(ctx)
                 
+                if reaction.emoji == Emoji.card:
+                    await self.drawCard(ctx, user)
+                
             except asyncio.exceptions.TimeoutError:
                 await self.stop(ctx)
         return False
@@ -184,6 +187,38 @@ class BlackJack(commands.Cog):
         await self.send(ctx, f"> **{user.name}** a bien rejoint la salle d'attente.")
         await self.updateEmbed(ctx)
 
+    @blackjack.command(name="retirer")
+    async def draw(self, ctx:commands.Context):
+        self.drawCard(ctx)
+
+    async def drawCard(self,
+            ctx:commands.Context,
+            member:discord.Member=None,
+            visible:bool=True
+        ):
+        """Tire une carte"""
+        member = member or ctx.author
+        room = self.getRoom(ctx)
+
+        def find(ctx, room):
+            i = 0
+            for player in room.blackjack.players:
+                i+= 1
+                if player.id == member.id:
+                    return player
+            return None
+        
+        player = find(ctx, room)
+        if not player:
+            await self.send("> Vous n'êtes pas un joueur.")
+        
+        if not player.drawing:
+            await self.send("> Vous vous êtes couchés.")
+        
+        room.blackjack.banker.draw(room.blackjack, player, visible)
+        await self.send(f"> {ctx.author.name} a tiré une carte.")
+        
+
     @blackjack.command(name="parier", aliases = ['bet'])
     async def bet(self, ctx:commands.Context, bet:int=None):
         """Parie un certain montant."""
@@ -208,6 +243,7 @@ class BlackJack(commands.Cog):
             self.accounts[player.id].coins -= bet #Enleve la somme misée du total des coins du joueur
             bj.Player()
             players.append(bj.NormalPlayer(player.id,bet))
+        
         room.blackjack = bj.BlackJack(players)
         room.blackjack.main()
 

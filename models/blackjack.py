@@ -97,6 +97,58 @@ class Card:
             return [10]
     
 
+class Player:
+    def blackJack(self, game):
+        self.totalValue = 0
+        for card in self.cards:
+            self.totalValue += card.value
+
+        if len(self.cards) == 2 and self.totalValue == 21:
+            self.draw = False
+            self.blackJack = True
+        return self.blackJack
+
+    def outOfNumber(self, game):
+        self.totalValue = 0
+        for card in player.cards:           
+            self.totalValue += card.value
+        if totalValue > 21:
+            self.drawing = False
+        return not self.drawing
+
+
+class NormalPlayer(Player):
+    def __init__(self, id:int, bet:int, cards:list=[], drawing:bool=True):
+        self.bet = bet
+        self.cards = cards
+        self.drawing = drawing
+        self.id = id
+        self.totalValue = 0
+        self.blackJack = False
+
+class Cheater(Player):
+    def play(self, game):
+        game.shuffledCards
+
+class Banker(Player):
+
+    def __init__(self, cards:list=[], drawing=True):
+        self.cards = cards
+        self.drawing = drawing
+        self.totalValue = 0
+        self.blackJack =  False
+    
+    def draw(self, game, player, visible):
+        player.cards.append(self.cards.pop(0))
+        player.cards[-1].visible = visible
+        
+    def drawAll(self, game, visible, n):
+        for i in range(n):
+            for player in self.players:
+                self.draw(self, game, player, visible)
+    
+
+
 class BlackJack:
     # cards =  ["co1","co2","co3","co4","co5","co6","co7","co8","co9","co10","coJ","coQ","coK","t1","t2","t3","t4","t5","t6","t7","t8","t9","t10","tJ","tQ","tK","p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","pJ","pQ","pK","ca1","ca2","ca3","ca4","ca5","ca6","ca7","ca8","ca9","ca10","caJ","caQ","caK"]
     maxPlayers = 8
@@ -186,55 +238,4 @@ class BlackJack:
     def isDone():
         return all([not player.drawing for player in self.players])
 
-
-class Player:
-    def blackJack(self, game):
-        self.totalValue = 0
-        for card in self.cards:
-            self.totalValue += card.value
-
-        if len(self.cards) == 2 and self.totalValue == 21:
-            self.draw = False
-            self.blackJack = True
-        return self.blackJack
-
-    def outOfNumber(self, game):
-        self.totalValue = 0
-        for card in player.cards:           
-            self.totalValue += card.value
-        if totalValue > 21:
-            self.drawing = False
-        return not self.drawing
-
-
-class NormalPlayer(Player):
-    def __init__(self, id:int, bet:int, cards:list=[], drawing:bool=True):
-        self.bet = bet
-        self.cards = cards
-        self.drawing = drawing
-        self.id = id
-        self.totalValue = 0
-        self.blackJack = False
-
-class Cheater(Player):
-    def play(self, game):
-        game.shuffledCards
-
-class Banker(Player):
-
-    def __init__(self, cards:list=[], drawing=True):
-        self.cards = cards
-        self.drawing = drawing
-        self.totalValue = 0
-        self.blackJack =  False
-    
-    def draw(self, game, player, visible):
-        player.cards.append(self.cards.pop(0))
-        player.cards[-1].visible = visible
-        
-    def drawAll(self, game, visible, n):
-        for i in range(n):
-            for player in self.players:
-                self.draw(self, game, player, visible)
-    
 
