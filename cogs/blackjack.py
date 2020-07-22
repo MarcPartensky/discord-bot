@@ -138,7 +138,7 @@ class BlackJack(commands.Cog):
                         await self.addUser(ctx, user)
                             
                 if reaction.emoji == Emoji.play:
-                    await self.startGame(ctx)
+                    await self.start(ctx)
                 
             except asyncio.exceptions.TimeoutError:
                 await self.stop(ctx)
@@ -203,19 +203,13 @@ class BlackJack(commands.Cog):
         """Lance la partie de BlackJack."""
         room = self.getRoom(ctx)
         await self.addGameReactions(ctx)
+        players = []
         for player, bet in room.players.items():
-            self.accounts[player.id].coins -= bet 
-        # self.accounts[ctx.author.id].coins -= bet
-        # jouer
-        #  self.accounts[ctx.author.id].coins += 2*bet
-
-    async def startGame(self, ctx):
-        """Lance la partie de BlackJack."""
-        await self.addGameReactions(ctx)
-
-
-        
-
+            self.accounts[player.id].coins -= bet #Enleve la somme misée du total des coins du joueur
+            bj.Player()
+            players.append(bj.NormalPlayer(player.id,bet))
+        room.blackjack = bj.BlackJack(players)
+        room.blackjack.main()
 
     @blackjack.command()
     async def stop(self, ctx:commands.Context):
