@@ -133,6 +133,7 @@ class NormalPlayer(Player):
         self.id = id
         self.totalValue = 0
         self.blackJack = False
+        self.coinsEarned = 0
 
 class Cheater(Player):
     def play(self, game):
@@ -146,7 +147,26 @@ class Banker(Player):
         self.totalValue = 0
         self.blackJack =  False
     
-    def draw(self, game, player, visible):
+    def playBanker(self,game):
+        for card in cards:
+            card.visible = True       #Rend toutes les cartes du banquier visibles
+        if self.cardsValue(cards) <= 17:
+            self.drawBanker(game)            #Pioche jusqu'à avoir une valeur d'au moins 17
+
+        self.drawing = False
+
+
+    def cardsValue(self,cards:list):
+        totalValue = 0
+        for card in card:
+            totalValue += card.value
+
+    def drawBanker(self, game, visible: bool=True):
+        self.cards.append(self.cards.pop(0))
+        self.cards[-1].visible = visible
+
+
+    def draw(self, game, player, visible: bool= True):
         player.cards.append(self.cards.pop(0))
         player.cards[-1].visible = visible
         
@@ -173,6 +193,7 @@ class BlackJack:
         self.banker = banker
         self.turn = 0
 
+
     def burn(self, n):
         for i in range(n):
             del self.cards[0]
@@ -198,6 +219,30 @@ class BlackJack:
                 player.totalValue = 0
                 for card in player.cards:
                     player.totalValue += card.value
+
+    def gains(self):
+        drawings = []
+        gains = []
+        for player in self.players:
+            drawings.append(player.drawing)
+        drawings.append(banker.drawing)
+        if self.allelementsFalse(drawings):
+            banker.totalValue = banker.cardsValue(banker.cards)
+            for player in self.players:
+                player.totalValue = banker.cardsValue(player.cards)
+                if  21 >= player.totalValue > banker.totalValue or banker.totalValue >= 21 and player.totalValue <=21:
+                    if player.blackJack:
+                        player.coinsEarned = 1.5*player.bet
+                    else:
+                        player.coinsEarned = 2*player.bet
+
+                elif player.totalValue == banker.totalValue <= 21:
+                    player.coinsEarned = bet 
+                gains.append(player.coinsEarned)
+        return gains
+
+            
+
 
     def firstTurn(self):
         self.burn(self, 5)
@@ -235,6 +280,15 @@ class BlackJack:
                 if bool(input("Stoper ? ")):
                     stop = "❌"
                     player.drawing = False
+
+    def allelementsFalse(self,liste):
+        for element in liste:
+            if element:
+                return False
+            return True
+
+
+
 
 
     def play():
