@@ -1,5 +1,9 @@
 import random
 import urllib.request
+from PIL import Image
+from collections import namedtuple
+import os
+# import PIL
 
 # urllib.request.urlretrieve(
 #     "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Playing_card_club_A.svg/1024px-Playing_card_club_A.svg.png",
@@ -85,13 +89,13 @@ class Card:
 
     def getUrl(self, category, number):
         """Find the the url of a given card."""
-        
+        pass
 
-
-    def __init__(self, category:str, number:str, visible:bool=False):
+    def __init__(self, category:str, number:str, visible:bool=False, sleeping:bool=False):
         self.category = category
         self.number = number
         self.visible = visible
+        self.sleeping = sleeping
 
     @property
     def value(self):
@@ -103,82 +107,74 @@ class Card:
         else:
             return [10]
 
-    
-
 class Player:
-    def blackJack(self, game):
-        self.totalValue = 0
-        for card in self.cards:
-            self.totalValue += card.value
+    def __init__(self, cards:list=[], sleeping:bool=False):
+        """Créee un joueur avec ses cartes et s'il est couché."""
+        self.cards = cards
+        self.sleeping = sleeping
 
-        if len(self.cards) == 2 and self.totalValue == 21:
-            self.draw = False
-            self.blackJack = True
-        return self.blackJack
+    def hasBlackJack(self):
+        """Vérifie si le joueur fait un blackjack."""
+        return len(self.cards) == 2 and self.totalValue == 21
 
-    def outOfNumber(self, game):
-        self.totalValue = 0
-        for card in player.cards:           
-            self.totalValue += card.value
-        if totalValue > 21:
-            self.drawing = False
-        return not self.drawing
+    def checkSleeping(self):
+        """Vérifie si le joueur est couché."""
+        if self.totalValue > 21:
+            self.sleeping = True
+            
+    @property
+    def totalValue(self):
+        """Affiche le total des cartes d'un joueur."""
+        return sum([card.value for card in self.cards])
 
+    def draw(self, game, visible:bool=True):
+        """Retire une carte."""
+        self.cards.append(game.cards.pop(0))
+        self.cards[-1].visible = visible
+        self.checkOutOfNumber(game)
 
 class NormalPlayer(Player):
-    def __init__(self, id:int, bet:int, cards:list=[], drawing:bool=True):
+    def __init__(self, id:int, bet:int, cards:list=[], sleeping:bool=False):
+        """Définit un joueur normal avec son id, pari, ses cartes et s'il est couché."""
+        super().__init__(cards, sleeping)
         self.bet = bet
-        self.cards = cards
-        self.drawing = drawing
         self.id = id
-        self.totalValue = 0
-        self.blackJack = False
-        self.coinsEarned = 0
+        
+    def gains(self, banker):
+        """Calcule le gain d'un joueur."""
+        if player.hasBlackJack():
+            return 1.5*player.bet
+        if  21 >= player.totalValue > banker.totalValue or (banker.totalValue >= 21 and player.totalValue <= 21):
+            return 2*player.bet
+        if player.totalValue == banker.totalValue <= 21:
+            return bet
+        return 0
 
 class Cheater(Player):
     def play(self, game):
-        game.shuffledCards
+        game.cards[0]
 
 class Banker(Player):
-
-    def __init__(self, cards:list=[], drawing=True):
-        self.cards = cards
-        self.drawing = drawing
-        self.totalValue = 0
-        self.blackJack =  False
+    def __init__(self, cards:list=[], sleeping:bool=False):
+        """Définit un banquier avec ses cartes et s'il est couché."""
+        super().__init__(cards, sleeping)
     
-    def playBanker(self,game):
-        for card in cards:
+    def play(self, game):
+        """Le banquier joue."""
+        for card in self.cards:
             card.visible = True       #Rend toutes les cartes du banquier visibles
         if self.cardsValue(cards) <= 17:
-            self.drawBanker(game)            #Pioche jusqu'à avoir une valeur d'au moins 17
-
-        self.drawing = False
-
-
-    def cardsValue(self,cards:list):
-        totalValue = 0
-        for card in card:
-            totalValue += card.value
-
-    def drawBanker(self, game, visible: bool=True):
-        self.cards.append(self.cards.pop(0))
-        self.cards[-1].visible = visible
-
-
-    def draw(self, game, player, visible: bool= True):
-        player.cards.append(self.cards.pop(0))
-        player.cards[-1].visible = visible
+            self.draw(game, banker)            #Pioche jusqu'à avoir une valeur d'au moins 17
+        self.sleeping = True
         
     def drawAll(self, game, visible, n):
+        """Le banquier distribue n cartes aux joueurs."""
         for i in range(n):
-            for player in self.players:
-                self.draw(self, game, player, visible)
+            for player in game.players:
+                player.draw(game, visible)
     
 
-
 class BlackJack:
-    # cards =  ["co1","co2","co3","co4","co5","co6","co7","co8","co9","co10","coJ","coQ","coK","t1","t2","t3","t4","t5","t6","t7","t8","t9","t10","tJ","tQ","tK","p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","pJ","pQ","pK","ca1","ca2","ca3","ca4","ca5","ca6","ca7","ca8","ca9","ca10","caJ","caQ","caK"]
     maxPlayers = 8
 
     @property
@@ -187,117 +183,91 @@ class BlackJack:
         return [Card(c, n) for c in cls.categories for n in cls.number]
 
     def __init__(self, players=[], banker=Banker()):
+        """Crée un jeu de blackjack avec ses joueurs et son banquier."""
         self.cards = BlackJack.allCards
+        self.table = Table()
         self.inGameCards = []
         self.players = players
         self.banker = banker
-        self.turn = 0
 
-
+    @property
+    def bankerTurn(self):
+        return all([player.sleeping for player in self.players])
+    
     def burn(self, n):
+        """Brûle n cartes."""
         for i in range(n):
             del self.cards[0]
 
     def shuffle(self):
+        """Mélange les cartes."""
         self.cards = BlackJack.cards
         random.shuffle(self.cards)
 
     def main(self):
-        self.banker.drawAll(self)
-        self.turn = 0
         self.shuffle()
-        while not self.isDone():
-            self.turn += 1
-            if turn == 1:
-                self.firstTurn()
-            elif turn == 2:
-                self.secondTurn()
-            else:
-                self.typicalTurn()
-            self.play()
-            for player in self.players:
-                player.totalValue = 0
-                for card in player.cards:
-                    player.totalValue += card.value
-
-    def gains(self):
-        drawings = []
-        gains = []
-        for player in self.players:
-            drawings.append(player.drawing)
-        drawings.append(banker.drawing)
-        if self.allelementsFalse(drawings):
-            banker.totalValue = banker.cardsValue(banker.cards)
-            for player in self.players:
-                player.totalValue = banker.cardsValue(player.cards)
-                if  21 >= player.totalValue > banker.totalValue or banker.totalValue >= 21 and player.totalValue <=21:
-                    if player.blackJack:
-                        player.coinsEarned = 1.5*player.bet
-                    else:
-                        player.coinsEarned = 2*player.bet
-
-                elif player.totalValue == banker.totalValue <= 21:
-                    player.coinsEarned = bet 
-                gains.append(player.coinsEarned)
-        return gains
-
-            
-
-
+        self.firstTurn()
+        while not self.bankerTurn:
+            pass
+        banker.play(self)
+        self.gains
+        
     def firstTurn(self):
-        self.burn(self, 5)
-        self.banker.drawAll(self, True,2)
-        self.banker.draw(self, banker, False)
-        return True
-    
-    def secondTurn(self):
-        for player in self.players:
-            if bool(input("Spliter ?")):
-                player.split()
+        self.burn(5)
+        self.banker.drawAll(self,True,2)
+        self.banker.draw(self, False)
+        self.banker.draw(self)
 
-            elif bool(input("Doubler la mise ?")):
-                player.bet += player.bet
-                banker.draw(game, player,visible)
-
-            elif bool(input("Demander une carte ? ")):
-                banker.draw(game, player,visible)
-                player.outOfNumber()
-            
-            if bool(input("Stoper ? ")):
-                player.drawing = False
-
-        ####Tour Banker####
-    
-    def typicalTurn(self):
-        for player in self.players:
-            if player.drawing == True:
-
-                if bool(input("Demander une carte ? ")):
-                    draw = "🃏"
-                    banker.draw(game, player,visible)
-                    player.outOfNumber()
-
-                if bool(input("Stoper ? ")):
-                    stop = "❌"
-                    player.drawing = False
-
-    def allelementsFalse(self,liste):
+    def allElementsFalse(self,liste):
         for element in liste:
             if element:
                 return False
             return True
 
-
-
-
-
-    def play():
-        for player in self.players:
-            if not player.drawing:
-                continue
-            player.play(self)
-
-    def isDone():
+    def bankerTurn():
         return all([not player.drawing for player in self.players])
 
+
+    def show(self):
+        """Affiche la table de blackjack actuel."""
+
+
+
+        # cw, ch = namedtuple
+        # border.resize
+        # bgw, bgh = background.size
+        # bdw, bdh = border.size[]
+
+        
+
+        n = len(self.players)
+
+        # bd
+
+
+Vector = namedtuple('Vector', ['x', 'y'])
+
+class Table:
+    backgroundPath  = os.path.abspath('assets/blackjack/imgs/green-background.jpg')
+    borderPath = os.path.abspath('assets/blackjack/imgs/white-border.png')
+    cardSize = Vector(1040, 832)
+    
+    def __init__(self,
+            backgroundPath = Table.backgroundPath,
+            borderPath = Table.borderPath
+        ):
+        self.background = Image.open(backgroundPath)
+        self.border = Image.open(borderPath)
+
+        bg = Vector(*self.background.size)
+        ratio = Table.cardSize.y/Table.cardSize.x # card ratio in pixel
+        c = Vector(bg.x/10, ratio*bg.x/10)
+        self.border = self.border.resize((c.x, c.y))
+        # bd = Vector(*self.border.size)
+
+    def save(self, filename:str):
+        pass
+
+    def insert(self, cardurl, i):
+        pass
 

@@ -245,8 +245,8 @@ class BlackJack(commands.Cog):
         
         if not player.drawing:
             return await self.send("> Vous vous êtes couchés.")
-        
-        room.blackjack.banker.draw(room.blackjack, player, visible)
+
+        player.draw(room.blackjack, visible)
         await self.send(f"> {ctx.author.name} a tiré une carte.")
     
     @blackjack.command(name="doubler", aliases=["double"])
