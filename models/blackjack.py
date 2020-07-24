@@ -173,6 +173,35 @@ class Banker(Player):
             for player in game.players:
                 player.draw(game, visible)
     
+Vector = namedtuple('Vector', ['x', 'y'])
+
+class Table:
+    backgroundPath  = os.path.abspath('assets/blackjack/imgs/green-background.jpg')
+    borderPath = os.path.abspath('assets/blackjack/imgs/white-border.png')
+    cardSize = Vector(1040, 832)
+    
+    def __init__(self,
+            backgroundPath:str=None,
+            borderPath:str=None
+        ):
+        self.backgroundPath = backgroundPath or Table.backgroundPath
+        self.borderPath = borderPath or Table.borderPath
+        self.background = Image.open(self.backgroundPath)
+        self.border = Image.open(self.borderPath)
+
+    def resize(self):
+        bg = Vector(*self.background.size)
+        ratio = Table.cardSize.y/Table.cardSize.x # card ratio in pixel
+        c = Vector(bg.x/10, ratio*bg.x/10)
+        self.border = self.border.resize((c.x, c.y))
+        # bd = Vector(*self.border.size)
+
+    def save(self, filename:str):
+        pass
+
+    def insert(self, cardurl, i):
+        pass
+
 
 class BlackJack:
     maxPlayers = 8
@@ -244,30 +273,4 @@ class BlackJack:
 
         # bd
 
-
-Vector = namedtuple('Vector', ['x', 'y'])
-
-class Table:
-    backgroundPath  = os.path.abspath('assets/blackjack/imgs/green-background.jpg')
-    borderPath = os.path.abspath('assets/blackjack/imgs/white-border.png')
-    cardSize = Vector(1040, 832)
-    
-    def __init__(self,
-            backgroundPath = Table.backgroundPath,
-            borderPath = Table.borderPath
-        ):
-        self.background = Image.open(backgroundPath)
-        self.border = Image.open(borderPath)
-
-        bg = Vector(*self.background.size)
-        ratio = Table.cardSize.y/Table.cardSize.x # card ratio in pixel
-        c = Vector(bg.x/10, ratio*bg.x/10)
-        self.border = self.border.resize((c.x, c.y))
-        # bd = Vector(*self.border.size)
-
-    def save(self, filename:str):
-        pass
-
-    def insert(self, cardurl, i):
-        pass
 
