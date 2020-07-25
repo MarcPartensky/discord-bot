@@ -1,5 +1,5 @@
 from config.config import cluster
-from models.mongo import 
+from models.mongo import  MongoCollection, BindPost
 
 import discord
 import string
@@ -91,6 +91,7 @@ class Question:
         """Fields of the question embed."""
         return {string.ascii_uppercase[i]:answer for i, answer in enumerate(self.shuffled_answers)}
 
+    @property
     def embed(self):
         """Return an embed for the given question."""
         embed = discord.Embed(

@@ -101,6 +101,7 @@ class MongoCluster(MongoClient):
     """Rewrite of Mongo Client."""
 
     def __getitem__(self, item):
+        """Return a mongo database given its key."""
         item = super().__getitem__(item)
         if isinstance(item, pymongo.database.Database):
             return MongoDatabase.from_database(item)
@@ -110,9 +111,11 @@ class MongoCluster(MongoClient):
 class MongoDatabase(Database):
     @classmethod
     def from_database(cls, database):
+        """Create a mongo database using another mongo database."""
         return cls(database.client, database.name)
 
     def __getitem__(self, item):
+        """Return a mongo collection given a key."""
         item = super().__getitem__(item)
         if isinstance(item, pymongo.collection.Collection):
             return MongoCollection.from_collection(item)
@@ -120,6 +123,7 @@ class MongoDatabase(Database):
             return item
 
     def __contains__(self, collection_name):
+        """Check whether the mongo database has a collection given its name."""
         return collection_name in self.collection_names()
 
 class MongoCollection(Collection):
@@ -148,9 +152,11 @@ class MongoCollection(Collection):
             yield (k, d)
 
     def put_one(self, **post):
+        """Insert one post."""
         self.insert_one(post)
 
     def put(self, **post):
+        """Insert or replace one post."""
         if '_id' in post:
             id = post['_id']
             if id in self:
@@ -165,10 +171,12 @@ class MongoCollection(Collection):
         return p
 
     def replace_one(self, filter, post, **kwargs):
+        """Replace one post."""
         post = self.treat(post)
         super().replace_one(filter, post, **kwargs)
 
     def insert_one(self, post, **kwargs):
+        """Insert one post."""
         post = self.treat(post)
         super().insert_one(post, **kwargs)
 
@@ -179,6 +187,7 @@ class MongoCollection(Collection):
             self.insert_one(arg, **kwargs)
 
     def insert_many(self, posts, **kwargs):
+        """Insert many posts."""
         posts = [self.treat(post) for post in posts]
         super().insert_many(post)
 
@@ -248,11 +257,18 @@ class MongoCollection(Collection):
             self.__setitem__(att, value)
 
 class BindPost: # More like lazy post
+    """Super set of mongo post system.
+    Instead of using a mongo post as a python dictionary, this class makes
+    it possible to use a post as a python object which allows much more
+    flexibility when writing code."""
+
     @classmethod
     def fromkeys(cls, *args, **kwargs):
+        """Create a bind post from keys."""
         return cls(_dict.fromkeys(*args, **kwargs))
 
     def __init__(self, _collection:MongoCollection,  _id:object=None):
+        """Create a bind post using a mongo collection and a post id."""
         self._collection:MongoCollection = _collection
         if _id:
             self._id = _id
@@ -264,70 +280,88 @@ class BindPost: # More like lazy post
 
     @property
     def collection(self):
+        """Return the mongo collection parent of the post."""
         return self._collection
 
     @property
     def _dict(self):
+        """Return the dictionary form of the post."""
         return Collection.find_one(self._collection, {'_id':self._id})
 
     def clear(self):
+        """Clear the content of a post."""
         d = dict(_id=self._id)
         self._collection.replace_one(d, d)
 
     def copy(self): # Create raw dictionary
+        """Create a raw dictionary."""
         return self._dict.copy()
 
     def get(self, key):
+        """Get an item of the post given a key."""
         return self._dict[key]
 
     def items(self):
+        """List the items of the post."""
         return self._dict.items()
 
     def keys(self):
+        """List the keys of the post."""
         return self._dict.keys()
 
     def values(self):
+        """List the values of the post."""
         return self._dict.values()
 
     def pop(self, key):
+        """Pop one item of the post given its key."""
         d = self._dict
         item = d.pop(key)
         self._collection.replace_one({'_id':self._id}, d)
         return item
 
     def popitem(self):
+        """Pop the last item of the dictionary."""
         dictionary = self._dict.copy()
         item = dictionary.popitem()
         return item
 
     def setdefault(self, key, value):
+        """Set a default item using its key and value."""
         d = self._dict
         d.setdefault(key, value)
         self._collection.replace_one({'_id':self._id}, d)
 
     def setdefaults(self, *args, **kwargs):
+        """Set default items using the list of items, and dictionaries
+        of keys and values of the items."""
         dicts = args+(kwargs,)
         for d in dicts:
             for k,v in d.items():
                 self.setdefault(k, v)
 
     def update(self, _dictionary:dict):
+        """Update a post using a dictionary."""
         d = self._dict
         d.update(_dictionary)
         self._collection.replace_one({'_id':self._id}, d)
 
     def __str__(self):
+        """Return a string representation of the post."""
         return str(self._dict)
 
     def __contains__(self, key):
+        """Check whether the post contains a key."""
         return key in self._dict
 
     def __delattr__(self, key):
+        """Delete an item from the post given its key."""
         self._collection.update_one({'_id':self._id}, {"$unset": {key:""}})
 
     __delitem__ = __delattr__
 
     def __getattribute__(self, key):
+        """Return the value of a post item given its key."""
         if key in ['_collection', '_id', 'collection', '_dict']:
             return super().__getattribute__(key)
         else:
@@ -338,6 +372,7 @@ class BindPost: # More like lazy post
                 return super().__getattribute__(key)
 
     def __setattr__(self, key, value):
+        """Set an item for the post given its key and value."""
         if key in ['_collection', '_id']:
             super().__setattr__(key, value)
         else:
@@ -346,12 +381,17 @@ class BindPost: # More like lazy post
             self._collection.replace_one({'_id':self._id}, d)
 
     def __getitem__(self, key):
+        """Return the value of an item given its key.
+        This can be used the same way as a dictionary."""
         return self._dict[key]
 
     def __setitem__(self, key, value):
+        """Set an item for the post given its key and value.
+        This can be used the same was as a dictionary."""
         self._dict[key] = value
 
     def __len__(self):
+        """Return the length of a post."""
         return len(self._dict)
 
 class Post(DictObject):
@@ -361,6 +401,7 @@ class Post(DictObject):
         self.post()
 
     def __str__(self):
+        """Return the string representation of a post."""
         collection = self.collection
         del self.collection
         string = super().__str__()

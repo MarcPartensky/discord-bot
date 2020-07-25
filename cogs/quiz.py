@@ -1,8 +1,13 @@
+from models.quiz import Quiz, Question
+
 from discord.ext import commands
 import discord
 
 class Quiz(commands.Cog):
+    """Representation of a quiz."""
+
     def __init__(self, bot:commands.Bot):
+        """Create a quiz given the bot."""
         self.bot = bot
         # self.quiz = quiz.Quiz()
 
@@ -24,7 +29,10 @@ class Quiz(commands.Cog):
     @quiz.command(name="suivant", aliases=['next', 'sv', 'n'])
     async def next(self, ctx:commands.Context):
         """Passe à la question suivante."""
-        await self.quiz.next(ctx)
+        await self.quiz.next(ctx).embed
+
+
+    
 
 def setup(bot):
     bot.add_cog(Quiz(bot))
