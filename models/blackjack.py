@@ -190,6 +190,7 @@ class Table:
         self.border = Image.open(self.borderPath)
 
     def resize(self):
+        """Resize the image of the blackjack."""
         bg = Vector(*self.background.size)
         ratio = Table.cardSize.y/Table.cardSize.x # card ratio in pixel
         c = Vector(bg.x/10, ratio*bg.x/10)
@@ -197,9 +198,11 @@ class Table:
         # bd = Vector(*self.border.size)
 
     def save(self, filename:str):
+        """Save the image of the blackjack created."""
         pass
 
     def insert(self, cardurl, i):
+        """Insert a card on the image."""
         pass
 
 
@@ -259,18 +262,11 @@ class BlackJack:
 
     def show(self):
         """Affiche la table de blackjack actuel."""
-
-
-
         # cw, ch = namedtuple
         # border.resize
         # bgw, bgh = background.size
         # bdw, bdh = border.size[]
-
-        
-
         n = len(self.players)
-
         # bd
 
 

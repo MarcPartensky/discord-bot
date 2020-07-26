@@ -10,7 +10,7 @@ class Room:
         self.embed_message:discord.Message = None
         self.message:discord.Message = None
 
-    def send(self, ctx:commands.Context, content:str="", embed:discord.Embed=None, **kwargs):
+    async def send(self, ctx:commands.Context, content:str="", embed:discord.Embed=None, **kwargs):
         """Send using one message at a time."""
         if embed:
             if self.embed_message:
