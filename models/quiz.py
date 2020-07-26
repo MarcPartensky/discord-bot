@@ -55,8 +55,7 @@ class Question:
             image:str=None,
             thumbnail:str=None,
             footer:str=None,
-            timestamp:time.time(),
-
+            timestamp:int=time.time(),
         ):
         """Create a question using ."""
         self.question = question
