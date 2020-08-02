@@ -16,6 +16,7 @@ sqldb = Database(path=path)
 
 class Commandes(commands.Cog):
     def __init__(self, bot:commands.Bot):
+        """Crée la catégorie des commandes avec le bot en argument."""
         self.bot = bot
         self.commands = cluster.commands.commands
         # self.commands.create_index([('command', pymongo.ASCENDING)], unique=True)
@@ -23,9 +24,19 @@ class Commandes(commands.Cog):
         self.learn_separator = "=>"
         self.search_prefix = ","
         self.timeout = 60
+
+    @commands.group(name='commande', aliases=['cmd'])
+    async def command(self, ctx:commands.Context):
+        """Groupe de commandes sur les commandes."""
+        if not ctx.invoked_subcommand:
+            await ctx.send(
+                "> Cette commande est inexistante."
+                f"\n> Tapez {prefix}help commande pour voir les commandes disponibles."
+            )
     
-    @commands.command(name='migrer-commandes')
-    async def migrate_commands(self, ctx:commands.Context):
+    @access.admin
+    @command.command(name='migrer')
+    async def migrate(self, ctx:commands.Context):
         """Migre commandes d'sqlite vers mongodb."""
         sqldb.select("answers")
         for (t, u, r, a) in sqldb.fetchall():
@@ -46,7 +57,7 @@ class Commandes(commands.Cog):
             # await ctx.send(msg)
             print(msg)
 
-    @commands.command(name='apprends', aliases=['retiens'])
+    @command.command(name='apprends', aliases=['retiens', 'learn'])
     async def learn(self, ctx:commands.Context, command, result):
         """Apprends une commande."""
         post = self.commands.find_one({'command':command})
@@ -66,7 +77,7 @@ class Commandes(commands.Cog):
         self.commands[command] = post
         await ctx.send(f"> La commande **{command}** a été apprise.")
 
-    @commands.command(name='cherche')
+    @command.command(name='cherche', aliases=['search'])
     async def search(self, ctx:commands.Context, command:str, *args):
         """Cherche une commande."""
         if command not in self.commands:
@@ -83,8 +94,8 @@ class Commandes(commands.Cog):
         else:
             await ctx.send(cmd)
 
-    @commands.command(name="info-commande")
-    async def info_command(self, ctx:commands.Context, *, command:str):
+    @command.command(aliases=['info'])
+    async def information(self, ctx:commands.Context, *, command:str):
         """Informe sur une commande."""
         post = self.commands[command]
         if not post:
@@ -106,14 +117,14 @@ class Commandes(commands.Cog):
         msg = "\n".join(msg)
         await ctx.send(msg)
 
-    @commands.command(name='nb-commandes')
-    async def commands_number(self, ctx:commands.Context):
+    @command.command(name='nombre', aliases=['number', 'n'])
+    async def number(self, ctx:commands.Context):
         """Affiche le nombre de commandes."""
         n = len(self.commands)
         await ctx.send(f"> Il y'a **{n}** commandes enregistrées.")
 
-    @commands.command(name='les-commandes')
-    async def the_commands(self, ctx:commands.Context, n=5, order='desc'):
+    @command.command(name='toutes', aliases=['all'])
+    async def all_commands(self, ctx:commands.Context, n=5, order='desc'):
         """Affiche les commandes enregistrées."""
         if ctx.author.id not in masters:
             n = min(n, self.max_commands_shown)
@@ -122,7 +133,7 @@ class Commandes(commands.Cog):
             return await ctx.send("> Aucune commande n'est enregistrée.")
         await self.send_commands(ctx, posts)
 
-    @commands.command(name='mes-commandes')
+    @command.command(name='moi', aliases=['me'])
     async def my_commands(self, ctx:commands.Context, n=5, order='desc'):
         """Affiche mes commandes enregistrées."""
         if ctx.author.id not in masters:
@@ -132,7 +143,7 @@ class Commandes(commands.Cog):
             return await ctx.send("> Vous n'avez enregistré aucune commande.")
         await self.send_commands(ctx, posts)
 
-    @commands.command(name='ses-commandes')
+    @command.command(name='lui', aliases=['his', 'her'])
     async def his_commands(self, ctx:commands.Context, member:discord.Member, n=5, order='desc'):
         """Affiche ses commandes enregistrées."""
         if ctx.author.id not in masters:
@@ -153,10 +164,10 @@ class Commandes(commands.Cog):
         txt = '\n'.join(lines)
         await ctx.send(txt)
 
-    @commands.command(name='sup-commandes')
+    @command.command(name='supprimer', aliases=['delete', 'd', 's'])
     @access.admin
     @check.validation
-    async def clear_commands(self,ctx:commands.Context):
+    async def delete(self,ctx:commands.Context):
         """Supprime toutes les commandes enregistrées."""
         self.commands.delete_many({})
         await ctx.send("> Toutes les commandes ont été supprimées.")
@@ -177,3 +188,6 @@ class Commandes(commands.Cog):
             
 def setup(bot:commands.Bot):
     bot.add_cog(Commandes(bot))
+
+
+#TODO: Test the cog

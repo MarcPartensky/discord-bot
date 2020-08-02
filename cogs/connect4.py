@@ -72,6 +72,7 @@ class Puissance4(commands.Cog):
 
     # @cog_before_invoke(start)
     async def show(self):
+        """Affiche le plateau sous forme de message discord."""
         w, h = self.board.size
         line = '|'+52*"-"+'|'+"\n"
         line_separator = "|"
@@ -110,6 +111,7 @@ class Puissance4(commands.Cog):
     #                 self.show()
 
     async def play(self):
+        """Joue au puissance 4."""
         if self.board.full or self.board.won:
             return
         turn = self.board.turns%2
@@ -133,6 +135,7 @@ class Puissance4(commands.Cog):
             await self.end()
 
     async def end(self):
+        """Affiche un message de fin quand la partie est finie."""
         last_token = type(self).tokens[(self.board.turns-1)%2]
         msg = f" Tapez: '{prefix}p4-rejouer'."
         if self.board.won:
