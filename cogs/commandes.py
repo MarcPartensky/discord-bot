@@ -30,8 +30,8 @@ class Commandes(commands.Cog):
         """Groupe de commandes sur les commandes."""
         if not ctx.invoked_subcommand:
             await ctx.send(
-                "> Cette commande est inexistante."
-                f"\n> Tapez {prefix}help commande pour voir les commandes disponibles."
+                "> Erreur: commande inexistante."
+                f"\n> Tapez `{prefix}help commande` pour voir les commandes disponibles."
             )
     
     @access.admin

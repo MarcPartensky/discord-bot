@@ -6,10 +6,12 @@ from discord.ext import commands, tasks
 import discord
 
 import time
+import math
 
 
-class Users(commands.Cog):
+class User(commands.Cog):
     def __init__(self, bot:commands.Bot):
+        """Create an user cog using the bot."""
         self.bot = bot
         self.users = cluster.users
         self.info = self.users.info
@@ -189,6 +191,35 @@ class Users(commands.Cog):
         await music.cog_before_invoke(ctx)
         await music._leave(ctx)
         await self.wait_message.delete()
+
+    @commands.group(name="niveau", aliases=['level'])
+    async def level(self, ctx:commands.Context):
+        """Groupe de commande sur les niveaux."""
+        if not ctx.invoked_subcommand:
+            self.read(ctx)
+
+    @level.command()
+    async def read(self, ctx:commands.Context, member:discord.Member=None):
+        """Affiche le niveau d'un membre."""
+        member = member or ctx.author
+        level = self.get_level(member)
+        await ctx.send(f"> {member.name} a {level} niveaux.")
+
+
+    def get_level(self, member:discord.Member):
+        """Return the level given the xp."""
+        account = self.accounts[member.id]
+        return math.log2(account.xp)
+
+
+
+
+    # def energy()
+
+
+
+
+
 
 
 def setup(bot):

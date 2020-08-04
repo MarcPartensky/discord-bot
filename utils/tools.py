@@ -93,3 +93,10 @@ def time_limit(seconds):
         yield
     finally:
         signal.alarm(0)
+
+
+def unexisting_subcommand_message(group, prefix):
+    return (
+        "> Erreur: Cette commande est inexistante."
+        f"\n> Tapez `{prefix}help {group}` pour voir la liste des commandes disponibles."
+    )

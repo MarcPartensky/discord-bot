@@ -12,12 +12,13 @@ class Role(commands.Cog):
         """Groupe des commandes sur les rôles."""
         if not ctx.invoked_subcommand:
             await ctx.send(
-                "> Cette commande est inexistante"
+                "> Cette commande est inexistante."
             )
 
     @role.command(aliases=['t'])
     async def top(self, ctx:commands.Context):
         """Affiche le rôle principal d'un joueur."""
+
 
 
 
