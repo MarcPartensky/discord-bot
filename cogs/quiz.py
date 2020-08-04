@@ -2,6 +2,7 @@ from models.quiz import Quiz, Question
 
 from discord.ext import commands
 import discord
+import math
 
 class Quiz(commands.Cog):
     """Representation of a quiz."""

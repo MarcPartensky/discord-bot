@@ -8,7 +8,8 @@ euro = "💶"
 dollar = "💵"
 heavy_dollar = "💲"
 xp = "💠"
+level = "🏆"
+energy = "⚡"
 cross = "❌"
-
 
 money = euro

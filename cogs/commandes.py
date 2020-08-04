@@ -34,8 +34,8 @@ class Commandes(commands.Cog):
                 f"\n> Tapez `{prefix}help commande` pour voir les commandes disponibles."
             )
     
-    @access.admin
     @command.command(name='migrer')
+    @access.admin
     async def migrate(self, ctx:commands.Context):
         """Migre commandes d'sqlite vers mongodb."""
         sqldb.select("answers")

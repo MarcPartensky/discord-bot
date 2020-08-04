@@ -1,17 +1,16 @@
-from models.mongo import Post
+from models.mongo import BindPost
 import discord
 
 import time
 import math
 
-class User(Post):
+class User(BindPost):
     """Representation of an user with a mongo post."""
 
     default_energy_limit = 200
     default_energy_rate =  10*3600 # in energy unit / seconds
 
-    @property
-    @staticmethod:
+    @staticmethod
     def defaults():
         return dict(
             wallet=0,
@@ -25,20 +24,28 @@ class User(Post):
             energy_rate=User.default_energy_rate,
         )
 
-    def __init__(self, *args, **kwargs):
-        """Create an user object."""
-        super().__init__(*args, **kwargs)
-        self.setdefaults(**User.defaults)
-
+    @property
     def level(self):
-        """Compute the level of a member using his xp."""
-        return self.xp
+        """Compute the level of a member using his xp.
+        The precise function is the following one:
+        lambda x: int(max(1/2 * (math.sqrt(8*self.xp/10+1)  - 1), 1))"""
+        return int(max(1/2 * (math.sqrt(8*self.xp/10+1)  - 1), 1))
 
     def update_energy(self):
         """Update the energy of a member using the energy of the member and the energy timestamp."""
         delta_time = (time.time() - self.energy_timestamp)
         delta_energy = delta_time * self.energy_rate
-        self.energy = min(self.energy+self.delta_energy, self.energy_limit)
+        self.energy = min(self.energy+delta_energy, self.energy_limit)
 
+    @property
+    def xp_left(self):
+        """Return the xp left to level up."""
+        level = self.level
+        next_level = level+1
+        level_to_xp = lambda x:x*(x+1)/2*10
+        return level_to_xp(next_level) - self.xp
 
-
+    def update(self):
+        """Update an user account."""
+        self.setdefaults(**User.defaults())
+        self.update_energy()

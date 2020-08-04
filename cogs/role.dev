@@ -13,6 +13,7 @@ class Role(commands.Cog):
         if not ctx.invoked_subcommand:
             await ctx.send(
                 "> Cette commande est inexistante."
+                "\n> Tapez `"
             )
 
     @role.command(aliases=['t'])
@@ -27,7 +28,10 @@ class Role(commands.Cog):
         """Liste tous les rôles du serveur."""
         pass
 
-    @role.command()
+    # @role.command()
+
+def setup(bot):
+    bot.add_cog(Role(bot))
 
 
 
