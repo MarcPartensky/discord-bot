@@ -1,14 +1,11 @@
-from models.mongocollection import MongoCollection
+import time
+import discord
+
+from discord.ext import commands, tasks
+
 from models.user import User as UserAccount
 from config.config import cluster, access
 from config import emoji
-
-from discord.ext import commands, tasks
-import discord
-
-import time
-import math
-
 
 class User(commands.Cog):
     def __init__(self, bot:commands.Bot):
@@ -142,7 +139,7 @@ class User(commands.Cog):
         account = self.accounts[member.id]
         account.setdefaults(xp=0)
         account.xp += 1
-        await self.info_xp(ctx, member)
+        await self.xp_info(ctx, member)
 
     @xp.command(name="-", aliases=["-=", "soustraire", "sub", "s"])
     @access.admin
@@ -152,7 +149,7 @@ class User(commands.Cog):
         account = self[member]
         account.setdefaults(xp=0)
         account.xp -= 1
-        await self.info_xp(ctx, member)
+        await self.xp_info(ctx, member)
 
     @xp.command(name="restant")
     async def xp_left(self, ctx:commands.Context, member:discord.Member=None):
@@ -205,7 +202,6 @@ class User(commands.Cog):
         account = self[member]
         account.update_energy()
         await ctx.send(f"> {member.name} est énergie **{account.energy}** {emoji.energy}")
-
 
 
 def setup(bot):
