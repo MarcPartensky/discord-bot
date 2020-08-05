@@ -52,7 +52,7 @@ class User(commands.Cog):
         embed.set_footer(text=f"id: {member.id}")
         await ctx.send(embed=embed)
 
-    @commands.command(name='portefeuille', aliases=['portemonnaie'])
+    @commands.group(name='portefeuille', aliases=['portemonnaie'])
     async def wallet(self, ctx:commands.Context, member:discord.Member=None):
         """Affiche l'argent d'un utilisateur."""
         user = member or ctx.author
