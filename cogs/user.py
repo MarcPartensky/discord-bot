@@ -18,7 +18,7 @@ class User(commands.Cog):
         self.starter_wallet_money = 5
 
     @property
-    def defaults(self):
+    def defaults(self): -> dict
         """Renvoie les champs des utilisateurs par défaults."""
         return dict(
             creation = time.time(),
@@ -29,10 +29,14 @@ class User(commands.Cog):
             messages = 0,
         )
 
-    def __getitem__(self, member:discord.Member):
+    def __getitem__(self, member:discord.Member): -> UserAccount
         """Renvoie un compte d'utilisateur étant donné le membre."""
         return UserAccount(_collection=self.accounts, _id=member.id)
-
+    
+    # def get(self, member:discord.Member): -> UserAccount
+    #     """Renvoie un compte d'utilisateur étant donné le membre."""
+    #     return UserAccount(_collection=self.accounts, _id=member.id)
+    
     @commands.group()
     async def profil(self, ctx:commands.Context, member:discord.Member=None):
         """Affiche le profil d'un membre."""
@@ -199,10 +203,20 @@ class User(commands.Cog):
     async def info(self, ctx:commands.Context, member:discord.Member=None):
         """Affiche l'énergie d'un membre."""
         member = member or ctx.author
+        self.__getitem__()
         account = self[member]
         account.update_energy()
-        await ctx.send(f"> {member.name} est énergie **{account.energy}** {emoji.energy}")
+        await ctx.send(f"> {member.name} est énergie **{account.energy}** {emoji.energy}.")
 
+    @energy.command()
+    async def add(self, ctx: commands.Context, amount: int, member: discord.Member = None):
+        """Ajoute de l'énergie à un membre."""
+        member = member or ctx.author
+        account = self[member]
+        account.update_energy()
+        account.energy += amount
+        await ctx.send(f"> {member.name} est maintenant énergie **{account.energy}** {emoji.energy}.")
+        
 
 def setup(bot):
     bot.add_cog(User(bot))
