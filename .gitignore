@@ -3,3 +3,4 @@ database
 *.vscode
 .secrets
 discordbotofmarcpartensky.pem
+__pycache__
