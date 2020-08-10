@@ -124,7 +124,7 @@ async def not_invoked_command(ctx: commands.Context, group: str):
 def lazy_embed(
         fields: dict,
         title: str = None,
-        description: str = None
+        description: str = None,
         color: bytes = None,
         footer: str = None,
         url : str = None,
@@ -134,14 +134,14 @@ def lazy_embed(
     """Lazy way to make an embed."""
     embed = discord.Embed(
         title=title,
-        description=description
+        description=description,
         color=color,
         url=url)
     if thumbnail:
         embed.set_thumbnail(url=thumbnail)
     if image:
         embed.set_image(url=image)
-    for k, v in fields = items():
+    for k, v in fields.items():
         embed.add_field(name=k, value=v)
     if footer:
         embed.set_footer(text=footer)

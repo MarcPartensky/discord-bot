@@ -164,12 +164,14 @@ class Mongo(commands.Cog):
     async def back(self, ctx: commands.Context):
         """Fait un retour en arrière."""
         if self.collection:
+            name = self.collection.name
             self.collection = None
-            return await ctx.send("La collection est désélectionnée.")
+            return await ctx.send(f"> La collection **{name}** est désélectionnée.")
         if self.database:
+            name = self.database.name
             self.database = None
-            return await ctx.send("La base de donnée est désélectionnée.")
-        return await ctx.send("Rien n'est sélectionné pour l'instant.")
+            return await ctx.send(f"> La base de donnée **{name}** est désélectionnée.")
+        return await ctx.send("> Rien n'est sélectionné pour l'instant.")
 
 
 def setup(bot):
