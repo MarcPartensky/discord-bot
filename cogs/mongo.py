@@ -7,15 +7,34 @@ from config.config import cluster, access
 from utils.tools import not_invoked_command, lazy_embed
 
 # @for_all_cog_methods(access.cog_admin)
-
-
+class MongoRoom:
+    def __init__(self,
+                 member: discord.Member,
+                 collection: MongoCollection = None,
+                 database: MongoDatabase = None,
+                 ):
+        """Create a mongo room using the member, the actual collection and the database."""
+        self.member = member
+        self.collection = collection
+        self.database = database
+        
 class Mongo(commands.Cog):
     def __init__(self, bot: commands.Bot):
         """Initialize the mongo cog using the bot."""
         self.bot = bot
-        self.database: MongoDatabase = None
-        self.collection: MongoCollection = None
-        self.post_color = discord.Color.dark_green()
+        self.rooms = []
+
+    def __getitem__(self, ctx: commands.Context):
+        """Return a room using the context."""
+        return self.get_room(ctx.author, ctx.guild.id)
+    
+    def get_room(self, member: discord.Member, id: int):
+        """Return the room using its id.
+        and create a room if it doesn't exist."""
+        if id in self.rooms:
+            return self.rooms[id]
+        else:
+            return self.rooms[id] := Room(member)
 
     @commands.group(aliases=['mg'])
     async def mongo(self, ctx: commands.Context):

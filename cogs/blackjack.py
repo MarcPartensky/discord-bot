@@ -99,10 +99,6 @@ class BlackJack(commands.Cog):
         self.send(ctx, error)
         print("erreur capturée")
 
-    @commands.command()
-    async def blackjack_test(self, ctx:commands.Context):
-        raise Exception("erreur du pauvre")
-
     @blackjack.command(name="créer", aliases=['create', 'c'])
     async def create(self, ctx:commands.Context, *members:discord.Member, bet:int=None):
         """Créer une partie de BlackJack."""
