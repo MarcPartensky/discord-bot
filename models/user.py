@@ -11,7 +11,7 @@ class User(BindPost):
     default_energy_rate =  10*3600 # in energy unit / seconds
 
     @staticmethod
-    def defaults(): -> dict
+    def defaults() -> dict:
         return dict(
             wallet=0,
             creation=time.time(),
@@ -25,7 +25,7 @@ class User(BindPost):
         )
 
     @property
-    def level(self):
+    def level(self) -> int:
         """Compute the level of a member using his xp.
         The precise function is the following one:
         lambda x: int(max(1/2 * (math.sqrt(8*self.xp/10+1)  - 1), 1))"""
@@ -38,7 +38,7 @@ class User(BindPost):
         self.energy = min(self.energy+delta_energy, self.energy_limit)
 
     @property
-    def xp_left(self): -> int
+    def xp_left(self) -> int:
         """Return the xp left to level up."""
         level = self.level
         next_level = level+1

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 from config.credentials import token, client_id
 from config.config import prefix, masters, delete_after_time, status, access
