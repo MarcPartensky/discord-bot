@@ -96,7 +96,6 @@ class CommitPost:
         self._collection.post(self._dict)
 
 
-
 class MongoCluster(MongoClient):
     """Rewrite of Mongo Client."""
 
@@ -121,10 +120,18 @@ class MongoDatabase(Database):
             return MongoCollection.from_collection(item)
         else:
             return item
+        
+    def __delitem__(self, collection_name):
+        """Drop a collection using its name."""
+        self.drop_collection(collection_name)
 
     def __contains__(self, collection_name):
         """Check whether the mongo database has a collection given its name."""
         return collection_name in self.collection_names()
+
+    def items(self):
+        """List the items in a database."""
+        return zip(self.list_collection_names(), self.list_collections())
 
 class MongoCollection(Collection):
     keys = [
@@ -144,12 +151,8 @@ class MongoCollection(Collection):
 
     def items(self):
         """Liste les items."""
-        items = self.find()
-        for item in items:
-            d = item.copy()
-            k = d['_id']
-            v = d.pop('_id')
-            yield (k, d)
+        for post in self.find():
+            yield (post.id, post)
 
     def put_one(self, **post):
         """Insert one post."""

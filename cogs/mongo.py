@@ -1,7 +1,7 @@
 import discord
 
 from discord.ext import commands
-from models.mongo import Post, MongoCollection, MongoDatabase
+from models.mongo import BindPost, MongoCollection, MongoDatabase
 
 from config.config import cluster, access
 from utils.tools import not_invoked_command, lazy_embed
@@ -12,11 +12,47 @@ class MongoRoom:
                  member: discord.Member,
                  collection: MongoCollection = None,
                  database: MongoDatabase = None,
+                 post: BindPost = None,
+                 embed: discord.Embed = None, 
+                 message: discord.Message = None,
                  ):
         """Create a mongo room using the member, the actual collection and the database."""
         self.member = member
         self.collection = collection
+        self.post = post
         self.database = database
+        self.embed = embed
+        self.message = message
+        
+    def update_embed(self):
+        """Update the embed."""
+        if self.post:
+            self.embed_post()
+        elif self.collection:
+            self.embed_collection()
+        elif self.databse:
+            self.embed_database()
+        else:
+            self.embed_default()
+            
+    def embed_default(self):
+        """Set the embed when nothing is selected."""
+        self.embed = discord.Embed(
+            title="Aucune sélection active",
+            color=self.member.color)
+        
+    def embed_database(self):
+        """Set the embed when only the database is selected."""
+        self.embed = discord.Embed(
+            title=self.database.name,
+            color=self.color,
+        )
+        for 
+        
+    async def send(self, ctx: commands.Context):
+        """Send a message one at a time."""
+        if message: await self.message.delete()
+        return self.message := await ctx.send(embed=self.embed)
         
 class Mongo(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -27,6 +63,10 @@ class Mongo(commands.Cog):
     def __getitem__(self, ctx: commands.Context):
         """Return a room using the context."""
         return self.get_room(ctx.author, ctx.guild.id)
+
+    def __delitem__(self, ctx: commands.Context):
+        """Delete a room using its context."""
+        del self.rooms[ctx.guild.id]
     
     def get_room(self, member: discord.Member, id: int):
         """Return the room using its id.
@@ -62,8 +102,8 @@ class Mongo(commands.Cog):
     @access.admin
     async def collection_set(self, ctx: commands.Context, *, name: str = None):
         """Choisi une collection."""
-        if name:
-            self.collection = self.database[name]
+        room = self[ctx]
+        if name: room.collection = self.database[name]
         await ctx.send(f"> La collection **{self.collection.name}** est sélectionnée.")
 
     @collection.command(name="supprimer", aliases=[''])
