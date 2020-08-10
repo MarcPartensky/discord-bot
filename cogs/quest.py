@@ -3,7 +3,7 @@ from discord.ext import commands
 from config.config import cluster, access
 
 """Module for dealing with quests.""" 
-class Quest(commands.Cog):
+class Quest(commands.Cog, name="Quête"):
     def __init__(self, bot: commands.Bot):
         """Créer la catégorie des quêtes pour convertir l'énergie en argent."""
         self.bot = bot

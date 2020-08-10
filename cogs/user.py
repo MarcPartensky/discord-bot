@@ -10,7 +10,7 @@ from config.config import cluster, access
 from config import emoji
 
 
-class User(commands.Cog):
+class User(commands.Cog, name="Utilisateur"):
     """The user cog contains command to interact with the users informations."""
 
     def __init__(self, bot: commands.Bot):
@@ -150,7 +150,7 @@ class User(commands.Cog):
             msg = f"{member.name} a maintenant **{account.xp}** {emoji.xp}."
         await ctx.send(msg)
 
-    @xp.command(name="ajouter", aliases=["+=", "ajouter", "add", "a"])
+    @xp.command(name="ajouter", aliases=["+=", "add", "a"])
     @access.admin
     async def xp_add(self, ctx: commands.Context, member: discord.Member = None):
         """Augmente l'expérience d'un utilisateur."""
@@ -201,7 +201,7 @@ class User(commands.Cog):
         if not ctx.invoked_subcommand:
             await self.level_info(ctx)
 
-    @level.command(name='info')
+    @level.command(name='info', aliases=['i'])
     async def level_info(self, ctx: commands.Context, member: discord.Member = None):
         """Affiche le niveau d'un membre."""
         member = member or ctx.author

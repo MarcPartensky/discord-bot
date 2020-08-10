@@ -22,6 +22,9 @@ class User(BindPost):
             energy_timestamp=0,
             energy_limit=User.default_energy_limit,
             energy_rate=User.default_energy_rate,
+            level_up_money = 20,
+            level_up_counter = 0,
+            
         )
 
     @property
@@ -45,7 +48,18 @@ class User(BindPost):
         level_to_xp = lambda x:x*(x+1)/2*10
         return level_to_xp(next_level) - self.xp
 
+    def update_level_up_reward(self):
+        """Update the reward counter."""
+        while self.level_up_counter >= self.level:
+            self.reward_level_up()
+            
+    def reward_level_up(self):
+        """Reward the user for a level up."""
+        self.money += self.level_up_money
+        self.level_up_counter += 1
+        
     def update(self):
         """Update an user account."""
         self.setdefaults(**User.defaults())
         self.update_energy()
+        self.update_level_up()

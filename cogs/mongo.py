@@ -1,25 +1,27 @@
-# from config.credentials import mongo_url
+import discord
 
 from discord.ext import commands, tasks
 from models.mongo import Post, MongoCollection, MongoDatabase
-import discord
 
 from config.config import cluster, access
-from utils.tools import for_all_cog_methods
-
-# print('mongo_url:', mongo_url)
-
-
-# db = cluster['esclave']
-# collection = db['memory']
+from utils.tools import for_all_cog_methods, not_invoked_command
 
 # @for_all_cog_methods(access.cog_admin)
 class Mongo(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
+        """Initialize the mongo cog using the bot."""
         self.bot = bot
         self.database:MongoDatabase = None
         self.collection:MongoCollection = None
         self.post_color = discord.Color.dark_green()
+        
+    @commands.group(aliases=['mg'])
+    async def mongo(self, ctx: commands.Context):
+        """Groupe de commandes pour gérer un cluster mongo."""
+        if not ctx.invoked_subcommand:
+            return await not_invoked_command(ctx, 'mongo')
+            
+        # await ctx
 
     @commands.command(name='mg-collections')
     @access.admin
@@ -150,7 +152,6 @@ class Mongo(commands.Cog):
     # async def cog_command_error(self, ctx, error):
     #     """Renvoie une réponse en cas d'erreur."""
         # await ctx.send(error)
-
     
 
 def setup(bot):

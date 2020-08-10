@@ -95,8 +95,8 @@ def time_limit(seconds):
         signal.alarm(0)
 
 
-def unexisting_subcommand_message(group, prefix):
-    return (
-        "> Erreur: Cette commande est inexistante."
-        f"\n> Tapez `{prefix}help {group}` pour voir la liste des commandes disponibles."
+async def not_invoked_command(ctx: commands.Context, group:str):
+    return await ctx.send(
+        f"> **Erreur**: La commande `{ctx.message.content.replace(ctx.bot.command_prefix, '', 1).strip()}` est inexistante."
+        f"\n> Tapez `{ctx.bot.command_prefix}help {group}` pour voir la liste des commandes disponibles."
     )
