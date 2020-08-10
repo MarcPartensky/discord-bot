@@ -1,6 +1,8 @@
 import discord
 
 from discord.ext import commands
+from config.config import access
+from models.mongo import MongoDatabase, MongoCollection, BindPost
 
 
 class MongoRoom:
@@ -28,7 +30,24 @@ class MongoRoom:
             path_list.append(self.collection.name)
         if self.post:
             path_list.append(self.post.id)
-        return '/'.join(path_list)
+        # return '/'.join(path_list)
+        
+    @path.setter
+    def path(self, path_list: list):
+        """Set the path of the room."""
+        if len(path_list) > 1:
+            self.database = cluster[path_list[0]]
+        if len(path_list) > 2:
+            self.collection = self.database[path_list[1]]
+        if len(path_list) > 3:
+            self.post = self.collection[path_list[2]]
+            
+    @path.deleter
+    def path(self):
+        """Tricky way to set the path to empty."""
+        self.database = None
+        self.collection = None
+        self.post = None
         
     @property
     def embed(self):
@@ -46,14 +65,14 @@ class MongoRoom:
         """Set the embed when nothing is selected."""
         return discord.Embed(
             title="Aucune sélection active",
-            description=self.path,
+            description='/'.join(self.path),
             color=self.member.color)
                 
     def embed_database(self):
         """Set the embed only when the database is selected."""
         embed = discord.Embed(
             title=self.database.name,
-            description=self.path,
+            description='/'.join(self.path),
             color=self.color,
         )
         for k,v in self.database.items():
@@ -65,7 +84,7 @@ class MongoRoom:
         are selected."""
         embed = discord.Embed(
             title=self.collection.title,
-            description=self.path,
+            description='/'.join(self.path),
             color=self.color,
         )
         for k,v in self.collection.items():
@@ -77,7 +96,7 @@ class MongoRoom:
         database are selected."""
         embed = discord.Embed(
             title=self.post.id,
-            description=self.path,
+            description='/'.join(self.path),
             color=self.color
         )
         for k,v in self.post.items():
@@ -95,8 +114,9 @@ class MongoRoom:
 class Mongo(commands.Cog):
     """Catégorie qui permet de naviguer au sein d'un cluster de mongo db."""
     
-    def __init__(self, rooms:dict={}):
+    def __init__(self, bot: commands.Bot, rooms:dict={}):
         """Initialise la catégorie mongo avec le dictionnaire des salons."""
+        self.bot = bot
         self.rooms = rooms
         
     def __getitem__(self, ctx: commands.Context):
@@ -109,14 +129,27 @@ class Mongo(commands.Cog):
         
     def get_room(self, id: int, member: discord.Member):
         """Return a room using the id and the discord member."""
-        self.rooms[id] = Room(member)
+        self.rooms[id] = MongoRoom(member)
         return self.rooms[id]
         
     @commands.group(aliases=['mg'])
-    def mongo(self, ctx: commands.Context):
+    async def mongo(self, ctx: commands.Context):
        """Groupe de commandes mongo."""
-       room = self[ctx]
-       await room.send(ctx)
+       if not ctx.invoked_subcommand:
+        await self.show(ctx)
+
+    @mongo.command(name='afficher', aliases=['a', 'show'])
+    async def show(self, ctx: commands.Context):
+        """Affiche un salon mongo."""
+        room = self[ctx]
+        await room.send(ctx)
+        
+    @mongo.command(name='sélectionner', aliases=['=', 'select'])
+    async def select(self, ctx: commands.Context, *path: str):
+        """Sélectionne un chemin mongo."""
+        room = self[ctx]
+        room.path = path
+        await self.show(ctx)
 
 
 def setup(bot):

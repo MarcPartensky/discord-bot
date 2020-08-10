@@ -11,4 +11,5 @@ xp = "💠"
 level = "🏆"
 energy = "⚡"
 cross = "❌"
+back = "🔙"
 money = euro
