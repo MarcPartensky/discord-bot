@@ -12,4 +12,7 @@ level = "🏆"
 energy = "⚡"
 cross = "❌"
 back = "🔙"
+next = '⏭️'
+trash = '🗑️'
+question_mark = ''
 money = euro

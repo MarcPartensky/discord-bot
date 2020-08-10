@@ -1,8 +1,10 @@
 import discord
+import asyncio
 
 from discord.ext import commands
 from config.config import access
 from models.mongo import MongoDatabase, MongoCollection, BindPost
+from config import emoji
 
 
 class MongoRoom:
@@ -12,6 +14,7 @@ class MongoRoom:
                  database: MongoDatabase = None,
                  post: BindPost = None,
                  message: discord.Message = None,
+                 timeout = 60,
                  ):
         """Create a mongo room using the member, the actual collection and the database."""
         self.member = member
@@ -19,6 +22,7 @@ class MongoRoom:
         self.post = post
         self.database = database
         self.message = message
+        self.timeout = timeout
         
     @property
     def path(self):
@@ -30,7 +34,7 @@ class MongoRoom:
             path_list.append(self.collection.name)
         if self.post:
             path_list.append(self.post.id)
-        # return '/'.join(path_list)
+        return path_list
         
     @path.setter
     def path(self, path_list: list):
@@ -103,12 +107,34 @@ class MongoRoom:
             embed.add_field(name=k, value=v)
         return embed
         
-    async def send(self, ctx: commands.Context):
+    async def show(self, ctx: commands.Context):
         """Send a message one at a time."""
         if self.message: await self.message.delete()
         self.message = await ctx.send(embed=self.embed)
-        return self.message
-        # return (self.message := await ctx.send(embed=self.embed))
+        return await self.add_reactions(ctx):
+            
+    async def add_reactions(self, ctx):
+        """Add the reactions. Bad design."""
+        await self.message.add_reaction(emoji.next)
+        await self.message.add_reaction(emoji.back)
+        await self.message.add_reaction(emoji.trash)
+        reactions = [emoji.next, emoji.back, emoji.trash]
+        while True:
+            try:
+                reaction, user = await ctx.bot.wait_for(
+                    'reaction_add', timeout=self.timeout, check=lambda r,u:not u.bot)
+                await reaction.remove(user)
+                if reaction.emoji == emoji.back:
+                    self.path = self.path[::-1]
+                    return True
+                elif reaction.emoji == emoji.trash:
+                    return False
+            except asyncio.exceptions.TimeoutError:
+                return False
+            
+    def __delitem__(self):
+        """Delete the messages when the room is deleted."""
+        await self.room.message.delete()
 
 
 class Mongo(commands.Cog):
@@ -118,10 +144,10 @@ class Mongo(commands.Cog):
         """Initialise la catégorie mongo avec le dictionnaire des salons."""
         self.bot = bot
         self.rooms = rooms
-        
+
     def __getitem__(self, ctx: commands.Context):
         """Return a room using the context."""
-        self.get_room(ctx.guild.id, ctx.author)
+        return self.get_room(ctx.guild.id, ctx.author)
         
     def __delitem__(self, ctx: commands.Context):
         """Delete a room using the context."""
@@ -129,7 +155,8 @@ class Mongo(commands.Cog):
         
     def get_room(self, id: int, member: discord.Member):
         """Return a room using the id and the discord member."""
-        self.rooms[id] = MongoRoom(member)
+        if id not in self.rooms:
+            self.rooms[id] = MongoRoom(member)
         return self.rooms[id]
         
     @commands.group(aliases=['mg'])
@@ -142,14 +169,24 @@ class Mongo(commands.Cog):
     async def show(self, ctx: commands.Context):
         """Affiche un salon mongo."""
         room = self[ctx]
-        await room.send(ctx)
+        await room.show(ctx)
         
     @mongo.command(name='sélectionner', aliases=['=', 'select'])
     async def select(self, ctx: commands.Context, *path: str):
         """Sélectionne un chemin mongo."""
         room = self[ctx]
         room.path = path
-        await self.show(ctx)
+        keeping = await self.show(ctx)
+        if not keeping:
+            del self[ctx]
+        
+    @mongo.command(name="chemin", alises=['path'])
+    async def path(self, ctx: commands.Context):
+        """Affiche le chemin dans le cluster mongo."""
+        room = self[ctx]
+        print(room.path)
+        text_path = '\n'.join(room.path)
+        await ctx.send(f"> {text_path}")
 
 
 def setup(bot):
