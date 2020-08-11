@@ -106,6 +106,10 @@ class MongoCluster(MongoClient):
             return MongoDatabase.from_database(item)
         else:
             return item
+        
+    def __delitem__(self, key):
+        self.drop_database(key)
+        
 
 class MongoDatabase(Database):
     @classmethod
@@ -128,10 +132,17 @@ class MongoDatabase(Database):
     def __contains__(self, collection_name):
         """Check whether the mongo database has a collection given its name."""
         return collection_name in self.collection_names()
+    
+    def __len__(self):
+        """Count the number of collections."""
+        return len(self.list_collection_names())
 
     def items(self):
         """List the items in a database."""
-        return zip(self.list_collection_names(), self.list_collections())
+        return zip(
+            self.list_collection_names(),
+            map(lambda name:MongoCollection(self, name), self.list_collection_names())
+            )
 
 class MongoCollection(Collection):
     keys = [
@@ -152,7 +163,7 @@ class MongoCollection(Collection):
     def items(self):
         """Liste les items."""
         for post in self.find():
-            yield (post.id, post)
+            yield (post['_id'], BindPost(_collection=self, _id=post['_id']))
 
     def put_one(self, **post):
         """Insert one post."""
@@ -229,7 +240,10 @@ class MongoCollection(Collection):
 
     def __delitem__(self, id):
         """Delete a post."""
+        print(id)
+        print(self.find_one(dict(_id=id)))
         self.delete_one(dict(_id=id))
+        print(self.find_one(dict(_id=id)))
 
     def post(self, post):
         """Replace or insert a post."""
@@ -359,7 +373,9 @@ class BindPost: # More like lazy post
 
     def __delattr__(self, key):
         """Delete an item from the post given its key."""
+        print('before:', self)
         self._collection.update_one({'_id':self._id}, {"$unset": {key:""}})
+        print('after:', self)
 
     __delitem__ = __delattr__
 
@@ -392,7 +408,7 @@ class BindPost: # More like lazy post
         """Set an item for the post given its key and value.
         This can be used the same was as a dictionary."""
         self._dict[key] = value
-
+        
     def __len__(self):
         """Return the length of a post."""
         return len(self._dict)

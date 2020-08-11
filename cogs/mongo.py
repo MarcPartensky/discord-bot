@@ -2,7 +2,7 @@ import discord
 import asyncio
 
 from discord.ext import commands
-from config.config import access
+from config.config import access, cluster
 from models.mongo import MongoDatabase, MongoCollection, BindPost
 from config import emoji
 
@@ -10,14 +10,16 @@ from config import emoji
 class MongoRoom:
     def __init__(self,
                  member: discord.Member,
+                 selection: int = 0,
                  collection: MongoCollection = None,
                  database: MongoDatabase = None,
                  post: BindPost = None,
                  message: discord.Message = None,
-                 timeout = 60,
+                 timeout = 5*60, # in seconds
                  ):
         """Create a mongo room using the member, the actual collection and the database."""
         self.member = member
+        self.selection  = selection
         self.collection = collection
         self.post = post
         self.database = database
@@ -33,18 +35,24 @@ class MongoRoom:
         if self.collection:
             path_list.append(self.collection.name)
         if self.post:
-            path_list.append(self.post.id)
+            path_list.append(self.post._id)
         return path_list
         
     @path.setter
     def path(self, path_list: list):
         """Set the path of the room."""
-        if len(path_list) > 1:
+        if len(path_list) >= 1:
             self.database = cluster[path_list[0]]
-        if len(path_list) > 2:
+        else:
+            self.database = None
+        if len(path_list) >= 2:
             self.collection = self.database[path_list[1]]
-        if len(path_list) > 3:
+        else:
+            self.collection = None
+        if len(path_list) >= 3:
             self.post = self.collection[path_list[2]]
+        else:
+            self.post = None
             
     @path.deleter
     def path(self):
@@ -63,79 +71,142 @@ class MongoRoom:
         elif self.database:
             return self.embed_database()
         else:
-            return self.embed_default()
+            return self.embed_cluster()
             
-    def embed_default(self):
+    def embed_cluster(self):
         """Set the embed when nothing is selected."""
-        return discord.Embed(
-            title="Aucune sélection active",
+        embed = discord.Embed(
+            title='cluster',
             description='/'.join(self.path),
             color=self.member.color)
+        for i, k in enumerate(cluster.list_database_names()):
+            v = cluster[k]
+            if i == self.selection:
+                k = f"> __{k}__"
+            embed.add_field(name=k, value=f"{len(v)} collections")
+        return embed
                 
     def embed_database(self):
         """Set the embed only when the database is selected."""
         embed = discord.Embed(
             title=self.database.name,
             description='/'.join(self.path),
-            color=self.color,
+            color=self.member.color,
         )
-        for k,v in self.database.items():
-            embed.add_field(name=k, value=v)
+        for i, (k,v) in enumerate(self.database.items()):
+            if i == self.selection:
+                k = f"> __{k}__"
+            embed.add_field(name=k, value=f"{len(v)} posts")
         return embed
             
     def embed_collection(self):
         """Set the embed when the collection and the database
         are selected."""
         embed = discord.Embed(
-            title=self.collection.title,
+            title=self.collection.name,
             description='/'.join(self.path),
-            color=self.color,
+            color=self.member.color,
         )
-        for k,v in self.collection.items():
-            embed.add_field(name=k, value=v)
+        for i, (k,v) in enumerate(self.collection.items()):
+            if i == self.selection:
+                k = f"> __{k}__"
+            embed.add_field(name=k, value=f"{len(v)} items")
         return embed
     
     def embed_post(self):
         """Set the embed when the post, the collection and the
         database are selected."""
         embed = discord.Embed(
-            title=self.post.id,
-            description='/'.join(self.path),
-            color=self.color
+            title=str(self.post._id),
+            description='/'.join(map(str, self.path)),
+            color=self.member.color
         )
-        for k,v in self.post.items():
-            embed.add_field(name=k, value=v)
+        # print('items', self.post.items())
+        for i, (k,v) in enumerate(self.post.items()):
+            if i == self.selection:
+                k = f"> __{k}__"
+            embed.add_field(name=k, value=str(v))
         return embed
         
     async def show(self, ctx: commands.Context):
         """Send a message one at a time."""
         if self.message: await self.message.delete()
         self.message = await ctx.send(embed=self.embed)
-        return await self.add_reactions(ctx):
+        return await self.add_reactions(ctx)
             
     async def add_reactions(self, ctx):
         """Add the reactions. Bad design."""
+        await self.message.add_reaction(emoji.previous)
+        await self.message.add_reaction(emoji.play)
         await self.message.add_reaction(emoji.next)
         await self.message.add_reaction(emoji.back)
+        await self.message.add_reaction(emoji.scissors)
         await self.message.add_reaction(emoji.trash)
-        reactions = [emoji.next, emoji.back, emoji.trash]
+        reactions = [emoji.previous, emoji.play, emoji.next, emoji.back, emoji.trash]
         while True:
             try:
                 reaction, user = await ctx.bot.wait_for(
                     'reaction_add', timeout=self.timeout, check=lambda r,u:not u.bot)
                 await reaction.remove(user)
                 if reaction.emoji == emoji.back:
-                    self.path = self.path[::-1]
+                    self.path = self.path[:-1]
+                    return True
+                elif reaction.emoji == emoji.play:
+                    self.select()
+                    return True
+                elif reaction.emoji == emoji.previous:
+                    self.selection = (self.selection + len(self) - 1) % len(self)
+                    await self.message.edit(embed=self.embed)
+                elif reaction.emoji == emoji.next:
+                    self.selection = (self.selection + 1) % len(self)
+                    await self.message.edit(embed=self.embed)
+                elif reaction.emoji == emoji.scissors:
+                    self.delete_selection()
                     return True
                 elif reaction.emoji == emoji.trash:
                     return False
             except asyncio.exceptions.TimeoutError:
                 return False
             
-    def __delitem__(self):
+    async def delete(self):
         """Delete the messages when the room is deleted."""
-        await self.room.message.delete()
-
+        await self.message.delete()
+        
+    def __len__(self):
+        """Return the length of the selected object in the room."""
+        if self.post:
+            return len(self.post)
+        elif self.collection:
+            return len(self.collection)
+        elif self.database:
+            return len(self.database)
+        else:
+            return len(cluster.list_database_names())
+        
+    def select(self):
+        """Select the object selected in the room."""
+        if self.post:
+            pass
+        elif self.collection:
+            self.post = self.collection[self.collection.find()[self.selection]['_id']]
+        elif self.database:
+            self.collection = self.database[self.database.list_collection_names()[self.selection]]
+        else:
+            self.database = cluster[cluster.list_database_names()[self.selection]]
+        self.selection = 0
+        
+    def delete_selection(self):
+        """Delete the object selected in the room."""
+        if self.post:
+            del self.post[self.post.__dict__.keys()[self.selection]]
+        elif self.collection:
+            del self.collection[self.collection.find()[self.selection]['_id']]
+        elif self.database:
+            del self.database[self.database.list_collection_names()[self.selection]]
+        else:
+            del cluster[cluster.list_database_names()[self.selection]]
+        self.selection = 0
+        
 
 class Mongo(commands.Cog):
     """Catégorie qui permet de naviguer au sein d'un cluster de mongo db."""
@@ -169,23 +240,26 @@ class Mongo(commands.Cog):
     async def show(self, ctx: commands.Context):
         """Affiche un salon mongo."""
         room = self[ctx]
-        await room.show(ctx)
-        
+        keeping = True
+        while keeping:
+            keeping = await room.show(ctx)
+            if not keeping:
+                await room.delete()
+                del self[ctx]
+
     @mongo.command(name='sélectionner', aliases=['=', 'select'])
     async def select(self, ctx: commands.Context, *path: str):
         """Sélectionne un chemin mongo."""
         room = self[ctx]
         room.path = path
-        keeping = await self.show(ctx)
-        if not keeping:
-            del self[ctx]
+        room.selection = 0
+        await self.show(ctx)
         
     @mongo.command(name="chemin", alises=['path'])
     async def path(self, ctx: commands.Context):
         """Affiche le chemin dans le cluster mongo."""
         room = self[ctx]
-        print(room.path)
-        text_path = '\n'.join(room.path)
+        text_path = '/'.join(room.path)
         await ctx.send(f"> {text_path}")
 
 
