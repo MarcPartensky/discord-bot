@@ -65,10 +65,12 @@ class User(commands.Cog, name="Utilisateur"):
             name="énergie", value=f"{account.energy} {emoji.energy}")
         embed.add_field(
             name="portefeuille", value=f"{account.wallet} {emoji.euro}")
-        embed.add_field(
-            name="banque", value=f"{cluster.bank.accounts[member.id].money} {emoji.money_bag}")
-        embed.add_field(
-            name="coins", value=f"{cluster.casino.accounts[member.id].coins} {emoji.coin}")
+        if 'money' in cluster.bank.accounts:
+            embed.add_field(
+                name="banque", value=f"{cluster.bank.accounts[member.id].money} {emoji.money_bag}")
+        if 'coins' in cluster.casino.accounts[member.id]:
+            embed.add_field(
+                name="coins", value=f"{cluster.casino.accounts[member.id].coins} {emoji.coin}")
         embed.set_footer(text=f"id: {member.id}")
         await ctx.send(embed=embed)
 
