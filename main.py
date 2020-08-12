@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Entry point for executing the bot."""
 
 from config.credentials import token, client_id
 from config.config import prefix, masters, delete_after_time, status, access
@@ -40,7 +41,10 @@ client = commands.Bot(command_prefix=prefix, case_insensitive=True)
 client.id = client_id
 
 class Main(commands.Cog):
+    """Main cog for commands."""
+
     def __init__(self, bot:commands.Bot):
+        """Create the main cog using the bot as argument."""
         self.bot = bot
         self.invited = "invité"
         self.good_invited = "bon invité"
@@ -51,11 +55,9 @@ class Main(commands.Cog):
         self.load_icloud()
         self.api:PycloudService = None
 
-
     def load_icloud(self):
         """Charge l'api d'icloud."""
         pass
-
 
     def load_status(self):
         """Charge les statuts."""
@@ -152,7 +154,6 @@ class Main(commands.Cog):
                     await channel.send("T'es un bon toi. T'iras loin!")
                     await member.add_roles(self.good_invited)
                     await ctx.send(f"{member.name} à été promu en {role.name}.")
-
                 except Exception:
                     await channel.send(f"Ça fait déjà {timeout} secondes.\nT'es un mauvais toi. T'iras pas loin.")
                     await member.add_roles(self.bad_invited)
@@ -202,7 +203,8 @@ class Main(commands.Cog):
         #         print(f'sent to {bot}')
         #         break
 
-def setup(bot):
+def setup(bot: commands.Bot):
+    """Setup the bot for the main cog."""
     bot.add_cog(Main(bot))
 
 if __name__=="__main__":

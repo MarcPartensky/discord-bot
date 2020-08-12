@@ -1,4 +1,5 @@
-coin = ":dollar:"
+dollar = ":dollar:"
+coin = "🔸" # custom emoji
 play = "▶️"
 money_bag = "💰"
 admin = "⚜️"

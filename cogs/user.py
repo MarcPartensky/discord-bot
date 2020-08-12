@@ -43,8 +43,14 @@ class User(commands.Cog, name="Utilisateur"):
     #     """Renvoie un compte d'utilisateur étant donné le membre."""
     #     return UserAccount(_collection=self.accounts, _id=member.id)
 
-    @commands.group()
-    async def profil(self, ctx: commands.Context, member: discord.Member = None):
+    @commands.group(aliases=['prf'])
+    async def profil(self, ctx: commands.Context):
+        """Groupe de commande sur les profils des membres."""
+        if not ctx.invoked_subcommand:
+           await self.profil_info(ctx) 
+
+    @profil.command(name='information', aliases=['info', 'i'])
+    async def profil_info(self, ctx: commands.Context, member: discord.Member = None):
         """Affiche le profil d'un membre."""
         member = member or ctx.author
         account = self[member]
@@ -62,9 +68,18 @@ class User(commands.Cog, name="Utilisateur"):
         embed.add_field(
             name="banque", value=f"{cluster.bank.accounts[member.id].money} {emoji.money_bag}")
         embed.add_field(
-            name="coins", value=f"{cluster.casino.accounts[member.id].money} {emoji.coins}")
+            name="coins", value=f"{cluster.casino.accounts[member.id].coins} {emoji.coin}")
         embed.set_footer(text=f"id: {member.id}")
         await ctx.send(embed=embed)
+
+    @profil.command(name="brut", aliases=['raw', 'b'])
+    @access.admin
+    async def profil_raw(self, ctx: commands.Context, member: discord.Member = None):
+        """Affiche un profil brute comme stocké sur mongo."""
+        member = member or ctx.author
+        account = self[member]
+        await ctx.send('\n'.join(map(lambda x:f"> {':'.join(map(str, x))}",
+                                     account.items())))
 
     @commands.group(name='portefeuille', aliases=['portemonnaie'])
     async def wallet(self, ctx: commands.Context, member: discord.Member = None):
@@ -114,9 +129,8 @@ class User(commands.Cog, name="Utilisateur"):
         if msg.author.bot:
             return
         account = self[msg.author]
-        account.setdefaults(xp=0)
+        account.update()
         account.xp += 1
-        account.setdefaults(messages=0)
         account.messages += 1
         account.last_message = msg.id
 

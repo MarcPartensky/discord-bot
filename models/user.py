@@ -48,14 +48,14 @@ class User(BindPost):
         level_to_xp = lambda x:x*(x+1)/2*10
         return level_to_xp(next_level) - self.xp
 
-    def update_level_up_reward(self):
+    def update_level_up(self):
         """Update the reward counter."""
-        while self.level_up_counter >= self.level:
+        while self.level_up_counter < self.level:
             self.reward_level_up()
             
     def reward_level_up(self):
         """Reward the user for a level up."""
-        self.money += self.level_up_money
+        self.wallet += self.level_up_money
         self.level_up_counter += 1
         
     def update(self):

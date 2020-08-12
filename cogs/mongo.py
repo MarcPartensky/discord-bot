@@ -147,6 +147,9 @@ class MongoRoom:
             try:
                 reaction, user = await ctx.bot.wait_for(
                     'reaction_add', timeout=self.timeout, check=lambda r,u:not u.bot)
+                if user != ctx.author:
+                    await ctx.send(
+                        "Vous n'êtes pas autorisés à effectuer cette action.")
                 await reaction.remove(user)
                 if reaction.emoji == emoji.back:
                     self.path = self.path[:-1]
@@ -198,7 +201,8 @@ class MongoRoom:
     def delete_selection(self):
         """Delete the object selected in the room."""
         if self.post:
-            del self.post[self.post.__dict__.keys()[self.selection]]
+            keys = list(self.post.keys())
+            del self.post[keys[self.selection]]
         elif self.collection:
             del self.collection[self.collection.find()[self.selection]['_id']]
         elif self.database:
@@ -216,7 +220,7 @@ class Mongo(commands.Cog):
         self.bot = bot
         self.rooms = rooms
 
-    def __getitem__(self, ctx: commands.Context):
+    def __getitem__(self, ctx: commands.Context) -> MongoRoom:
         """Return a room using the context."""
         return self.get_room(ctx.guild.id, ctx.author)
         
@@ -237,6 +241,7 @@ class Mongo(commands.Cog):
         await self.show(ctx)
 
     @mongo.command(name='afficher', aliases=['a', 'show'])
+    @access.admin
     async def show(self, ctx: commands.Context):
         """Affiche un salon mongo."""
         room = self[ctx]
