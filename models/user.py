@@ -63,3 +63,4 @@ class User(BindPost):
         self.setdefaults(**User.defaults())
         self.update_energy()
         self.update_level_up()
+
