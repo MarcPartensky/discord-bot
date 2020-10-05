@@ -121,7 +121,7 @@ class Player:
         """Vérifie si le joueur est couché."""
         if self.totalValue > 21:
             self.sleeping = True
-            
+
     @property
     def totalValue(self):
         """Affiche le total des cartes d'un joueur."""
@@ -139,8 +139,8 @@ class NormalPlayer(Player):
         super().__init__(cards, sleeping)
         self.bet = bet
         self.id = id
-        
-    def gains(self, banker):
+
+    def gains(self, player, banker):
         """Calcule le gain d'un joueur."""
         if player.hasBlackJack():
             return 1.5*player.bet
@@ -158,7 +158,7 @@ class Banker(Player):
     def __init__(self, cards:list=[], sleeping:bool=False):
         """Définit un banquier avec ses cartes et s'il est couché."""
         super().__init__(cards, sleeping)
-    
+
     def play(self, game):
         """Le banquier joue."""
         for card in self.cards:
@@ -166,20 +166,20 @@ class Banker(Player):
         if self.cardsValue(cards) <= 17:
             self.draw(game, banker)            #Pioche jusqu'à avoir une valeur d'au moins 17
         self.sleeping = True
-        
+
     def drawAll(self, game, visible, n):
         """Le banquier distribue n cartes aux joueurs."""
         for i in range(n):
             for player in game.players:
                 player.draw(game, visible)
-    
+
 Vector = namedtuple('Vector', ['x', 'y'])
 
 class Table:
     backgroundPath  = os.path.abspath('assets/blackjack/imgs/green-background.jpg')
     borderPath = os.path.abspath('assets/blackjack/imgs/white-border.png')
     cardSize = Vector(1040, 832)
-    
+
     def __init__(self,
             backgroundPath:str=None,
             borderPath:str=None

@@ -11,8 +11,6 @@ import time
 import datetime
 
 class Casino(commands.Cog):
-    
-    
     @property
     def account_defaults(self):
         return dict(
@@ -150,7 +148,7 @@ class Casino(commands.Cog):
         member = member or ctx.author
         self.casino.accounts[member.id].coins += coins
         await self.coins(ctx, member)
-    
+
     @casino.command(name="coins-=")
     @access.admin
     async def remove_coins(self, ctx:commands.Context, coins:int, member:discord.Member=None):

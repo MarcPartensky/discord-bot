@@ -19,7 +19,7 @@ class Basic(commands.Cog):
     def __init__(self, bot:commands.Bot, **kwargs):
         super().__init__(**kwargs)
         self.bot = bot
-    
+
     @commands.command()
     async def id(self, ctx:commands.Context, member:discord.Member=None):
         """Affiche l'id d'un membre."""
