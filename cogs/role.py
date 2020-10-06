@@ -1,5 +1,7 @@
 from discord.ext import commands
 from config.config import cluster, prefix
+from functools import reduce
+
 import discord
 
 class Role(commands.Cog):
@@ -27,29 +29,33 @@ class Role(commands.Cog):
 
     @role.command(name="liste", aliases=['list', 'l'])
     async def role_list(self, ctx:commands.Context):
-        """Liste tous les rôles du serveur."""
+        """Donne tous les rôles d'un membre."""
         #bad way to do it, too much processing
-        roles = []
-        roles.extend(map(lambda mb:mb.roles, ctx.guild.members))
-        roles = list(set(roles))
-        msg = f"La liste des rôles présents sur le serveur est: {roles}"
-        await ctx.send(msg)
+        member = member or ctx.author
+        roles = list(reversed([f"*{r.name}*" for r in member.roles]))[:-1]
+        string = f"{', '.join(roles[::-1])} et {roles[-1]}."
+        if member == ctx.author:
+            await ctx.send(f"> Vos rôles sont {string}.")
+        else:
+            await ctx.send(f"> Les rôles de **{member.name}** sont {string}.")
+
+    @role.command(name="sauvegarder", aliases=['save', 's'])
+    async def role_save(self, ctx:commands.Context):
+        """"""
 
     @commands.command()
     async def roles(self, ctx:commands.Context, member:discord.Member=None):
-        """Donne les rôles."""
-        member = member or ctx.author
-        roles = list(reversed([r.name for r in member.roles]))
-        string = f"{', '.join(roles[::-1])} et {roles[-1]}."
-        if member == ctx.author:
-            await ctx.send(f"Vos rôles sont {string}.")
-        else:
-            await ctx.send(f"Les rôles de {member.name} sont {string}.")
+        """Liste tous les rôles du serveur."""
+        roles = []
+        roles.extend(map(lambda mb:mb.roles, ctx.guild.members))
+        roles = reduce(lambda a,b:a+b, roles)
+        roles = list(map(lambda role:role.name, set(roles)))
+        msg = f"> La liste des rôles présents sur le serveur est: {roles}"
+        await ctx.send(msg)
 
     # @role.command()
     # async def role_old(self, ctx:)
 
-    # @role.command()
 
 def setup(bot):
     bot.add_cog(Role(bot))

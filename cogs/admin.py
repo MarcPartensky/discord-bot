@@ -1,5 +1,5 @@
 
-from config.config import access, status, delete_after_time, masters
+from config.config import access, status, delete_after_time, masters, cluster
 from config import shops
 from utils import tools
 
@@ -57,17 +57,32 @@ class Admin(commands.Cog):
         await member.edit(nick=nickname)
         await ctx.send(f'> Le pseudo de **{member.name}** est maintenant **{member.mention}**.')
 
+
     @commands.command()
     @access.admin
-    async def kick(self, ctx, member:discord.Member, *, reason:str=None):
+    async def kick(self, ctx:commands.Context, member:discord.Member, *, reason:str=None):
         "Expulse un membre du serveur."
         reason = reason or self.kick_reason
         try:
+            account = cluster.users.accounts[member.id]
+            account.roles = [role.name for role in member.roles[1::]]
             await member.kick(reason=reason)
         except discord.Forbidden:
-            return await ctx.send(f"> Je n'ai pas le droit de ban.")
+            return await ctx.send(f"> Je n'ai pas le droit de kick.")
         await ctx.send(f"> **{member.name}** a été kick de **{ctx.guild}** parce que **{reason}**.")
         await member.send(f"> Vous avez été kick de **{ctx.guild}** parce que **{reason}**.")
+
+    @commands.command()
+    @access.admin
+    async def pardon(self, ctx:commands.Context, member:discord.Member):
+        """Redonne les rôles à un membre après avoir été kick."""
+        account = cluster.users.accounts[member.id]
+        for role in account.roles:
+            await member.add_roles(role)
+        roles = list(account.roles)
+        roles = list(map(lambda role:f"*{role}*", roles))
+        string_roles = ', '.join(roles[::-1])+' et '+role[-1]
+        await ctx.send(f"> **{member.name}** récupère les rôles {string_roles}.")
 
     @commands.command()
     @access.admin
@@ -84,6 +99,8 @@ class Admin(commands.Cog):
         reason = reason or self.kick_reason
         roles = member.roles
         try:
+            account = cluster.users.accounts[member.id]
+            account.roles = [role.name for member in member.roles[1::]]
             await member.kick(reason=reason)
         except discord.Forbidden:
             return await ctx.send(f"> Je n'ai pas le droit de kick.")
@@ -92,7 +109,7 @@ class Admin(commands.Cog):
         await member.send(f"> Heuresement vous avez encore le droit de rejoindre.")
         member.add_roles(roles)
         await self.invite(ctx, member, duration)
-    
+
     @commands.command()
     @access.admin
     async def ban(self, ctx, members: commands.Greedy[discord.Member], delete_days:typing.Optional[int]=0, *, reason:str=None):
@@ -104,7 +121,7 @@ class Admin(commands.Cog):
                 await ctx.send(f"> **{member.name}** a été ban de {ctx.guild} parce que {reason}.")
             except discord.Forbidden:
                 await ctx.send(f"Je n'ai pas le droit de ban.")
-        
+
     @commands.command()
     @access.admin
     async def unban(self, ctx, *, member, reason:str=None):
@@ -126,7 +143,7 @@ class Admin(commands.Cog):
         msg += '\n'.join([f">       - **{ban.user.name}#{ban.user.discriminator}** car **{ban.reason}**." for ban in await ctx.guild.bans()])
         return await ctx.send(msg)
 
-            
+
     @commands.command()
     @shops.commands.sell
     async def clear(self, ctx, limit:int=None, included=True):

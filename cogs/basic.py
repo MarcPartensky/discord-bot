@@ -183,37 +183,37 @@ class Basic(commands.Cog):
         embed.add_field(name=f"{user.name} peut:", value=permissions)
         embed.set_footer(text="Pas de traduction.")
         return await ctx.send(embed=embed)
-        
 
-    @commands.command()
-    async def role(self, ctx, user:discord.Member=None):
-        """Donne le rôle."""
-        user = user or ctx.author
-        if not isinstance(user, discord.Member):
-            if user == ctx.author:
-                await ctx.send("Vous n'avez pas de rôle sur une conversation privée!")
-            else:
-                await ctx.send(f"{user.name} n'a pas de rôle sur une conversation privée!")
-        else:
-            if user == ctx.author:
-                await ctx.send(f"Vous êtes {user.top_role}.")
-            else:
-                await ctx.send(f"{user.name} est {user.top_role}.")
 
-    @commands.command()
-    async def roles(self, ctx, user:discord.Member=None):
-        """Donne les rôles."""
-        user = user or ctx.author
-        if not isinstance(ctx.author, discord.Member):
-            if user == ctx.author:
-                await ctx.send("Vous n'avez pas de rôle sur une conversation privée!")
-            else:
-                await ctx.send(f"{user.name} n'a pas de rôle sur une conversation privée!")
-        else:
-            if user == ctx.author:
-                await ctx.send("Vos rôles sont:  "+", ".join(reversed([r.name for r in user.roles[2:]]))+" et "+user.roles[1].name+".")
-            else:
-                await ctx.send(f"Les rôles de {user.name} sont:  "+", ".join(reversed([r.name for r in user.roles[2:]]))+" et "+user.roles[1].name+".")
+    # @commands.command()
+    # async def role(self, ctx, user:discord.Member=None):
+        # """Donne le rôle."""
+        # user = user or ctx.author
+        # if not isinstance(user, discord.Member):
+            # if user == ctx.author:
+                # await ctx.send("Vous n'avez pas de rôle sur une conversation privée!")
+            # else:
+                # await ctx.send(f"{user.name} n'a pas de rôle sur une conversation privée!")
+        # else:
+            # if user == ctx.author:
+                # await ctx.send(f"Vous êtes {user.top_role}.")
+            # else:
+                # await ctx.send(f"{user.name} est {user.top_role}.")
+
+    # @commands.command()
+    # async def roles(self, ctx, user:discord.Member=None):
+        # """Donne les rôles."""
+        # user = user or ctx.author
+        # if not isinstance(ctx.author, discord.Member):
+            # if user == ctx.author:
+                # await ctx.send("Vous n'avez pas de rôle sur une conversation privée!")
+            # else:
+                # await ctx.send(f"{user.name} n'a pas de rôle sur une conversation privée!")
+        # else:
+            # if user == ctx.author:
+                # await ctx.send("Vos rôles sont:  "+", ".join(reversed([r.name for r in user.roles[2:]]))+" et "+user.roles[1].name+".")
+            # else:
+                # await ctx.send(f"Les rôles de {user.name} sont:  "+", ".join(reversed([r.name for r in user.roles[2:]]))+" et "+user.roles[1].name+".")
 
     @commands.command(name="date-complète")
     async def full_date(self, ctx):

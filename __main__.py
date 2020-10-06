@@ -173,7 +173,7 @@ class Main(commands.Cog):
                     await channel.send(f"On a dit une minute de silence!")
                 except Exception:
                     await channel.send("La minute est passée. Vous pouvez retournez à vos activités.")
-                    
+
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error, translating=None):
         """Envoie l'erreur aux utilisateurs."""
@@ -211,4 +211,4 @@ if __name__=="__main__":
     os.system("clear")
     setup(client)
     client.run(token)
-   
+
