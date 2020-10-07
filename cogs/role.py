@@ -40,8 +40,32 @@ class Role(commands.Cog):
             await ctx.send(f"> Les rôles de **{member.name}** sont {string}.")
 
     @role.command(name="sauvegarder", aliases=['save', 's'])
-    async def role_save(self, ctx:commands.Context):
-        """"""
+    async def role_save(self, ctx:commands.Context, member:discord.Member=None):
+        """Sauvegarde les rôles d'un membre."""
+        member = member or ctx.author
+        account = cluster.users.accounts[member.id]
+        account.roles = [role.name for role in member.roles[1::]]
+        if member==ctx.author:
+            msg = "> Vos rôles sont sauvegardés."
+        else:
+            msg = f"> Les rôles de **{member.name}** sont sauvegardés."
+        await ctx.send(msg)
+
+    @role.command(name="sauvegardés", aliases=['saved', 'sd'])
+    async def role_save(self, ctx:commands.Context, member:discord.Member=None):
+        """Sauvegarde les rôles d'un membre."""
+        member = member or ctx.author
+        account = cluster.users.accounts[member.id]
+        string
+        if member==ctx.author:
+            msg = "> Vos rôles sauvegardés sont {string_roles}."
+        else:
+            msg = f"> Les rôles de **{member.name}** sauvegardés sont {string_roles}."
+        await ctx.send(msg)
+
+    @role.command()
+    @access.admin
+    async def role_mach
 
     @commands.command()
     async def roles(self, ctx:commands.Context, member:discord.Member=None):
@@ -55,6 +79,7 @@ class Role(commands.Cog):
 
     # @role.command()
     # async def role_old(self, ctx:)
+
 
 
 def setup(bot):

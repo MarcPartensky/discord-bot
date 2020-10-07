@@ -24,7 +24,6 @@ class User(BindPost):
             energy_rate=User.default_energy_rate,
             level_up_money = 20,
             level_up_counter = 0,
-            
         )
 
     @property
@@ -52,15 +51,21 @@ class User(BindPost):
         """Update the reward counter."""
         while self.level_up_counter < self.level:
             self.reward_level_up()
-            
+
     def reward_level_up(self):
         """Reward the user for a level up."""
         self.wallet += self.level_up_money
         self.level_up_counter += 1
-        
+
+    def update_role(self):
+        """Update the roles of an user given its level."""
+        cluster.users.options['roles'].role_prices = []
+        self.level = 
+
     def update(self):
         """Update an user account."""
         self.setdefaults(**User.defaults())
         self.update_energy()
         self.update_level_up()
+        self.update_role()
 

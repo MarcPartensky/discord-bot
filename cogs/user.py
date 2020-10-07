@@ -47,7 +47,7 @@ class User(commands.Cog, name="Utilisateur"):
     async def profil(self, ctx: commands.Context):
         """Groupe de commande sur les profils des membres."""
         if not ctx.invoked_subcommand:
-           await self.profil_info(ctx) 
+           await self.profil_info(ctx)
 
     @profil.command(name='information', aliases=['info', 'i'])
     async def profil_info(self, ctx: commands.Context, member: discord.Member = None):
