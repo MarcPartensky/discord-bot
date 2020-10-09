@@ -1,8 +1,11 @@
-from models.mongo import BindPost
 import discord
 
 import time
 import math
+
+from models.mongo import BindPost
+from config.config import cluster
+
 
 class User(BindPost):
     """Representation of an user with a mongo post."""
@@ -24,6 +27,7 @@ class User(BindPost):
             energy_rate=User.default_energy_rate,
             level_up_money = 20,
             level_up_counter = 0,
+            roles=[],
         )
 
     @property
@@ -58,9 +62,13 @@ class User(BindPost):
         self.level_up_counter += 1
 
     def update_role(self):
-        """Update the roles of an user given its level."""
-        cluster.users.options['roles'].role_prices = []
-        self.level = 
+        """Update the roles of an user given his level."""
+        # Iterate on all the roles available
+        for role in cluster.users.options.roles:
+            given = True
+            for role_name, level in role.items():
+                if level >= self.level and role_name not in self.roles:
+                    self.roles.append(role_name)
 
     def update(self):
         """Update an user account."""

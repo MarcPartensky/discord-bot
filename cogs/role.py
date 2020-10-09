@@ -51,21 +51,21 @@ class Role(commands.Cog):
             msg = f"> Les rôles de **{member.name}** sont sauvegardés."
         await ctx.send(msg)
 
-    @role.command(name="sauvegardés", aliases=['saved', 'sd'])
-    async def role_save(self, ctx:commands.Context, member:discord.Member=None):
-        """Sauvegarde les rôles d'un membre."""
-        member = member or ctx.author
-        account = cluster.users.accounts[member.id]
-        string
-        if member==ctx.author:
-            msg = "> Vos rôles sauvegardés sont {string_roles}."
-        else:
-            msg = f"> Les rôles de **{member.name}** sauvegardés sont {string_roles}."
-        await ctx.send(msg)
-
-    @role.command()
+    @role.command(name="choisir", aliases=['set', 'c'])
     @access.admin
-    async def role_mach
+    async def role_set(self, ctx:commands.Context, role:str, level:int):
+        """Choisi le niveau nécessaire pour gagner un rôle."""
+        create = False
+        if not 'users' in cluster:
+            create = True
+        elif not 'options' in cluster.users:
+            create = True
+        elif not 'roles' in cluster.users.options:
+            create = True
+        elif not 'levels_based' in cluster.users.options.roles:
+            create = True
+        if create:
+            cluster.users.options.roles[role] = level
 
     @commands.command()
     async def roles(self, ctx:commands.Context, member:discord.Member=None):
