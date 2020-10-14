@@ -14,7 +14,7 @@ class DictObject(dict):
         super().__setattr__('__dict__', self)
 
 class CommitPost:
-    
+
     @classmethod
     def fromkeys(cls, *args, **kwargs):
         return cls(_dict.fromkeys(*args, **kwargs))
@@ -106,10 +106,10 @@ class MongoCluster(MongoClient):
             return MongoDatabase.from_database(item)
         else:
             return item
-        
+
     def __delitem__(self, key):
         self.drop_database(key)
-        
+
 
 class MongoDatabase(Database):
     @classmethod
@@ -124,7 +124,7 @@ class MongoDatabase(Database):
             return MongoCollection.from_collection(item)
         else:
             return item
-        
+
     def __delitem__(self, collection_name):
         """Drop a collection using its name."""
         self.drop_collection(collection_name)
@@ -132,7 +132,7 @@ class MongoDatabase(Database):
     def __contains__(self, collection_name):
         """Check whether the mongo database has a collection given its name."""
         return collection_name in self.collection_names()
-    
+
     def __len__(self):
         """Count the number of collections."""
         return len(self.list_collection_names())
@@ -282,7 +282,7 @@ class BindPost: # More like lazy post
     @classmethod
     def fromkeys(cls, *args, **kwargs):
         """Create a bind post from keys."""
-        return cls(_dict.fromkeys(*args, **kwargs))
+        return cls(MongoCollection.fromkeys(*args, **kwargs))
 
     def __init__(self, _collection:MongoCollection,  _id:object=None):
         """Create a bind post using a mongo collection and a post id."""
@@ -296,12 +296,12 @@ class BindPost: # More like lazy post
             self._collection.insert_one(d)
 
     @property
-    def collection(self):
+    def collection(self) -> MongoCollection:
         """Return the mongo collection parent of the post."""
         return self._collection
 
     @property
-    def _dict(self):
+    def _dict(self) -> dict:
         """Return the dictionary form of the post."""
         return Collection.find_one(self._collection, {'_id':self._id})
 
@@ -310,7 +310,7 @@ class BindPost: # More like lazy post
         d = dict(_id=self._id)
         self._collection.replace_one(d, d)
 
-    def copy(self): # Create raw dictionary
+    def copy(self) -> dict: # Create raw dictionary
         """Create a raw dictionary."""
         return self._dict.copy()
 
@@ -363,11 +363,11 @@ class BindPost: # More like lazy post
         d.update(_dictionary)
         self._collection.replace_one({'_id':self._id}, d)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation of the post."""
         return str(self._dict)
 
-    def __contains__(self, key):
+    def __contains__(self, key) -> bool:
         """Check whether the post contains a key."""
         return key in self._dict
 
@@ -402,13 +402,18 @@ class BindPost: # More like lazy post
     def __getitem__(self, key):
         """Return the value of an item given its key.
         This can be used the same way as a dictionary."""
-        return self._dict[key]
+        return getattr(self, key)
+        # return self._dict[key]
+        # return self._collection[key]
 
     def __setitem__(self, key, value):
         """Set an item for the post given its key and value.
         This can be used the same was as a dictionary."""
-        self._dict[key] = value
-        
+        setattr(self, key, value)
+        # d = self._dict
+        # d[key] = value
+        # self._collection.replace_one({'_id':self._id}, d)
+
     def __len__(self):
         """Return the length of a post."""
         return len(self._dict)

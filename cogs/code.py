@@ -4,6 +4,8 @@ import discord
 from utils import tools
 from config.config import access, masters
 from config import emoji
+
+import requests
 import asyncio
 import random
 import os
@@ -177,6 +179,20 @@ class Code(commands.Cog):
         msg = '\n'.join(reversed(lines))
         await ctx.send(msg)
 
+    @commands.command()
+    async def plugins(self, ctx:commands.Context):
+        """Affiche les plugins Neovim de Marc."""
+        url = 'https://raw.githubusercontent.com/MarcPartensky/nvim/main/vim-plug/plugins.vim'
+        plugin_list = []
+        response = requests.get(url)
+        for line in response.text.split('\n'):
+            if line.startswith('Plug '):
+                plugin_list.append(
+                    line.replace('Plug ', '').replace('"', '').replace("'", '')
+                )
+                plugin_list[-1] = f"* {plugin_list[-1]}"
+        text = "```md\n# Plugins de Marc\n"+'\n'.join(plugin_list)+"\n```"
+        await ctx.send(text)
 
 def setup(bot):
     bot.add_cog(Code(bot))
