@@ -30,7 +30,8 @@ class Bank(commands.Cog):
         def tell(self) -> str:
             raise NotImplemented
         def __str__(self):
-            return self.message        
+            return self.message
+
     class NotEnoughMoney(Error):
         def tell(self):
             if self.author==self.user:
@@ -49,7 +50,7 @@ class Bank(commands.Cog):
                 return "Vous ne pouvez pas vous payer vous-même."
             else:
                 return f"{self.user.name} ne peut pas se payer soi-même."
-    
+
     def __init__(self, bot:commands.Bot):
         self.bot = bot
         self.bank = cluster.bank

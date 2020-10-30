@@ -131,7 +131,7 @@ class User(commands.Cog, name="Utilisateur"):
         if msg.author.bot:
             return
         account = self[msg.author]
-        account.update()
+        account.update(msg.author)
         account.xp += 1
         account.messages += 1
         account.last_message = msg.id
@@ -245,6 +245,7 @@ class User(commands.Cog, name="Utilisateur"):
         account = self[member]
         account.update_energy()
         account.energy += amount
+
         await ctx.send(
             f"> {member.name} est maintenant énergie **{account.energy}** {emoji.energy}.")
 

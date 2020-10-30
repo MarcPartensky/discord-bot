@@ -316,7 +316,7 @@ class Web(commands.Cog):
             if name.startswith('*'):
                 n = int(name[1:]) - 1
                 name = oldname
-            else: 
+            else:
                 n = 1
             for i in range(n):
                 await ctx.send(

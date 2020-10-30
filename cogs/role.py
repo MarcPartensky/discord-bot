@@ -28,7 +28,7 @@ class Role(commands.Cog):
             await ctx.send(f"{member.name} est {member.top_role}.")
 
     @role.command(name="liste", aliases=['list', 'l'])
-    async def role_list(self, ctx:commands.Context):
+    async def role_list(self, ctx:commands.Context, member:discord.Member=None):
         """Donne tous les rôles d'un membre."""
         #bad way to do it, too much processing
         member = member or ctx.author

@@ -61,19 +61,19 @@ class User(BindPost):
         self.wallet += self.level_up_money
         self.level_up_counter += 1
 
-    def update_role(self):
+    def update_role(self, member:discord.Member):
         """Update the roles of an user given his level."""
+        if not 'roles' in self:
+            self.roles = []
         # Iterate on all the roles available
-        for role in cluster.users.options.roles:
-            given = True
-            for role_name, level in role.items():
-                if level >= self.level and role_name not in self.roles:
-                    self.roles.append(role_name)
+        for name, level in cluster.users.options.roles.items():
+            if int(level) >= self.level and name not in self.roles:
+                self.roles.append(name)
 
-    def update(self):
+    def update(self, member:discord.Member):
         """Update an user account."""
         self.setdefaults(**User.defaults())
         self.update_energy()
         self.update_level_up()
-        self.update_role()
+        self.update_role(member)
 

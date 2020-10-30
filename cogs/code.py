@@ -191,7 +191,7 @@ class Code(commands.Cog):
                     line.replace('Plug ', '').replace('"', '').replace("'", '')
                 )
                 plugin_list[-1] = f"* {plugin_list[-1]}"
-        text = "```md\n# Plugins de Marc\n"+'\n'.join(plugin_list)+"\n```"
+        text = "```md\n# [Plugins de Marc](https://github.com/samyhaff/django_getting_started/blob/master/blog/blog/settings.py)\n"+'\n'.join(plugin_list)+"\n```"
         await ctx.send(text)
 
 def setup(bot):
