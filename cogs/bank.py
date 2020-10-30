@@ -7,13 +7,9 @@ from discord.ext import commands
 import discord
 import pymongo
 
+from os.path import join, dirname, abspath
 import datetime
 import time
-
-from models.database import Database
-from os.path import join, dirname, abspath
-path = join(dirname(dirname(abspath(__file__))), 'database/bank.db')
-sqldb = Database(path=path)
 
 
 class Bank(commands.Cog):
@@ -52,6 +48,7 @@ class Bank(commands.Cog):
                 return f"{self.user.name} ne peut pas se payer soi-même."
 
     def __init__(self, bot:commands.Bot):
+        """Create a bank using the bot."""
         self.bot = bot
         self.bank = cluster.bank
         self.users = cluster.users
@@ -246,7 +243,7 @@ class Bank(commands.Cog):
         #     msg = f"{buyer.name} n'a pas assez d'argent en banque."
         #     return await ctx.send(msg)
         receiver_account = self.accounts[receiver.id]
-        buyer_account = self.accounts[buyer.id]        
+        buyer_account = self.accounts[buyer.id]
         try:
             self.ensure_payment(
                 ctx.author,
@@ -276,6 +273,9 @@ class Bank(commands.Cog):
     @check.warn("migrer de sqlite3 vers mongodb.")
     async def migrate(self, ctx:commands.Context):
         """Migre banque de sqlite vers mongodb."""
+        from models.database import Database
+        path = join(dirname(dirname(abspath(__file__))), 'database/bank.db')
+        sqldb = Database(path=path)
         sqldb.select('money')
         for (id, money, datetime) in sqldb.fetchall():
             account = Bank.Account(self.account_defaults)
