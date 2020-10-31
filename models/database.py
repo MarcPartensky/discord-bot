@@ -133,26 +133,26 @@ class Database:
     def __del__(self):
         """Ferme la base de donnée."""
         self.connection.close()
-    
 
-if __name__=="__main__":
-    db = Database()
-    db.create_table(table="machin",  fields={"datetime":"text", "author":"text", "request":"text", "response":"text"})
-    db.create_table_if_not_exists(table="machin",  fields={"datetime":"text", "author":"text", "request":"text", "response":"text"})
-    db.insert(table="machin", row=["today", "me", "slt", "tg"])
-    db.insert(table="machin", row=["avant-hier", "moa", "wesh", "tg"])
-    db.select(column="*", table="machin", conditions={"datetime":"today", "author":"me"}, orderby="request", order="desc")
-    print(db["machin", "author"])
-    db["machin"] = ["demain", "toa", "osef", "tu pues"]
-    print(db.all)
-    db.select("machin", "datetime")
-    print(db.one)
-    db.select("machin")
-    print(db.fetchmany(2))
-    # db.forget_table("machin")
-    print(db.tables)
-    print(len(db["machin"]))
-    print(db.cursor.lastrowid)
-    print(db.update("machin", {"request":"osef"}, {"author":"me"}))
-    print(db["machin"])
-    db.close()
+
+# if __name__=="__main__":
+#     db = Database()
+#     db.create_table(table="machin",  fields={"datetime":"text", "author":"text", "request":"text", "response":"text"})
+#     db.create_table_if_not_exists(table="machin",  fields={"datetime":"text", "author":"text", "request":"text", "response":"text"})
+#     db.insert(table="machin", row=["today", "me", "slt", "tg"])
+#     db.insert(table="machin", row=["avant-hier", "moa", "wesh", "tg"])
+#     db.select(column="*", table="machin", conditions={"datetime":"today", "author":"me"}, orderby="request", order="desc")
+#     print(db["machin", "author"])
+#     db["machin"] = ["demain", "toa", "osef", "tu pues"]
+#     print(db.all)
+#     db.select("machin", "datetime")
+#     print(db.one)
+#     db.select("machin")
+#     print(db.fetchmany(2))
+#     # db.forget_table("machin")
+#     print(db.tables)
+#     print(len(db["machin"]))
+#     print(db.cursor.lastrowid)
+#     print(db.update("machin", {"request":"osef"}, {"author":"me"}))
+#     print(db["machin"])
+#     db.close()

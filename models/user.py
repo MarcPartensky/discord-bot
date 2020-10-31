@@ -67,7 +67,9 @@ class User(BindPost):
             self.roles = []
         # Iterate on all the roles available
         for name, level in cluster.users.options.roles.items():
-            if int(level) >= self.level and name not in self.roles:
+            if name=="_id":
+                continue
+            if int(level) >= int(self.level) and name not in self.roles:
                 self.roles.append(name)
 
     def update(self, member:discord.Member):
