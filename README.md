@@ -1,6 +1,5 @@
-# discord bot
+# Discord bot
 A discord bot who obeys me.
-
 
 # Short presentation
 
