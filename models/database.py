@@ -132,7 +132,10 @@ class Database:
 
     def __del__(self):
         """Ferme la base de donnée."""
-        self.connection.close()
+        try:
+            self.connection.close()
+        except AttributeError as e:
+            print(e)
 
 
 # if __name__=="__main__":
