@@ -11,8 +11,6 @@ from models.database import Database
 from models.mongo import Post
 from utils import tools
 
-path = join(dirname(dirname(abspath(__file__))), 'database/answers.db')
-sqldb = Database(path=path)
 
 class Commandes(commands.Cog):
     def __init__(self, bot:commands.Bot):
@@ -33,11 +31,13 @@ class Commandes(commands.Cog):
                 "> Erreur: commande inexistante."
                 f"\n> Tapez `{prefix}help commande` pour voir les commandes disponibles."
             )
-    
+
     @command.command(name='migrer')
     @access.admin
     async def migrate(self, ctx:commands.Context):
         """Migre commandes d'sqlite vers mongodb."""
+        path = join(dirname(dirname(abspath(__file__))), 'database/answers.db')
+        sqldb = Database(path=path)
         sqldb.select("answers")
         for (t, u, r, a) in sqldb.fetchall():
             name = u.split('#')[0]
@@ -185,7 +185,7 @@ class Commandes(commands.Cog):
         elif msg.content.startswith(self.search_prefix):
                 req = msg.content.replace(self.search_prefix,'',1)
                 await self.search(ctx, *map(lambda r:r.strip(), req.strip().split('|')))
-            
+
 def setup(bot:commands.Bot):
     bot.add_cog(Commandes(bot))
 
