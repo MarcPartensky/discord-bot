@@ -35,11 +35,15 @@ class SoundDeck(commands.Cog):
         """Affiche tous les sons disponibles."""
         msg = ""
         for s in self.sounds:
+            print(s)
             if len(s.keys())==1:
                 del self.sounds[s._id]
             else:
                 author = self.bot.get_user(s.author)
-                line = f"> **{s._id}** ajouté par *{author.name}*.\n"
+                if not hasattr(author, 'name'):
+                    line = f"> **{s._id}** ajouté par *inconnu*.\n"
+                else:
+                    line = f"> **{s._id}** ajouté par *{author.name}*.\n"
                 if len(msg+line) > 2000:
                     await ctx.send(msg)
                     msg = ""

@@ -300,7 +300,7 @@ class Basic(commands.Cog):
     # @commands.Cog.listener(name="reaction_add")
     # async def reaction_add(self, reaction, user):
     #     print(reaction, user)
-    #     # await msg.channel.send("je vois")    
+    #     # await msg.channel.send("je vois")
 
 
 def setup(bot):
