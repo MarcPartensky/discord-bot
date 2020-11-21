@@ -244,7 +244,7 @@ class Web(commands.Cog):
         await ctx.send(msg)
 
     @commands.command()
-    async def google(self, ctx:commands.Context, *,msg:str, n=1):
+    async def google_search(self, ctx:commands.Context, *,msg:str, n=1):
         """Fais une recherche sur google."""
         parser = argparse.ArgumentParser()
         parser.add_argument('search', type=str, nargs='+', help='your google search')
@@ -263,6 +263,13 @@ class Web(commands.Cog):
         for result in results:
             embed = self.embed_google_result(result)
             await ctx.send(embed=embed)
+
+    @commands.command()
+    async def google(self, ctx:commands.Context, *, search):
+        """Fais une recherche sur google à ta place."""
+        search = urllib.parse.quote(search)
+        url = f"http://letmegooglethat.com/?q={search}"
+        await ctx.send(url)
 
     def embed_google_result(self, result):
         """Crée une intégration pour le résultat de la recherche google."""
