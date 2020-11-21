@@ -9,6 +9,7 @@ import requests
 import asyncio
 import random
 import os
+import re
 
 
 class Code(commands.Cog):
@@ -192,6 +193,19 @@ class Code(commands.Cog):
                 )
                 plugin_list[-1] = f"* {plugin_list[-1]}"
         text = "```md\n# [Plugins de Marc](https://github.com/samyhaff/django_getting_started/blob/master/blog/blog/settings.py)\n"+'\n'.join(plugin_list)+"\n```"
+        await ctx.send(text)
+
+    @commands.command()
+    async def man(self, ctx:commands.Context, cmd:str):
+        """Affiche le manuel d'une commande."""
+        url = f"http://cheat.sh/{cmd}"
+        response = requests.get(url)
+        text = response.text
+        text = re.sub(r'\[[\d;]*m', '', text)
+        text = text.replace('\x1b', '')
+        if len(text) > 1988:
+            text = text[:1984]+' ...'
+        text = "```sh\n"+text+"\n```"
         await ctx.send(text)
 
 def setup(bot):
