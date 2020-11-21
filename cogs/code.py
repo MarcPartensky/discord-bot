@@ -4,6 +4,7 @@ import discord
 from utils import tools
 from config.config import access, masters
 from config import emoji
+from urllib.parse import quote
 
 import requests
 import asyncio
@@ -111,7 +112,7 @@ class Code(commands.Cog):
             await ctx.send('> '+self.quit_message)
         except Exception as e:
             await ctx.send('> '+str(e))
-    
+
     @commands.command(name="locals")
     async def locals_(self, ctx:commands.Context):
         """Affiche les variables de la shell."""
@@ -196,9 +197,9 @@ class Code(commands.Cog):
         await ctx.send(text)
 
     @commands.command()
-    async def man(self, ctx:commands.Context, cmd:str):
+    async def man(self, ctx:commands.Context, *, cmd:str):
         """Affiche le manuel d'une commande."""
-        url = f"http://cheat.sh/{cmd}"
+        url = f"http://cheat.sh/{quote(cmd)}"
         response = requests.get(url)
         text = response.text
         text = re.sub(r'\[[\d;]*m', '', text)
