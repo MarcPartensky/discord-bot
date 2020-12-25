@@ -48,7 +48,7 @@ class Code(commands.Cog):
                 if out:
                     out = ['> '+line for line in out]
                     await ctx.send("\n".join(out))
-                    
+
         except TimeoutError:
             await ctx.send('> '+self.time_limit_error_message)
         except SystemExit:
