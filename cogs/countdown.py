@@ -34,12 +34,13 @@ class CountDown(commands.Cog):
         if not ctx.invoked_subcommand:
             print("Vous n'avez pas invoké de sous-commande.")
 
-    @countdown.command(name='réinitialiser', alises=['reset', 'rs'])
+    @countdown.command(name='réinitialiser', aliases=['reset', 'rs'])
     @access.admin
     async def reset(self, ctx: commands.Context):
         """Réinitialise la base de données."""
         del cluster['countdown']
         await ctx.send(f'> La base de données **countdown** a été supprimée.')
+        await self.restart(ctx)
 
     @countdown.command(name="ajouter", aliases=['add', 'a'])
     async def add(self, ctx: commands.Context, name: str,
@@ -51,22 +52,47 @@ class CountDown(commands.Cog):
             datetime_str, '%Y-%m-%d %H:%M:%S')
         embed = self.get_embed(name, datetime_)
         message: discord.Message = await ctx.send(embed=embed)
+        self.countdowns[name].bot = self.bot.user.id
+        self.countdowns[name].author = ctx.author.id
         self.countdowns[name].datetime = datetime_
         self.countdowns[name].message = message.id
         self.countdowns[name].guild = message.guild.id
         self.countdowns[name].channel = message.channel.id
 
+        print(self.countdowns[name])
+
     @countdown.command(name='supprimer', aliases=['remove', 'rm'])
     async def remove(self, ctx: commands.Context, name: str):
         """Retire un compte à rebours."""
         del self.countdowns[name]
-        await ctx.send(f"> Le compte à rebours {name} a été supprimé.")
+
+    @countdown.command(name="liste", aliases=['list', 'l'])
+    async def list(self, ctx: commands.Context, *names: str):
+        """Liste les comptes à rebours."""
+        for countdown in self.countdowns.find():
+            name = countdown['_id']
+            datetime_ = countdown['datetime']
+            await ctx.send(f"> **{name}** jusqu'à **{datetime_}**.")
+
+    @countdown.command(name="liste-brute", aliases=['raw-list', 'rl'])
+    async def raw_list(self, ctx: commands.Context, *names: str):
+        """Liste les comptes à rebours sans traitement."""
+        for countdown in self.countdowns.find():
+            await ctx.send(f"> **{countdown}**")
 
     @countdown.command(name="trouver", aliases=['find', 'f'])
     async def find(self, ctx: commands.Context, *names: str):
         """Trouve des comptes à rebours."""
         for countdown in self.countdowns.find():
             await self.refresh(ctx,  countdown)
+
+    @countdown.command(name="relance", aliases=["restart"])
+    async def restart(self, ctx: commands.Context):
+        """Recommence l'actualisation automatique.
+        À utiliser en cas d'erreur."""
+        self.update.start()
+        await ctx.send(
+            f"> Relance de l'actualisation automatique des comptes à rebours.")
 
     async def refresh(self, ctx:commands.Context, countdown: dict):
         """Rafraîchi la collection,
@@ -86,6 +112,8 @@ class CountDown(commands.Cog):
         del self.countdowns[countdown['_id']]
         message: discord.Message = await ctx.send(embed=embed)
 
+        self.countdowns[name].bot = message.author.id
+        self.countdowns[name].author = ctx.author.id
         self.countdowns[name].datetime = datetime_
         self.countdowns[name].message = message.id
         self.countdowns[name].guild = message.guild.id
@@ -119,24 +147,37 @@ class CountDown(commands.Cog):
     async def update(self):
         """Actualise les compteurs."""
         # print(list(self.countdowns.find()))
-        for countdown in self.countdowns.find():
-            datetime_ = countdown['datetime']
-            try:
-                message = await self.get_countdown_message(countdown)
-            except:
-                print('[countdown] cant find message', countdown)
-                continue
-            now = datetime.datetime.now().replace(microsecond=0)
-            time_left = datetime_ - now
-            if time_left.total_seconds() < 0:
-                del self.countdowns[countdown['_id']]
-                await message.delete()
-                continue
-            embed = self.get_embed(
-                countdown['_id'],
-                datetime_
-            )
-            await message.edit(embed=embed)
+        try:
+            for countdown in self.countdowns.find():
+                datetime_ = countdown['datetime']
+                try:
+                    message = await self.get_countdown_message(countdown)
+                except discord.errors.NotFound:
+                    print('[countdown] cant find message', countdown)
+                    continue
+
+                # If the mongo message was posted by another bot
+                # we can't write it, so we refresh it.
+                if countdown['bot'] != self.bot.user.id:
+                    ctx = self.bot.get_context(message)
+                    await self.refresh(ctx, countdown)
+                    continue
+
+                now = datetime.datetime.now().replace(microsecond=0)
+                time_left = datetime_ - now
+                if time_left.total_seconds() < 0:
+                    del self.countdowns[countdown['_id']]
+                    await message.delete()
+                    continue
+                embed = self.get_embed(
+                    countdown['_id'],
+                    datetime_
+                )
+                await message.edit(embed=embed)
+
+        except discord.errors.Forbidden as e:
+            print(e)
+
 
     def cog_unload(self):
         """Retire les tâches de fonds."""
