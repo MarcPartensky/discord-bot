@@ -34,7 +34,7 @@ class Check:
         except TimeoutError:
             await ctx.send(self.timeout_answer)
         return False
-    
+
     def consent(self, message):
         message = self.consent_message + " " + message
         return tools.post_passer(self.validation, message=message)
