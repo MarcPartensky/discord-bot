@@ -1,7 +1,9 @@
-env
 database/
 *.vscode
 .secrets
 discordbotofmarcpartensky.pem
 __pycache__/
 .DS_STORE
+venv/
+.env
+.env.dev
