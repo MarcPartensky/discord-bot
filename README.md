@@ -52,11 +52,56 @@ Casino system to play all types of games
 - Hosted by heroku
 
 # To use my bot in your server 
-
 Go to:
 *https://discord.com/api/oauth2/authorize?client_id=703347349623144549&permissions=8&scope=bot*
 
-# To install the project to run your own bot
+## With Docker
+
+### Make a mongo account with a mongo cluster (100% Free)
+[guide](https://docs.atlas.mongodb.com/tutorial/create-atlas-account)
+[register](https://account.mongodb.com/account/register)
+[youtube tutorial](https://www.youtube.com/watch?v=KKyag6t98g8)
+
+### Make a .env file
+Make a .env file with the following parameters.
+
+```.env
+DISCORD_TOKEN=
+DISCORD_CLIENT_ID=
+DISCORD_MONGO_CLUSTER=
+DISCORD_MONGO_USERNAME=
+DISCORD_MONGO_PASSWORD=
+```
+
+Other parameters can be added in the .env file but are not required.
+
+```.env
+WOLFRAM_ALPHA_ID=
+FACEBOOK_MAIL=
+FACEBOOK_PASSWORD=
+FACEBOOK_MAIL_2=
+FACEBOOK_PASSWORD_2=
+FACEBOOK_MAIL_MISCORD=
+FACEBOOK_PASSWORD_MISCORD=
+MISCORD_DASHBOARD_USERNAME=
+MISCORD_DASHBOARD_PASSWORD=
+PYGITHUB_TOKEN=
+GITHUB_TOKEN=
+CAPTCHA_WEBSITE_KEY=
+CAPTCHA_SECRET_KEY=
+LEEKWARS_USERNAME=
+BRAWLSTARS_ID=
+BRAWLSTARS_MAIL=
+BRAWLSTARS_PASSWORD=
+BRAWLSTARS_TOKEN=
+```
+
+### Then run:
+```sh
+docker run --env-file .env -name discord-bot marcpartensky/discord-bot
+```
+
+## Build it yourself
 
 **Download python3.8 (Tested in 3.8.2)**
 - Download from the official website (recommended): https://www.python.org/
