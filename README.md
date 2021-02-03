@@ -55,8 +55,6 @@ Casino system to play all types of games
 Go to:
 *https://discord.com/api/oauth2/authorize?client_id=703347349623144549&permissions=8&scope=bot*
 
-## With Docker
-
 ### Make a mongo account with a mongo cluster (100% Free)
 [guide](https://docs.atlas.mongodb.com/tutorial/create-atlas-account)
 [register](https://account.mongodb.com/account/register)
@@ -96,37 +94,58 @@ BRAWLSTARS_PASSWORD=
 BRAWLSTARS_TOKEN=
 ```
 
+## Option 1 :Run with Docker recommended
+
 ### Then run:
+
 ```sh
-docker run --env-file .env -name discord-bot marcpartensky/discord-bot
+docker run --env-file .env marcpartensky/discord-bot
 ```
 
-## Build it yourself
+#### Or run in background:
+
+Run with:
+```sh
+docker run --env-file .env --name discord-bot marcpartensky/discord-bot
+```
+
+Stop with:
+```sh
+docker kill discord-bot
+```
+
+Clean with:
+```sh
+docker container rm discord-bot
+```
+
+## Option 2: Build it yourself
 
 **Download python3.8 (Tested in 3.8.2)**
 - Download from the official website (recommended): https://www.python.org/
+
 OR
-- Download with homebrew (for mac or windows) 
+- Download with homebrew for Mac
     - Go to homebrew website and download by typing their command: https://brew.sh/
     - Then download python3.8 by typing into terminal: brew install python3.8
 
-**Make a folder to download the repo (use cd, ls, mkdir in linux) (optional)**
-For instance to create a project in root:
-- cd ~
-- mkdir DiscordBot
-- cd discordbot
+OR
+- Download with apt for linux in ubuntu
+
+OR
+- Download with chocolatey in windows
 
 **Download the repo by typing:**
-- git clone https://github.com/MarcPartensky/discord-bot-esclave
+- git clone https://github.com/MarcPartensky/discord-bot
 
 **Go into the new repo by typing:**
-- cd esclave
+- cd discord-bot
 
 **Use a virtual environment in python (optional but highly recommended)**
 To do so type:
-- pip3.8 install virtualenv  #install virtualenv
-- virtualenv esclave #create a virtual environment named esclave (you can name it however you want)
-- source esclave/bin/activate #activate your virtual environment, to deactivate type 'deactivate'
+- pip3.8 install virtualenv  # install virtualenv
+- virtualenv -p python3.8 venv # create a virtual environment named `venv`
+- source venv/bin/activate # activate your virtual environment, to deactivate type 'deactivate'
 
 
 **Download librairies by typing:**
