@@ -44,7 +44,7 @@ nodeenv==1.5.0
 numpy==1.19.4
 packaging==20.4
 paho-mqtt==1.5.1
-parso==0.8.0
+parso==0.7.1
 Pillow==7.2.0
 pluggy==0.13.1
 pre-commit==2.8.2
