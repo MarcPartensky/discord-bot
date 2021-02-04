@@ -50,7 +50,7 @@ class Room:
             if player.id == member.id:
                 return player
         return None
-        
+
 
 class BlackJack(commands.Cog):
     def __init__(self, bot:commands.Bot):
@@ -60,7 +60,7 @@ class BlackJack(commands.Cog):
         self.timeout = 5*60
         self.defaultBet = 0
 
-        
+
     @property
     def accounts(self):
         return cluster.casino.accounts
@@ -70,7 +70,7 @@ class BlackJack(commands.Cog):
         if not ctx.guild.id in self.rooms:
             self.rooms[ctx.guild.id] = Room()
         return self.rooms[ctx.guild.id]
-        
+
     async def send(self, ctx:commands.Context, content:str="", embed=None):
         """Envoie un message sur discord."""
         room = self.getRoom(ctx)
@@ -78,7 +78,7 @@ class BlackJack(commands.Cog):
             if room.embed_message:
                 await room.embed_message.edit(embed=embed)
             else:
-                room.embed_message = await ctx.send(embed=embed)    
+                room.embed_message = await ctx.send(embed=embed)
         else:
             if room.message:
                 room.message.edit(content=content)

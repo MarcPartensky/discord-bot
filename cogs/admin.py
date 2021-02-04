@@ -68,7 +68,9 @@ class Admin(commands.Cog):
             account.roles = [role.name for role in member.roles[1::]]
             await member.kick(reason=reason)
         except discord.Forbidden:
-            return await ctx.send(f"> Je n'ai pas le droit de kick.")
+            return await ctx.send(
+                f"> Je n'ai pas le droit de kick car {member} "
+                "a un rôle supérieur au mien.")
         await ctx.send(f"> **{member.name}** a été kick de **{ctx.guild}** parce que **{reason}**.")
         await member.send(f"> Vous avez été kick de **{ctx.guild}** parce que **{reason}**.")
 
@@ -193,10 +195,11 @@ class Admin(commands.Cog):
             return await ctx.send(f"> **{member}** est déjà muet.")
         reason = reason or self.mute_reason
         role = discord.utils.get(ctx.guild.roles, name=self.muted_role_name)
-        if not role: #create a role for the muted
+        if not role: # create a role for the muted
             try:
-                role = await ctx.guild.create_role(name=self.muted_role_name, reason="Pour muter les gens trop bavards.")
-                for channel in ctx.guild.channels: # removes permission to view and send in the channels 
+                role = await ctx.guild.create_role(
+                    name=self.muted_role_name, reason="Pour muter les gens trop bavards.")
+                for channel in ctx.guild.channels: # removes permission to view and send in the channel
                     await channel.set_permissions(role,
                             send_messages=False,
                             read_message_history=False,
@@ -274,7 +277,7 @@ class Admin(commands.Cog):
     async def quit_all_voice_channels(self, ctx, channel:discord.VoiceChannel=None):
         """Quitte tous les salons vocaux."""
         for voice_client in self.bot.voice_clients:
-                await voice_client.disconnect()
+            await voice_client.disconnect()
         await ctx.send("> J'ai quitté tous les salons vocaux.")
 
     @commands.command(aliases=["demute"])
