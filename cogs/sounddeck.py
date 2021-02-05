@@ -1,13 +1,20 @@
+"""
+All sound effects you want in one command.
+"""
+
+import time
+import datetime
+import discord
+
 from utils.date import months, days
 from config.config import cluster, masters
 from discord.ext import commands
 
-import datetime
-import discord
-import time
-
 class SoundDeck(commands.Cog):
+    """Sound deck cog for the sound deck commands."""
+
     def __init__(self, bot:commands.Bot):
+        """Define the sound deck using the bot."""
         self.sounds = cluster.sound_deck.sounds
         self.bot = bot
 
@@ -115,12 +122,13 @@ class SoundDeck(commands.Cog):
     @sound.command(name="jouer", aliases=['j', 'play', 'p'])
     async def play(self, ctx:commands.Context, *, name:str):
         """Joue un son."""
-        music = self.music 
+        music = self.music
         sound = self.sounds[name]
         await self.connect(ctx, music)
         await music._play(ctx, search=sound.url)
         sound.played += 1
         sound.last_used_time = time.time()
+
 
 def setup(bot):
     bot.add_cog(SoundDeck(bot))

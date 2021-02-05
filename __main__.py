@@ -1,27 +1,25 @@
 #!/usr/bin/env python
 """Entry point for executing the bot."""
 
-from config.credentials import token, client_id
-from config.config import prefix, masters, delete_after_time, status, access
-
-from discord.ext import commands, tasks
-import progressbar
-import warnings
-warnings.filterwarnings("ignore")
-import requests
-import datetime
-import discord
-import sqlite3
-import asyncio
+import os
+import re
+import time
 import random
 import itertools
-import html
-import time
-import re
-import os
+import warnings
+warnings.filterwarnings("ignore")
 
-#TODO
-#command prefix
+import progressbar
+import discord
+import html
+
+from config.config import prefix, masters, delete_after_time, status, access
+from config.credentials import token, client_id
+from discord.ext import commands, tasks
+
+
+# TODO
+# command prefix
 
 # def get_prefix(bot, message):
 #     """A callable Prefix for our bot. This could be edited to allow per server prefixes."""
@@ -40,10 +38,11 @@ import os
 client = commands.Bot(command_prefix=prefix, case_insensitive=True)
 client.id = client_id
 
+
 class Main(commands.Cog):
     """Main cog for commands."""
 
-    def __init__(self, bot:commands.Bot):
+    def __init__(self, bot: commands.Bot):
         """Create the main cog using the bot as argument."""
         self.bot = bot
         self.invited = "invité"
@@ -53,7 +52,7 @@ class Main(commands.Cog):
         self.load_cogs()
         self.load_status()
         self.load_icloud()
-        self.api:PycloudService = None
+        self.api: PycloudService = None
 
     def load_icloud(self):
         """Charge l'api d'icloud."""
@@ -75,7 +74,7 @@ class Main(commands.Cog):
 
     @commands.command(name="charge-tous")
     @access.admin
-    async def load_all(self, ctx:commands.Context):
+    async def load_all(self, ctx: commands.Context):
         """Charge tous les cogs."""
         self.load_cogs()
         await ctx.send("Tous les cogs sont chargés.")
@@ -84,15 +83,15 @@ class Main(commands.Cog):
         """Charge tous les cogs."""
         cogs = os.listdir('./cogs')
         with progressbar.ProgressBar(max_value=len(cogs)) as bar:
-            for i,filename in enumerate(cogs):
+            for i, filename in enumerate(cogs):
                 bar.update(i)
                 if filename.endswith('.py'):
-                    print(filename)
+                    # print(filename)
                     self.bot.load_extension(f"cogs.{filename[:-3]}")
 
     @commands.command(name="décharge-tous")
     @access.admin
-    async def unload_all(self, ctx:commands.Context):
+    async def unload_all(self, ctx: commands.Context):
         """Décharge tous les cogs."""
         self.unload_cogs()
         await ctx.send("Tous les cogs sont déchargés.")
@@ -117,10 +116,10 @@ class Main(commands.Cog):
         self.bot.unload_extension(f"cogs.{extension}")
         await ctx.send(f"Le cog {extension} a été déchargée.")
 
-    @tasks.loop(seconds = 10)
+    @tasks.loop(seconds=10)
     async def change_status(self):
         """Change le statut."""
-        await self.bot.change_presence(activity = discord.Game(next(self.status)))
+        await self.bot.change_presence(activity=discord.Game(next(self.status)))
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -136,15 +135,17 @@ class Main(commands.Cog):
 
         timeout = 60
         for channel in member.guild.channels:
-            if channel.name == "général" or channel.name=="general":
+            if channel.name == "général" or channel.name == "general":
 
                 await channel.send(f"Bienvenue sur en {str(channel)} {member.mention}!")
                 await channel.send("Dit bonjour.")
+
                 def check(ctx):
-                    if ctx.author!=member:
+                    if ctx.author != member:
                         return False
                     msg = ctx.content.lower()
-                    bonjours = ['hello', 'hi', 'hey', 'slt', 'salut', 'hola', 'bonjour', 'binjour', 'bonsoir']
+                    bonjours = ['hello', 'hi', 'hey', 'slt', 'salut',
+                                'hola', 'bonjour', 'binjour', 'bonsoir']
                     for bonjour in bonjours:
                         if bonjour in msg:
                             return True
@@ -164,11 +165,11 @@ class Main(commands.Cog):
         """Départ un nouveau membre."""
         timeout = 60
         for channel in member.guild.channels:
-            if channel.name == "général" or channel.name=="general":
+            if channel.name == "général" or channel.name == "general":
                 await channel.send(f"Une pensée pour {member} qui a rage quit le serveur.")
                 await channel.send(f"Faisons une minute de silence.")
                 try:
-                    check = lambda ctx:not ctx.author.bot
+                    def check(ctx): return not ctx.author.bot
                     msg = await self.bot.wait_for('message', check=check, timeout=timeout)
                     await channel.send(f"On a dit une minute de silence!")
                 except Exception:
@@ -186,7 +187,8 @@ class Main(commands.Cog):
             message = html.unescape(message)
         else:
             message = str(error)
-        if message[-1]!=".": message+="."
+        if message[-1] != ".":
+            message += "."
         await ctx.send(message)
         raise error
 
@@ -203,12 +205,13 @@ class Main(commands.Cog):
         #         print(f'sent to {bot}')
         #         break
 
+
 def setup(bot: commands.Bot):
     """Setup the bot for the main cog."""
     bot.add_cog(Main(bot))
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     os.system("clear")
     setup(client)
     client.run(token)
-
