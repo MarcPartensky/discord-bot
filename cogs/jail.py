@@ -19,10 +19,9 @@ class Jail(commands.Cog):
     """
 
     insults = [
-        'Confinement gratuit pour toi!',
-        'You have been **confined**.',
+        "Confinement gratuit pour toi!",
+        "You have been **confined**.",
     ]
-
 
     def __init__(self, bot: commands.Bot):
         """Initialize the jail commands."""
@@ -30,9 +29,9 @@ class Jail(commands.Cog):
         # cluster -> database -> collection -> document
         # self.jail = cluster.jail
         self.prisonners = cluster.jail.prisonners
-        self.term = 10 # in minute
-        self.unit = 'min'
-        self.role_name = 'Jail'
+        self.term = 10  # in minute
+        self.unit = "min"
+        self.role_name = "Jail"
         self.check.start()
 
     # @access.admin
@@ -46,92 +45,93 @@ class Jail(commands.Cog):
     def convert_term(self, term, unit):
         """Converti un temps de sentence en seconde.
         La conversion prend en compte l'unité de temps initial."""
-        if unit == 'sec':
+        if unit == "sec":
             pass
-        elif unit == 'min':
+        elif unit == "min":
             term *= 60
-        elif unit == 'hour':
+        elif unit == "hour":
             term *= 3600
-        elif unit == 'day':
-            term *= 24*3600
-        elif unit == 'month':
-            term *= 30*24*3600
-        elif unit == 'year':
-            term *= 355*30*24*3600
-        elif unit == 'decade':
-            term *= 10*355*30*24*3600
-        elif unit == 'century':
-            term *= 100*355*30*24*3600
-        elif unit == 'millenium':
-            term *= 1000*355*30*24*3600
-        else: # seconds
-            raise Exception('This unit does not exist.'
-                            'Advice: use millenium instead.')
+        elif unit == "day":
+            term *= 24 * 3600
+        elif unit == "month":
+            term *= 30 * 24 * 3600
+        elif unit == "year":
+            term *= 355 * 30 * 24 * 3600
+        elif unit == "decade":
+            term *= 10 * 355 * 30 * 24 * 3600
+        elif unit == "century":
+            term *= 100 * 355 * 30 * 24 * 3600
+        elif unit == "millenium":
+            term *= 1000 * 355 * 30 * 24 * 3600
+        else:  # seconds
+            raise Exception(
+                "This unit does not exist." "Advice: use millenium instead."
+            )
         return term
 
-    @commands.command(
-        name='emprisonner',
-        aliases=['tojail', 'imprison'])
-    async def imprison(self,
-             ctx: commands.Context,
-             member: discord.Member,
-             term: int=None,
-             unit: str=None,
-            ):
+    @commands.command(name="emprisonner", aliases=["tojail", "imprison"])
+    async def imprison(
+        self,
+        ctx: commands.Context,
+        member: discord.Member,
+        term: int = None,
+        unit: str = None,
+    ):
         """Emprisonne un membre gratuitement."""
         term = term or self.term
         unit = unit or self.unit
         term = self.convert_term(term, unit)
 
-        text_jail = discord.utils.get(ctx.guild.channels, 'jail')
+        text_jail = discord.utils.get(ctx.guild.channels, "jail")
         if not text_jail:
-            await ctx.guild.create_text_channel('jail')
-        voice_jail = discord.utils.get(ctx.guild.channels, 'jail')
+            await ctx.guild.create_text_channel("jail")
+        voice_jail = discord.utils.get(ctx.guild.channels, "jail")
         if not voice_jail:
-            voice_jail = await ctx.guild.create_voice_channel('Jail')
+            voice_jail = await ctx.guild.create_voice_channel("Jail")
 
         insult = random.choice(Jail.insults)
-        message = f"> **{member}**:\n" \
-                "> Tu va être dépouillé de **tout** ce que tu as:\n\n```diff\n" \
-                "Roles:"
+        message = (
+            f"> **{member}**:\n"
+            "> Tu va être dépouillé de **tout** ce que tu as:\n\n```diff\n"
+            "Roles:"
+        )
 
         roles = []
         for role in member.roles[1:]:
             try:
-                message += '\n- ' + role.name
+                message += "\n- " + role.name
                 print(f"{member} perd {role}")
                 await member.remove_roles(role)
                 roles.append(role)
             except discord.Forbidden:
-                print(f'Impossible de supprimer {role} \
-                      pour {member} par {ctx.author}.')
+                print(
+                    f"Impossible de supprimer {role} \
+                      pour {member} par {ctx.author}."
+                )
 
         jail_role = discord.utils.get(ctx.guild.roles, name=self.role_name)
         await member.add_roles(jail_role)
-        message += '\n+ Jail\n```'
-        message += '\n\n> ' + insult
+        message += "\n+ Jail\n```"
+        message += "\n\n> " + insult
 
         self.prisonners[member.id] = dict(
             police_officer=ctx.author.id,
             timestamp=time.time(),
-            release=time.time()+term,
+            release=time.time() + term,
             term=term,
-            removed_roles=[role.name for role in roles]
+            removed_roles=[role.name for role in roles],
         )
-
 
         await ctx.send(message)
 
         # await asyncio.sleep(term)
         self.check.start()
 
-    @commands.command(name="prison", aliases=['jail'])
-    async def jail(self, ctx:commands.Context):
+    @commands.command(name="prison", aliases=["jail"])
+    async def jail(self, ctx: commands.Context):
         """Affiche les prisonners."""
         embed = discord.Embed(
-            title="Prison",
-            color=0x555555,
-            description="Les prisonniers sont :"
+            title="Prison", color=0x555555, description="Les prisonniers sont :"
         )
         for prisonner in self.prisonners:
             member = self.bot.get_user(prisonner._id)
@@ -141,17 +141,13 @@ class Jail(commands.Cog):
             embed.add_field(
                 name=member.name,
                 value=f"- emprisonné le {timestamp}\n"
-                    f"- par {police_officer}\n"
-                    f"- libéré le {release}"
+                f"- par {police_officer}\n"
+                f"- libéré le {release}",
             )
         await ctx.send(embed=embed)
 
-    @commands.command(
-        name='libérer',
-        aliases=['unjail', 'release', 'free'])
-    async def unjail(self,
-               ctx: commands.Context,
-               member: discord.Member):
+    @commands.command(name="libérer", aliases=["unjail", "release", "free"])
+    async def unjail(self, ctx: commands.Context, member: discord.Member):
         """Libère un membre par pur bonté."""
         print(self.prisonners)
         print(member.id)
@@ -165,18 +161,20 @@ class Jail(commands.Cog):
 
         del self.prisonners[member.id]
 
-        text_jail = discord.utils.get(ctx.guild.channels, 'jail')
+        text_jail = discord.utils.get(ctx.guild.channels, "jail")
         if not text_jail:
-            await ctx.guild.create_text_channel('jail')
-        voice_jail = discord.utils.get(ctx.guild.channels, 'jail')
+            await ctx.guild.create_text_channel("jail")
+        voice_jail = discord.utils.get(ctx.guild.channels, "jail")
         if not voice_jail:
-            voice_jail = await ctx.guild.create_voice_channel('Jail')
+            voice_jail = await ctx.guild.create_voice_channel("Jail")
 
-        message = f"> **{member} !**\n" \
-                "> Vous êtes placé en libération conditionnelle.\n" \
-                "> Au moindre faux pas vous retournerez en prison.\n" \
-                "> Tâcher de ne pas recommencer!\n" \
-                "> Ou les conséquences seront **terribles!**"
+        message = (
+            f"> **{member} !**\n"
+            "> Vous êtes placé en libération conditionnelle.\n"
+            "> Au moindre faux pas vous retournerez en prison.\n"
+            "> Tâcher de ne pas recommencer!\n"
+            "> Ou les conséquences seront **terribles!**"
+        )
         # await self.free(ctx, member)
         await ctx.send(message)
 
@@ -195,6 +193,7 @@ class Jail(commands.Cog):
         await self.bot.wait_until_ready()
 
     # @commands.
+
 
 def setup(bot):
     bot.add_cog(Jail(bot))

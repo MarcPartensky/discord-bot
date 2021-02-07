@@ -8,20 +8,21 @@ import pymongo
 
 # from pymongo.cursor import Cursor
 
+
 class DictObject(dict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        super().__setattr__('__dict__', self)
+        super().__setattr__("__dict__", self)
+
 
 class CommitPost:
-
     @classmethod
     def fromkeys(cls, *args, **kwargs):
         return cls(_dict.fromkeys(*args, **kwargs))
 
     def __init__(self, *args, **kwargs):
-        self._collection = kwargs.pop('_collection')
-        self._dict = dict(*args ,**kwargs)
+        self._collection = kwargs.pop("_collection")
+        self._dict = dict(*args, **kwargs)
         self.post()
 
     def clear(self):
@@ -52,13 +53,13 @@ class CommitPost:
         self._dict.setdefault(key, value)
 
     def setdefaults(self, *args, **kwargs):
-        dicts = args+(kwargs,)
+        dicts = args + (kwargs,)
         for dict_ in dicts:
             self._dict.update(dict_)
             # for k,v in d.items():
             #     self.setdefault(k, v)
 
-    def update(self, dictionary_:dict):
+    def update(self, dictionary_: dict):
         self._dict.update(dictionary_)
 
     def __str__(self):
@@ -68,7 +69,7 @@ class CommitPost:
         return key in self._dict
 
     def __getattribute__(self, key):
-        if key in ['_collection', '_dict']:
+        if key in ["_collection", "_dict"]:
             return super().__getattribute__(key)
         else:
             if key in self._dict:
@@ -77,7 +78,7 @@ class CommitPost:
                 return super().__getattribute__(key)
 
     def __setattr__(self, key, value):
-        if key in ['_collection', '_dict']:
+        if key in ["_collection", "_dict"]:
             super().__setattr__(key, value)
         else:
             self._dict[key] = value
@@ -141,29 +142,30 @@ class MongoDatabase(Database):
         """List the items in a database."""
         return zip(
             self.list_collection_names(),
-            map(lambda name:MongoCollection(self, name), self.list_collection_names())
-            )
+            map(lambda name: MongoCollection(self, name), self.list_collection_names()),
+        )
+
 
 class MongoCollection(Collection):
     keys = [
-        '_BaseObject__codec_options',
-        '_BaseObject__read_preference',
-        '_BaseObject__write_concern',
-        '_BaseObject__read_concern',
-        '_Collection__database',
-        '_Collection__name',
-        '_Collection__full_name',
-        '_Collection__write_response_codec_options'
+        "_BaseObject__codec_options",
+        "_BaseObject__read_preference",
+        "_BaseObject__write_concern",
+        "_BaseObject__read_concern",
+        "_Collection__database",
+        "_Collection__name",
+        "_Collection__full_name",
+        "_Collection__write_response_codec_options",
     ]
 
     def __iter__(self):
         """Iterate through the connexion."""
-        return map(lambda d:BindPost(_id=d['_id'], _collection=self), self.find())
+        return map(lambda d: BindPost(_id=d["_id"], _collection=self), self.find())
 
     def items(self):
         """Liste les items."""
         for post in self.find():
-            yield (post['_id'], BindPost(_collection=self, _id=post['_id']))
+            yield (post["_id"], BindPost(_collection=self, _id=post["_id"]))
 
     def put_one(self, **post):
         """Insert one post."""
@@ -171,17 +173,17 @@ class MongoCollection(Collection):
 
     def put(self, **post):
         """Insert or replace one post."""
-        if '_id' in post:
-            id = post['_id']
+        if "_id" in post:
+            id = post["_id"]
             if id in self:
-                self.replace_one({'_id':id}, post)
+                self.replace_one({"_id": id}, post)
                 return
         self.insert_one(post)
 
     def treat(self, post):
         p = post.copy()
-        if 'collection' in post:
-            p.pop('collection')
+        if "collection" in post:
+            p.pop("collection")
         return p
 
     def replace_one(self, filter, post, **kwargs):
@@ -206,7 +208,7 @@ class MongoCollection(Collection):
         super().insert_many(post)
 
     def __contains__(self, id):
-        return self.seek_one(_id=id)!=None
+        return self.seek_one(_id=id) != None
 
     def __len__(self):
         """Determine the length of the collection."""
@@ -235,7 +237,7 @@ class MongoCollection(Collection):
 
     def __setitem__(self, id, post):
         """Lazy way of settings posts."""
-        post['_id'] = id
+        post["_id"] = id
         self.post(post)
 
     def __delitem__(self, id):
@@ -247,16 +249,16 @@ class MongoCollection(Collection):
 
     def post(self, post):
         """Replace or insert a post."""
-        if '_id' in post:
-            self.replace_one({'_id':post['_id']}, post, upsert=True)
+        if "_id" in post:
+            self.replace_one({"_id": post["_id"]}, post, upsert=True)
         else:
             self.insert_one(post)
 
     def setdefaults(self, *args, **kwargs):
         """Set defaults posts."""
-        dicts = args+(kwargs,)
+        dicts = args + (kwargs,)
         for d in dicts:
-            for k,v in d.items():
+            for k, v in d.items():
                 self.setdefault(k, v)
 
     def setdefault(self, id, post):
@@ -273,7 +275,8 @@ class MongoCollection(Collection):
         else:
             self.__setitem__(att, value)
 
-class BindPost: # More like lazy post
+
+class BindPost:  # More like lazy post
     """Super set of mongo post system.
     Instead of using a mongo post as a python dictionary, this class makes
     it possible to use a post as a python object which allows much more
@@ -284,9 +287,9 @@ class BindPost: # More like lazy post
         """Create a bind post from keys."""
         return cls(MongoCollection.fromkeys(*args, **kwargs))
 
-    def __init__(self, _collection:MongoCollection,  _id:object=None):
+    def __init__(self, _collection: MongoCollection, _id: object = None):
         """Create a bind post using a mongo collection and a post id."""
-        self._collection:MongoCollection = _collection
+        self._collection: MongoCollection = _collection
         if _id:
             self._id = _id
         else:
@@ -303,14 +306,14 @@ class BindPost: # More like lazy post
     @property
     def _dict(self) -> dict:
         """Return the dictionary form of the post."""
-        return Collection.find_one(self._collection, {'_id':self._id})
+        return Collection.find_one(self._collection, {"_id": self._id})
 
     def clear(self):
         """Clear the content of a post."""
         d = dict(_id=self._id)
         self._collection.replace_one(d, d)
 
-    def copy(self) -> dict: # Create raw dictionary
+    def copy(self) -> dict:  # Create raw dictionary
         """Create a raw dictionary."""
         return self._dict.copy()
 
@@ -334,7 +337,7 @@ class BindPost: # More like lazy post
         """Pop one item of the post given its key."""
         d = self._dict
         item = d.pop(key)
-        self._collection.replace_one({'_id':self._id}, d)
+        self._collection.replace_one({"_id": self._id}, d)
         return item
 
     def popitem(self):
@@ -347,21 +350,21 @@ class BindPost: # More like lazy post
         """Set a default item using its key and value."""
         d = self._dict
         d.setdefault(key, value)
-        self._collection.replace_one({'_id':self._id}, d)
+        self._collection.replace_one({"_id": self._id}, d)
 
     def setdefaults(self, *args, **kwargs):
         """Set default items using the list of items, and dictionaries
         of keys and values of the items."""
-        dicts = args+(kwargs,)
+        dicts = args + (kwargs,)
         for d in dicts:
-            for k,v in d.items():
+            for k, v in d.items():
                 self.setdefault(k, v)
 
-    def update(self, _dictionary:dict):
+    def update(self, _dictionary: dict):
         """Update a post using a dictionary."""
         d = self._dict
         d.update(_dictionary)
-        self._collection.replace_one({'_id':self._id}, d)
+        self._collection.replace_one({"_id": self._id}, d)
 
     def __str__(self) -> str:
         """Return a string representation of the post."""
@@ -373,15 +376,15 @@ class BindPost: # More like lazy post
 
     def __delattr__(self, key):
         """Delete an item from the post given its key."""
-        print('before:', self)
-        self._collection.update_one({'_id':self._id}, {"$unset": {key:""}})
-        print('after:', self)
+        print("before:", self)
+        self._collection.update_one({"_id": self._id}, {"$unset": {key: ""}})
+        print("after:", self)
 
     __delitem__ = __delattr__
 
     def __getattribute__(self, key):
         """Return the value of a post item given its key."""
-        if key in ['_collection', '_id', 'collection', '_dict']:
+        if key in ["_collection", "_id", "collection", "_dict"]:
             return super().__getattribute__(key)
         else:
             d = self._dict
@@ -392,12 +395,12 @@ class BindPost: # More like lazy post
 
     def __setattr__(self, key, value):
         """Set an item for the post given its key and value."""
-        if key in ['_collection', '_id']:
+        if key in ["_collection", "_id"]:
             super().__setattr__(key, value)
         else:
             d = self._dict
             d[key] = value
-            self._collection.replace_one({'_id':self._id}, d)
+            self._collection.replace_one({"_id": self._id}, d)
 
     def __getitem__(self, key):
         """Return the value of an item given its key.
@@ -418,8 +421,10 @@ class BindPost: # More like lazy post
         """Return the length of a post."""
         return len(self._dict)
 
+
 class Post(DictObject):
     """Mongo Post class."""
+
     def __setattr__(self, key, value):
         self[key] = value
         self.post()
@@ -429,21 +434,24 @@ class Post(DictObject):
         collection = self.collection
         del self.collection
         string = super().__str__()
-        super().__setattr__('collection', collection)
+        super().__setattr__("collection", collection)
         return string
 
     def post(self):
         """Post a post."""
-        collection = self.pop('collection')
+        collection = self.pop("collection")
         collection[self._id] = self
-        super().__setattr__('collection', collection)
+        super().__setattr__("collection", collection)
 
 
 class SuperPost(DictObject):
     """Pass"""
 
+
 class User(DictObject):
     """Mongo collection for a user."""
+
+
 #     def __str__(self):
 #         if hasattr(self, 'name'):
 #             name = self.name
@@ -452,31 +460,30 @@ class User(DictObject):
 #             l = [f'{k}={v}' for (k,v) in self.items()]
 #         return name+"("+", ".join(l)+")"
 
-    # def __init__(self, post:Post):
-    #     """Mongo representation of a user."""
-    #     self.user = user
-        # self.post = post
+# def __init__(self, post:Post):
+#     """Mongo representation of a user."""
+#     self.user = user
+# self.post = post
 
-    # @property
-    # def id(self): return self.user.id
+# @property
+# def id(self): return self.user.id
 
-    # def getMoney(self):
-    #     return self.post.money
+# def getMoney(self):
+#     return self.post.money
 
-    # def __getattribute__(self, att):
-    #     collection = object.__getattribute__(self, 'collection')
-    #     if att in collection:
-    #         return collection[att]
-    #     return super().__getattribute__(att)
+# def __getattribute__(self, att):
+#     collection = object.__getattribute__(self, 'collection')
+#     if att in collection:
+#         return collection[att]
+#     return super().__getattribute__(att)
 
 
-    # def __setattr__(self, att, value):
-    #     if hasattr(self, 'collection'):
-    #         collection = object.__getattribute__(self, 'collection')
-    #         collection[att] = value
-    #     else:
-    #         super().__setattr__(att, value)
-
+# def __setattr__(self, att, value):
+#     if hasattr(self, 'collection'):
+#         collection = object.__getattribute__(self, 'collection')
+#         collection[att] = value
+#     else:
+#         super().__setattr__(att, value)
 
 
 # from config.config import mongo
@@ -490,13 +497,13 @@ class User(DictObject):
 # db.commands.append(command)
 # command = db.commands.find(machin=34, bidule=324)
 
-if __name__=="__main__":
-    mongo_url = 'mongodb+srv://esclave:esclave@discord-cluster-5ckni.mongodb.net/test'
+if __name__ == "__main__":
+    mongo_url = "mongodb+srv://esclave:esclave@discord-cluster-5ckni.mongodb.net/test"
     cl = MongoCluster(mongo_url)
     # print('cluster over')
     esclave = cl.esclave
     # esclave = MongoDatabase.from_database(cl.esclave)
-    print('main:', type(esclave))
+    print("main:", type(esclave))
     # memory = MongoCollection.from_collection(esclave.memory)
     memory = esclave.memory
     # print('main:', type(memory))
@@ -517,7 +524,7 @@ if __name__=="__main__":
     # o = DictObject(d)
     # print(o)
     # memory.testing = {'testing':'testing'}
-    memory.put(_id='testing', testing='testing')
+    memory.put(_id="testing", testing="testing")
     print(memory.testing.testing)
     # print(m)
     # user = User(d, 'marc')

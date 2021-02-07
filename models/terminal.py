@@ -8,8 +8,9 @@ import sys
 import os
 import copy
 
+
 class Terminal(commands.Cog):
-    def __init__(self, bot:commands.Bot, **kwargs):
+    def __init__(self, bot: commands.Bot, **kwargs):
         super().__init__(**kwargs)
         self.bot = bot
         self.on = False
@@ -17,11 +18,14 @@ class Terminal(commands.Cog):
         self.stdin = ""
 
     @commands.Cog.listener()
-    async def on_message(self, msg:discord.Message):
+    async def on_message(self, msg: discord.Message):
         """React to messages."""
-        if msg.author.bot: return
-        if not msg.author.id in masters: return
-        if msg.content.startswith(prefix): return
+        if msg.author.bot:
+            return
+        if not msg.author.id in masters:
+            return
+        if msg.content.startswith(prefix):
+            return
         # if not self.process:
         #     self.process = subprocess.Popen(msg.content, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # else:
@@ -33,16 +37,18 @@ class Terminal(commands.Cog):
         #     await msg.channel.send(out)
         # return
 
-
         try:
-            result = subprocess.check_output(self.stdin+msg.content, shell=True, universal_newlines=True)
+            result = subprocess.check_output(
+                self.stdin + msg.content, shell=True, universal_newlines=True
+            )
             if result:
                 await msg.channel.send(result)
             else:
-                if msg.content.startswith('cd'):
-                    self.stdin += msg.content+"; "
+                if msg.content.startswith("cd"):
+                    self.stdin += msg.content + "; "
         except Exception as e:
             await msg.channel.send(e)
+
 
 def setup(bot):
     bot.add_cog(Developper(bot))

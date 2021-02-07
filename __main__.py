@@ -7,6 +7,7 @@ import time
 import random
 import itertools
 import warnings
+
 warnings.filterwarnings("ignore")
 
 import progressbar
@@ -62,12 +63,12 @@ class Main(commands.Cog):
         """Charge les statuts."""
         self.status = []
         for command in self.bot.commands:
-            msg = prefix+command.name+" "+command.short_doc
+            msg = prefix + command.name + " " + command.short_doc
             self.status.append(msg)
         random.shuffle(self.status)
         i = 0
         while i < len(self.status):
-            msg = prefix+"help Voir les commandes."
+            msg = prefix + "help Voir les commandes."
             self.status.insert(i, msg)
             i += self.help_every
         self.status = itertools.cycle(self.status)
@@ -81,11 +82,11 @@ class Main(commands.Cog):
 
     def load_cogs(self):
         """Charge tous les cogs."""
-        cogs = os.listdir('./cogs')
+        cogs = os.listdir("./cogs")
         with progressbar.ProgressBar(max_value=len(cogs)) as bar:
             for i, filename in enumerate(cogs):
                 bar.update(i)
-                if filename.endswith('.py'):
+                if filename.endswith(".py"):
                     # print(filename)
                     self.bot.load_extension(f"cogs.{filename[:-3]}")
 
@@ -98,8 +99,8 @@ class Main(commands.Cog):
 
     def unload_cogs(self):
         """Décharge tous les cogs."""
-        for filename in os.listdir('./cogs'):
-            if filename.endswith('.py'):
+        for filename in os.listdir("./cogs"):
+            if filename.endswith(".py"):
                 self.bot.unload_extension(f"cogs.{filename[:-3]}")
 
     @commands.command(name="charge", aliases=["load"])
@@ -125,7 +126,7 @@ class Main(commands.Cog):
     async def on_ready(self):
         """Déclarer être prêt."""
         self.change_status.start()
-        print(f'{self.bot.user} is connected to Discord!')
+        print(f"{self.bot.user} is connected to Discord!")
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -144,19 +145,33 @@ class Main(commands.Cog):
                     if ctx.author != member:
                         return False
                     msg = ctx.content.lower()
-                    bonjours = ['hello', 'hi', 'hey', 'slt', 'salut',
-                                'hola', 'bonjour', 'binjour', 'bonsoir']
+                    bonjours = [
+                        "hello",
+                        "hi",
+                        "hey",
+                        "slt",
+                        "salut",
+                        "hola",
+                        "bonjour",
+                        "binjour",
+                        "bonsoir",
+                    ]
                     for bonjour in bonjours:
                         if bonjour in msg:
                             return True
                     return False
+
                 try:
-                    msg = await self.bot.wait_for('message', check=check, timeout=timeout)
+                    msg = await self.bot.wait_for(
+                        "message", check=check, timeout=timeout
+                    )
                     await channel.send("T'es un bon toi. T'iras loin!")
                     await member.add_roles(self.good_invited)
                     await ctx.send(f"{member.name} à été promu en {role.name}.")
                 except Exception:
-                    await channel.send(f"Ça fait déjà {timeout} secondes.\nT'es un mauvais toi. T'iras pas loin.")
+                    await channel.send(
+                        f"Ça fait déjà {timeout} secondes.\nT'es un mauvais toi. T'iras pas loin."
+                    )
                     await member.add_roles(self.bad_invited)
                     await ctx.send(f"{member.name} à été promu en {role.name}.")
 
@@ -166,14 +181,23 @@ class Main(commands.Cog):
         timeout = 60
         for channel in member.guild.channels:
             if channel.name == "général" or channel.name == "general":
-                await channel.send(f"Une pensée pour {member} qui a rage quit le serveur.")
+                await channel.send(
+                    f"Une pensée pour {member} qui a rage quit le serveur."
+                )
                 await channel.send(f"Faisons une minute de silence.")
                 try:
-                    def check(ctx): return not ctx.author.bot
-                    msg = await self.bot.wait_for('message', check=check, timeout=timeout)
+
+                    def check(ctx):
+                        return not ctx.author.bot
+
+                    msg = await self.bot.wait_for(
+                        "message", check=check, timeout=timeout
+                    )
                     await channel.send(f"On a dit une minute de silence!")
                 except Exception:
-                    await channel.send("La minute est passée. Vous pouvez retournez à vos activités.")
+                    await channel.send(
+                        "La minute est passée. Vous pouvez retournez à vos activités."
+                    )
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error, translating=None):
@@ -182,7 +206,8 @@ class Main(commands.Cog):
             translating = ctx.author.id not in masters
         if translating:
             from translate import Translator
-            translator = Translator(to_lang='fr', from_lang='en')
+
+            translator = Translator(to_lang="fr", from_lang="en")
             message = translator.translate(str(error))
             message = html.unescape(message)
         else:
@@ -192,18 +217,19 @@ class Main(commands.Cog):
         await ctx.send(message)
         raise error
 
+
 # elif ctn.startswith('bot'):
 #     ctn = ctn.replace('bot', '', 1).strip()
 #     user = client.get_user(270904126974590976)
 #     await user.send(ctn)
 #     # for bot in bots:
 #     #     print(ctn, bot, ctn.startswith(bot))
-        #     if ctn.startswith(bot):
-        #         ctn = ctn.replace(bot, '', 1).strip()
-        #         user = await client.get_user(bots)
-        #         await client.send_message(user,ctn)
-        #         print(f'sent to {bot}')
-        #         break
+#     if ctn.startswith(bot):
+#         ctn = ctn.replace(bot, '', 1).strip()
+#         user = await client.get_user(bots)
+#         await client.send_message(user,ctn)
+#         print(f'sent to {bot}')
+#         break
 
 
 def setup(bot: commands.Bot):

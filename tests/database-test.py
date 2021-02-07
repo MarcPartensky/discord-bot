@@ -1,5 +1,6 @@
 import pymysql
 
+
 class Database:
     @classmethod
     def local(cls, path=":memory:", isolation_level=None, **kwargs):
@@ -21,17 +22,17 @@ class Database:
         self.close = self.connection.close
         self.execute = self.cursor.execute
 
-    def create_table_if_not_exists(self, table:str, fields:dict):
+    def create_table_if_not_exists(self, table: str, fields: dict):
         cmd = f"create table if not exists `{table}` ({', '.join([f'{k} {v}' for k,v in fields.items()])})"
         self.cursor.execute(cmd)
         return cmd
 
-    def create_unique_index(self, table:str, id:str, field:str):
+    def create_unique_index(self, table: str, id: str, field: str):
         cmd = f"create unique index {id} on {table} ({field})"
         self.cursor.execute(cmd)
         return cmd
 
-    def create_table(self, table:str, fields:dict):
+    def create_table(self, table: str, fields: dict):
         cmd = f"create table if not exists {table} ({', '.join([f'{k} {v}' for k,v in fields.items()])})"
         self.cursor.execute(cmd)
         return cmd
@@ -52,13 +53,13 @@ class Database:
     def one(self):
         return self.cursor.fetchone()
 
-    def insert(self, table:str, row:tuple):
+    def insert(self, table: str, row: tuple):
         """Insère un item."""
-        cmd = f"insert into `{table}` values (`"+'`,`'.join(["?"]*len(row))+"`)"
+        cmd = f"insert into `{table}` values (`" + "`,`".join(["?"] * len(row)) + "`)"
         self.cursor.execute(cmd, row)
         return cmd
 
-    def replace(self, table:str, values:dict):
+    def replace(self, table: str, values: dict):
         """Remplace un item."""
         columns = tuple(values.keys())
         row = tuple(values.values())
@@ -67,18 +68,26 @@ class Database:
         self.cursor.execute(cmd, row)
         return cmd
 
-    def update(self, table:str, values:dict, conditions:dict={}):
+    def update(self, table: str, values: dict, conditions: dict = {}):
         """Remplace un item."""
-        cmd = f"update {table} set "+", ".join([k+"=?" for k in values.keys()])
+        cmd = f"update {table} set " + ", ".join([k + "=?" for k in values.keys()])
         if conditions:
-            cmd += " where "+", ".join([k+"=?" for k in  conditions.keys()])
-        row = tuple(values.values())+tuple(conditions.values())
+            cmd += " where " + ", ".join([k + "=?" for k in conditions.keys()])
+        row = tuple(values.values()) + tuple(conditions.values())
         self.cursor.execute(cmd, row)
         return cmd
 
-
-
-    def select(self, table:str, column:str="*", conditions:dict={}, orderby:str="", order:str="asc", limit:str="", offset:str="", like:str=""):
+    def select(
+        self,
+        table: str,
+        column: str = "*",
+        conditions: dict = {},
+        orderby: str = "",
+        order: str = "asc",
+        limit: str = "",
+        offset: str = "",
+        like: str = "",
+    ):
         """Sélectionne un item."""
         cmd = f"select {column} from {table}"
         if conditions:
@@ -94,7 +103,16 @@ class Database:
         self.cursor.execute(cmd, tuple(conditions.values()))
         return cmd
 
-    def delete(self, table:str, conditions:dict={}, orderby:str="", order:str="asc", limit:str="", offset:str="", like:str=""):
+    def delete(
+        self,
+        table: str,
+        conditions: dict = {},
+        orderby: str = "",
+        order: str = "asc",
+        limit: str = "",
+        offset: str = "",
+        like: str = "",
+    ):
         """Supprime un item."""
         cmd = f"delete from {table}"
         if conditions:
@@ -110,12 +128,12 @@ class Database:
         self.cursor.execute(cmd, tuple(conditions.values()))
         return cmd
 
-    def drop_table(self, table:str, if_exists:bool=False):
+    def drop_table(self, table: str, if_exists: bool = False):
         """Oublie toutes la mémoire."""
         cmd = "drop table"
         if if_exists:
             cmd += " if exists"
-        cmd += f" {table}";
+        cmd += f" {table}"
         self.cursor.execute(cmd)
         return cmd
 
@@ -144,20 +162,32 @@ class Database:
     def __del__(self):
         """Ferme la base de donnée."""
         self.connection.close()
-    
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     # db = Database()
     db = Database.online(
-                host='127.0.0.1',
-                user='esclave',
-                password='esclave',
-                db='commandes')
+        host="127.0.0.1", user="esclave", password="esclave", db="commandes"
+    )
     # db.create_table(table="machin",  fields={"datetime":"text", "author":"text", "request":"text", "response":"text"})
-    db.create_table_if_not_exists(table="machin",  fields={"datetime":"text", "author":"text", "request":"text", "response":"text"})
+    db.create_table_if_not_exists(
+        table="machin",
+        fields={
+            "datetime": "text",
+            "author": "text",
+            "request": "text",
+            "response": "text",
+        },
+    )
     db.insert(table="machin", row=["today", "me", "slt", "tg"])
     db.insert(table="machin", row=["avant-hier", "moa", "wesh", "tg"])
-    db.select(column="*", table="machin", conditions={"datetime":"today", "author":"me"}, orderby="request", order="desc")
+    db.select(
+        column="*",
+        table="machin",
+        conditions={"datetime": "today", "author": "me"},
+        orderby="request",
+        order="desc",
+    )
     print(db["machin", "author"])
     db["machin"] = ["demain", "toa", "osef", "tu pues"]
     print(db.all)
@@ -169,6 +199,6 @@ if __name__=="__main__":
     print(db.tables)
     print(len(db["machin"]))
     print(db.cursor.lastrowid)
-    print(db.update("machin", {"request":"osef"}, {"author":"me"}))
+    print(db.update("machin", {"request": "osef"}, {"author": "me"}))
     print(db["machin"])
     db.close()

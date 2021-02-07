@@ -14,7 +14,7 @@ class Test(commands.Cog):
 
     @commands.command(hidden=True)
     @access.admin
-    async def number(self, ctx, amount:int):
+    async def number(self, ctx, amount: int):
         """Test erreur d'argument."""
         await ctx.send(amount)
 
@@ -42,7 +42,6 @@ class Test(commands.Cog):
         """Test la validation."""
         await ctx.send("gg wesh")
 
-
     @commands.command(hidden=False)
     # @shop.sell_for(2)
     async def test_selling_for(self, ctx):
@@ -51,14 +50,9 @@ class Test(commands.Cog):
 
     @commands.command(hidden=False)
     @shops.commands.sell
-    async def test_selling(self, ctx:commands.Context):
+    async def test_selling(self, ctx: commands.Context):
         """Test la vente automatique."""
         await ctx.send("Adjugé vendu.")
-
-
-
-
-
 
     # @commands.Cog.listener()
     # async def on_command_error(self, ctx, error):
@@ -68,39 +62,38 @@ class Test(commands.Cog):
     #     else:
     #         raise error
 
-
     @commands.command(name="dl-music", hidden=True)
     @access.admin
-    async def download_music(self, ctx, url:str):
+    async def download_music(self, ctx, url: str):
         """Download a music on my computer."""
         d = os.getcwd()
         os.chdir("/Volumes/$/Youtube/Discord/")
         await ctx.send("Musics downloading.")
         cmd = "youtube-dl -ciw -x --audio-format 'mp3' --audio-quality 0 -f bestaudio --embed-thumbnail -o '%(title)s.%(ext)s' --rm-cache-dir"
-        os.system(cmd+' '+url)
+        os.system(cmd + " " + url)
         os.chdir(d)
         await ctx.send("Musics downloaded.")
 
-    @commands.command(name='user-test', hidden=True)
+    @commands.command(name="user-test", hidden=True)
     @access.admin
-    async def user_test(self, ctx, user:discord.User):
+    async def user_test(self, ctx, user: discord.User):
         """Return the user."""
         await ctx.send(user)
 
-    @commands.command(name='member-test', hidden=True)
+    @commands.command(name="member-test", hidden=True)
     @access.admin
-    async def member_test(self, ctx, member:discord.Member):
+    async def member_test(self, ctx, member: discord.Member):
         """Return the member."""
         await ctx.send(member)
 
-    @commands.command(name='fetch-user', hidden=True)
+    @commands.command(name="fetch-user", hidden=True)
     @access.admin
-    async def fetch_user(self, ctx, id:int):
+    async def fetch_user(self, ctx, id: int):
         """Send the username with its id."""
         user = await self.bot.fetch_user(id)
         await ctx.send(user)
 
-    @commands.command(name='get-user', hidden=True)
+    @commands.command(name="get-user", hidden=True)
     @access.admin
     async def get_user(self, ctx, user):
         """Send the username whatever argument is given."""
@@ -110,15 +103,12 @@ class Test(commands.Cog):
             user = await self.bot.fetch_user(id)
         await ctx.send(user)
 
-    @commands.command(name='user-id', hidden=True)
+    @commands.command(name="user-id", hidden=True)
     @access.admin
-    async def user_id(self, ctx, user:discord.User):
+    async def user_id(self, ctx, user: discord.User):
         """Return the id of the given user."""
         await ctx.send(user.id)
 
 
-
 def setup(bot):
     bot.add_cog(Test(bot))
-    
-

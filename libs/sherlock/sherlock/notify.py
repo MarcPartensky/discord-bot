@@ -7,7 +7,7 @@ from .result import QueryStatus
 from colorama import Fore, Style, init
 
 
-class QueryNotify():
+class QueryNotify:
     """Query Notify Object.
 
     Base class that describes methods available to notify the results of
@@ -15,6 +15,7 @@ class QueryNotify():
     It is intended that other classes inherit from this base class and
     override the methods to implement specific functionality.
     """
+
     def __init__(self, result=None):
         """Create Query Notify Object.
 
@@ -110,8 +111,8 @@ class QueryNotifyPrint(QueryNotify):
 
     Query notify class that prints results.
     """
-    def __init__(self, result=None, verbose=False, print_found_only=False,
-                 color=True):
+
+    def __init__(self, result=None, verbose=False, print_found_only=False, color=True):
         """Create Query Notify Print Object.
 
         Contains information about a specific method of notifying the results
@@ -155,11 +156,19 @@ class QueryNotifyPrint(QueryNotify):
 
         title = "Checking username"
         if self.color:
-            print(Style.BRIGHT + Fore.GREEN + "[" +
-                Fore.YELLOW + "*" +
-                Fore.GREEN + f"] {title}" +
-                Fore.WHITE + f" {message}" +
-                Fore.GREEN + " on:")
+            print(
+                Style.BRIGHT
+                + Fore.GREEN
+                + "["
+                + Fore.YELLOW
+                + "*"
+                + Fore.GREEN
+                + f"] {title}"
+                + Fore.WHITE
+                + f" {message}"
+                + Fore.GREEN
+                + " on:"
+            )
         else:
             print(f"[*] {title} {message} on:")
 
@@ -185,55 +194,98 @@ class QueryNotifyPrint(QueryNotify):
         else:
             response_time_text = f" [{round(self.result.query_time * 1000)} ms]"
 
-        #Output to the terminal is desired.
+        # Output to the terminal is desired.
         if result.status == QueryStatus.CLAIMED:
             if self.color:
-                print((Style.BRIGHT + Fore.WHITE + "[" +
-                       Fore.GREEN + "+" +
-                       Fore.WHITE + "]" +
-                       response_time_text +
-                       Fore.GREEN +
-                       f" {self.result.site_name}: " +
-                       Style.RESET_ALL +
-                       f"{self.result.site_url_user}"))
+                print(
+                    (
+                        Style.BRIGHT
+                        + Fore.WHITE
+                        + "["
+                        + Fore.GREEN
+                        + "+"
+                        + Fore.WHITE
+                        + "]"
+                        + response_time_text
+                        + Fore.GREEN
+                        + f" {self.result.site_name}: "
+                        + Style.RESET_ALL
+                        + f"{self.result.site_url_user}"
+                    )
+                )
             else:
-                print(f"[+]{response_time_text} {self.result.site_name}: {self.result.site_url_user}")
+                print(
+                    f"[+]{response_time_text} {self.result.site_name}: {self.result.site_url_user}"
+                )
         elif result.status == QueryStatus.AVAILABLE:
             if not self.print_found_only:
                 if self.color:
-                    print((Style.BRIGHT + Fore.WHITE + "[" +
-                           Fore.RED + "-" +
-                           Fore.WHITE + "]" +
-                           response_time_text +
-                           Fore.GREEN + f" {self.result.site_name}:" +
-                           Fore.YELLOW + " Not Found!"))
+                    print(
+                        (
+                            Style.BRIGHT
+                            + Fore.WHITE
+                            + "["
+                            + Fore.RED
+                            + "-"
+                            + Fore.WHITE
+                            + "]"
+                            + response_time_text
+                            + Fore.GREEN
+                            + f" {self.result.site_name}:"
+                            + Fore.YELLOW
+                            + " Not Found!"
+                        )
+                    )
                 else:
-                    print(f"[-]{response_time_text} {self.result.site_name}: Not Found!")
+                    print(
+                        f"[-]{response_time_text} {self.result.site_name}: Not Found!"
+                    )
         elif result.status == QueryStatus.UNKNOWN:
             if self.color:
-                print(Style.BRIGHT + Fore.WHITE + "[" +
-                      Fore.RED + "-" +
-                      Fore.WHITE + "]" +
-                      Fore.GREEN + f" {self.result.site_name}:" +
-                      Fore.RED + f" {self.result.context}" +
-                      Fore.YELLOW + f" ")
+                print(
+                    Style.BRIGHT
+                    + Fore.WHITE
+                    + "["
+                    + Fore.RED
+                    + "-"
+                    + Fore.WHITE
+                    + "]"
+                    + Fore.GREEN
+                    + f" {self.result.site_name}:"
+                    + Fore.RED
+                    + f" {self.result.context}"
+                    + Fore.YELLOW
+                    + f" "
+                )
             else:
                 print(f"[-] {self.result.site_name}: {self.result.context} ")
         elif result.status == QueryStatus.ILLEGAL:
             if not self.print_found_only:
                 msg = "Illegal Username Format For This Site!"
                 if self.color:
-                    print((Style.BRIGHT + Fore.WHITE + "[" +
-                           Fore.RED + "-" +
-                           Fore.WHITE + "]" +
-                           Fore.GREEN + f" {self.result.site_name}:" +
-                           Fore.YELLOW + f" {msg}"))
+                    print(
+                        (
+                            Style.BRIGHT
+                            + Fore.WHITE
+                            + "["
+                            + Fore.RED
+                            + "-"
+                            + Fore.WHITE
+                            + "]"
+                            + Fore.GREEN
+                            + f" {self.result.site_name}:"
+                            + Fore.YELLOW
+                            + f" {msg}"
+                        )
+                    )
                 else:
                     print(f"[-] {self.result.site_name} {msg}")
         else:
-            #It should be impossible to ever get here...
-            raise ValueError(f"Unknown Query Status '{str(result.status)}' for "
-                             f"site '{self.result.site_name}'")
+            # It should be impossible to ever get here...
+            raise ValueError(
+                f"Unknown Query Status '{str(result.status)}' for "
+                f"site '{self.result.site_name}'"
+            )
 
         return
 

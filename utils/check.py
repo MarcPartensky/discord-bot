@@ -3,6 +3,7 @@ from discord.ext import commands
 from utils import tools
 from config import emoji
 
+
 class Check:
     @staticmethod
     def same_author(msg, ctx):
@@ -15,8 +16,8 @@ class Check:
         self.help_message = "Répondre par `oui` ou `non`."
         self.consent_message = "En effectuant cette action vous consentez à"
         self.sure = "Êtes-vous sur?"
-        self.yes = ['oui', 'yes', 'yep', 'yup', 'y', 'affirmatif', '+1']
-        self.no = ['non', 'no', 'nope', 'nop', 'nah', 'n', 'flemme', 'negatif', '-1']
+        self.yes = ["oui", "yes", "yep", "yup", "y", "affirmatif", "+1"]
+        self.no = ["non", "no", "nope", "nop", "nah", "n", "flemme", "negatif", "-1"]
         self.cancel_answer = "La commande n'a pas été effectué."
         self.invalid_answer = "Réponse invalide veuillez répondre par 'oui' ou 'non'."
         self.timemout_answer = "La validation de cette commande a expiré."
@@ -24,7 +25,11 @@ class Check:
     async def wait_for_check(self, ctx, timeout=None):
         timeout = timeout or self.timeout
         try:
-            msg = await ctx.bot.wait_for('message', check=tools.post_passer(Check.same_author, ctx), timeout=self.timeout)
+            msg = await ctx.bot.wait_for(
+                "message",
+                check=tools.post_passer(Check.same_author, ctx),
+                timeout=self.timeout,
+            )
             if msg.content.lower() in self.yes:
                 return True
             elif msg.content.lower() in self.no:
@@ -46,15 +51,16 @@ class Check:
         return tools.post_passer(self.validation, message=message, warning=True)
 
     def validation(self, func, message=None, warning=False):
-        async def decorated(command, ctx:commands.Context, *args):
+        async def decorated(command, ctx: commands.Context, *args):
             msg = message or self.sure
-            msg += (" " + self.help_message)
+            msg += " " + self.help_message
             await ctx.send(msg)
             self.message = None
             if await self.wait_for_check(ctx):
                 return await func(command, ctx, *args)
+
         if warning:
-             decorated.__doc__ = self.warning_emoji+func.__doc__
+            decorated.__doc__ = self.warning_emoji + func.__doc__
         else:
             decorated.__doc__ = func.__doc__
         decorated.__name__ = func.__name__
@@ -64,5 +70,3 @@ class Check:
 
     def inform(self, message):
         pass
-
-

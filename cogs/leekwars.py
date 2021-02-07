@@ -29,7 +29,7 @@ class Leekwars(commands.Cog):
     def leek_id(self):
         """Return the id of a leek if not stored already."""
         if not self.leek_id_:
-            self.leek_id_ = list(self.farmer['leeks'].keys())[0]
+            self.leek_id_ = list(self.farmer["leeks"].keys())[0]
         return self.leek_id_
 
     @leek_id.setter
@@ -37,29 +37,28 @@ class Leekwars(commands.Cog):
         """Store the id of a leek if not stored already."""
         self.leek_id_ = leek_id
 
-    @commands.group(aliases=['lk'])
+    @commands.group(aliases=["lk"])
     async def leekwars(self, ctx: commands.Context):
         """API Leekwars."""
         if not self.token:
             url = os.path.join(
                 self.url,
                 "farmer/login-token",
-                os.environ['LEEKWARS_USERNAME'],
-                os.environ['LEEKWARS_PASSWORD'],
+                os.environ["LEEKWARS_USERNAME"],
+                os.environ["LEEKWARS_PASSWORD"],
             )
             profile = requests.get(url=url).json()
-            self.farmer = profile['farmer']
-            self.token = profile['token']
+            self.farmer = profile["farmer"]
+            self.token = profile["token"]
         if ctx.invoked_subcommand is None:
             await ctx.send("Aucune commande n'est précisée.")
 
     @leekwars.command()
     async def activate(self, ctx: commands.Context):
         """Activer le compte."""
-        await ctx.send(
-            self.api.farmer.activate(self.farmer['id']))
+        await ctx.send(self.api.farmer.activate(self.farmer["id"]))
 
-    @leekwars.group(name="jardin", aliases=['potager'])
+    @leekwars.group(name="jardin", aliases=["potager"])
     async def garden(self, ctx: commands.Context):
         """Jardin de leekwars."""
         if ctx.invoked_subcommand is None:
@@ -68,15 +67,14 @@ class Leekwars(commands.Cog):
     @garden.command(name="récupérer")
     async def get(self, ctx: commands.Context):
         """Récupère le jarding de leekwars."""
-        await ctx.send(
-            self.api.garden.get(self.token))
+        await ctx.send(self.api.garden.get(self.token))
 
     @garden.command(name="défi-solo")
     async def get_solo_challenge(
-            self,
-            ctx: commands.Context,
-            # target_id: str
-        ):
+        self,
+        ctx: commands.Context,
+        # target_id: str
+    ):
         """Liste les défis solo."""
         url = self.api.garden.url + "/get-solo-challenge/" + str(self.leek_id)
         # r = requests.get(url, auth=(
@@ -84,51 +82,45 @@ class Leekwars(commands.Cog):
         #     os.environ['LEEKWARS_PASSWORD']
         # ))
         # print(url)
-        await ctx.send(
-            self.api.session.get(url).json())
+        await ctx.send(self.api.session.get(url).json())
 
     @garden.command(name="combat-solo")
     async def get_solo_fight(self, ctx: commands.Context):
         """Liste les combat solo."""
         url = self.api.garden.url + "/get-solo-fight/" + str(self.leek_id)
-        response = requests.get(url, auth=(
-            os.environ['LEEKWARS_USERNAME'],
-            os.environ['LEEKWARS_PASSWORD']
-        ))
+        response = requests.get(
+            url, auth=(os.environ["LEEKWARS_USERNAME"], os.environ["LEEKWARS_PASSWORD"])
+        )
         print(response.text)
         print(response)
         await ctx.send(response)
 
-
     @garden.command(name="opposants-fermier")
     async def get_farmer_opponnents(self, ctx: commands.Context):
         """Renvoie la liste des opposants d'un fermier."""
-        url = self.api.garden.url + "/get-farmer-opponnents/" + str(self.leek_id)# +"/"+token
+        url = (
+            self.api.garden.url + "/get-farmer-opponnents/" + str(self.leek_id)
+        )  # +"/"+token
         # r = self.api.session.get(url).json()
         result = requests.get(
             url,
             auth=HTTPBasicAuth(
-                os.environ['LEEKWARS_USERNAME'],
-                os.environ['LEEKWARS_PASSWORD']
-            ))
+                os.environ["LEEKWARS_USERNAME"], os.environ["LEEKWARS_PASSWORD"]
+            ),
+        )
         await ctx.send(result)
 
     @garden.command(name="opposants-poireau")
     async def get_leek_opponnents(self, ctx: commands.Context):
         """Renvoie la liste des opposants du poireau."""
         # result = self.api.garden.get_leek_opponents(self.leek_id) #, self.token)
-        url = os.path.join(
-            self.url,
-            'garden',
-            'get-leek-opponents',
-            str(self.leek_id)
-        )
+        url = os.path.join(self.url, "garden", "get-leek-opponents", str(self.leek_id))
         headers = {
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,\
-                image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-            'Upgrade-Insecure-Requests': str(1),
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5)Appl\
-                eWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36'
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,\
+                image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "Upgrade-Insecure-Requests": str(1),
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5)Appl\
+                eWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36",
         }
         print(url)
         print(headers)
@@ -154,10 +146,10 @@ class Leekwars(commands.Cog):
         """Liste les joueurs connectés."""
         result = self.api.farmer.get_connected()
         lines = [f"```ini\n[Joueurs connectés {result['count']}]\n```"]
-        for farmer in result['farmers']:
+        for farmer in result["farmers"]:
             line = f"> nom:{farmer['name']} id:{farmer['id']}"
             lines.append(line)
-        msg = '\n'.join(lines)
+        msg = "\n".join(lines)
         await ctx.send(msg)
 
 

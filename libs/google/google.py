@@ -5,10 +5,13 @@ from .modules import images
 from .modules import currency
 from .modules import calculator
 from .modules import standard_search
+
 # from modules import shopping_search
 
-__author__ = "Anthony Casagrande <birdapi@gmail.com>, " + \
-    "Agustin Benassi <agusbenassi@gmail.com>"
+__author__ = (
+    "Anthony Casagrande <birdapi@gmail.com>, "
+    + "Agustin Benassi <agusbenassi@gmail.com>"
+)
 __version__ = "1.1.0"
 
 
@@ -26,4 +29,5 @@ calculate = calculator.calculate
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

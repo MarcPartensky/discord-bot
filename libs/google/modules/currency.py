@@ -19,8 +19,7 @@ def convert(amount, from_currency, to_currency):
     if from_currency == to_currency:
         return amount * 1.0
 
-    req_url = _get_currency_req_url(amount,
-                                    from_currency, to_currency)
+    req_url = _get_currency_req_url(amount, from_currency, to_currency)
     response = get_html(req_url)
     rate = _parse_currency_response(response, to_currency)
 
@@ -43,8 +42,8 @@ def exchange_rate(from_currency, to_currency):
 # PRIVATE
 def _get_currency_req_url(amount, from_currency, to_currency):
     return "https://www.google.com/finance/converter?a={0}&from={1}&to={2}".format(
-        amount, from_currency.replace(" ", "%20"),
-        to_currency.replace(" ", "%20"))
+        amount, from_currency.replace(" ", "%20"), to_currency.replace(" ", "%20")
+    )
 
 
 def _parse_currency_response(response, to_currency):

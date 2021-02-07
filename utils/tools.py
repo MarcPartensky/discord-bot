@@ -25,7 +25,7 @@ class Capturing(list):
 
     def __exit__(self, *args):
         self.extend(self._stringio.getvalue().splitlines())
-        del self._stringio    # free up some memory
+        del self._stringio  # free up some memory
         sys.stdout = self._stdout
 
 
@@ -43,7 +43,7 @@ def id_to_name(bot, id):
 
 def tag_to_id(tag):
     """Convert a discord tag to a discord id."""
-    return int(tag.replace('<@!', '').replace('>', ''))
+    return int(tag.replace("<@!", "").replace(">", ""))
 
 
 def id_to_tag(id):
@@ -53,6 +53,7 @@ def id_to_tag(id):
 
 class DictObject(dict):
     """Tricky way to make a dictionary usable as a python object."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__dict__ = self
@@ -60,12 +61,14 @@ class DictObject(dict):
 
 def post_passer(func, *passed_args, **passed_kwargs):
     """Decorator that passes additionnal arguments (after its own) to a function."""
+
     def decorated(*args, **kwargs):
         args = list(args)
         args.extend(passed_args)
         args = tuple(args)
         kwargs.update(passed_kwargs)
         return func(*args, **kwargs)
+
     return decorated
 
 
@@ -80,9 +83,12 @@ def for_all_cog_methods(decorator_method):
                     decorated_cog_commands.append(decorated)
                 o.__cog_commands__ = tuple(decorated_cog_commands)
                 return o
+
             return decorated__new__
+
         cls.__new__ = decorator__new__(cls.__new__)
         return cls
+
     return decorate
 
 
@@ -104,8 +110,10 @@ def keep(t: dict, l: list):
 @contextmanager
 def time_limit(seconds):
     """Decorator that gives a time limit to execute a function."""
+
     def signal_handler(signum, frame):
         raise TimeoutError("Timed out!")
+
     signal.signal(signal.SIGALRM, signal_handler)
     signal.alarm(seconds)
     try:
@@ -122,21 +130,17 @@ async def not_invoked_command(ctx: commands.Context, group: str):
 
 
 def lazy_embed(
-        fields: dict,
-        title: str = None,
-        description: str = None,
-        color: bytes = None,
-        footer: str = None,
-        url : str = None,
-        thumbnail : str = None,
-        image: str = None,
-    ):
+    fields: dict,
+    title: str = None,
+    description: str = None,
+    color: bytes = None,
+    footer: str = None,
+    url: str = None,
+    thumbnail: str = None,
+    image: str = None,
+):
     """Lazy way to make an embed."""
-    embed = discord.Embed(
-        title=title,
-        description=description,
-        color=color,
-        url=url)
+    embed = discord.Embed(title=title, description=description, color=color, url=url)
     if thumbnail:
         embed.set_thumbnail(url=thumbnail)
     if image:

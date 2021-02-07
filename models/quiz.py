@@ -1,22 +1,25 @@
 from config.config import cluster
-from models.mongo import  MongoCollection, BindPost
+from models.mongo import MongoCollection, BindPost
 
 import discord
 import string
 import time
 import random
 
+
 class Quiz:
     """Quiz class."""
-    def __init__(self,
-            name:str,
-            creator:str,
-            owners:str,
-            timestamp:float=time.time(),
-            questions:list=[],
-            seed:int=random.randint(1e9, 1e10-1),
-            n=0
-        ):
+
+    def __init__(
+        self,
+        name: str,
+        creator: str,
+        owners: str,
+        timestamp: float = time.time(),
+        questions: list = [],
+        seed: int = random.randint(1e9, 1e10 - 1),
+        n=0,
+    ):
         """Create a quiz using the list of questions."""
         self.question = questions
         self.n = n
@@ -41,22 +44,24 @@ class Quiz:
         random.shuffle(questions)
         return questions
 
+
 class Question:
     """Representation of a question of a quiz.
     This object is not strictely speaking a question as it also contains
     the possible answers and good answer for the real question."""
 
-    def __init__(self,
-            question:str,
-            answers:list=[],
-            color:discord.Color=None,
-            url:str=None,
-            description:str=None,
-            image:str=None,
-            thumbnail:str=None,
-            footer:str=None,
-            timestamp:int=time.time(),
-        ):
+    def __init__(
+        self,
+        question: str,
+        answers: list = [],
+        color: discord.Color = None,
+        url: str = None,
+        description: str = None,
+        image: str = None,
+        thumbnail: str = None,
+        footer: str = None,
+        timestamp: int = time.time(),
+    ):
         """Create a question using ."""
         self.question = question
         self.answers = answers
@@ -68,11 +73,11 @@ class Question:
         self.footer = footer
         self.timestamp = timestamp
 
-    @property 
+    @property
     def answer(self):
         """Right answer."""
         return self.answers[0]
-    
+
     @property
     def title(self):
         """Title of the discord embed associated with the question."""
@@ -88,7 +93,10 @@ class Question:
     @property
     def fields(self):
         """Fields of the question embed."""
-        return {string.ascii_uppercase[i]:answer for i, answer in enumerate(self.shuffled_answers)}
+        return {
+            string.ascii_uppercase[i]: answer
+            for i, answer in enumerate(self.shuffled_answers)
+        }
 
     @property
     def embed(self):

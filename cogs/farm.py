@@ -1,21 +1,21 @@
 from discord.ext import commands, tasks
+
 # from config.emoji import farm
 from config.config import cluster, check, access
 
 
 class Farm(commands.Cog):
-    def __init__(self, bot:commands.Bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.farms:MongoDatabase = cluster.farms
-        self.users:MongoDatabase = cluster.users
+        self.farms: MongoDatabase = cluster.farms
+        self.users: MongoDatabase = cluster.users
 
-    @commands.group(name='ferme', aliases=['farm'])
-    async def farm(self, ctx:commands.Context):
+    @commands.group(name="ferme", aliases=["farm"])
+    async def farm(self, ctx: commands.Context):
         """Commandes de la ferme."""
 
-
     @farm.command(name="créer")
-    async def create(self, ctx:commands.Context, name:str):
+    async def create(self, ctx: commands.Context, name: str):
         """Crée une ferme."""
         user = self.users.accounts[ctx.author.id]
         user.setdefaults(farms=0, max_farms=1)
@@ -33,16 +33,16 @@ class Farm(commands.Cog):
 
     @farm.command(name="supprimer")
     @check.consent("supprimer cette ferme.")
-    async def delete(self, ctx:commands.Context, name:str):
+    async def delete(self, ctx: commands.Context, name: str):
         """Supprime une ferme."""
         farm = self.farms[name]
         if farm.owner == ctx.author.id:
             del self.farms[name]
 
 
-
 def setup(bot):
     bot.add_cog(Farm(bot))
+
 
 """
 users:Database

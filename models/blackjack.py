@@ -3,6 +3,7 @@ import urllib.request
 from PIL import Image
 from collections import namedtuple
 import os
+
 # import PIL
 
 # urllib.request.urlretrieve(
@@ -10,9 +11,7 @@ import os
 #     "as de trêfle.jpg")
 
 
-
 class CardDeck:
-
 
     base_url = ""
     "Trèfles"
@@ -49,7 +48,7 @@ class CardDeck:
     "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Playing_card_spade_J.svg/800px-Playing_card_spade_J.svg.png"
     "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Playing_card_spade_Q.svg/800px-Playing_card_spade_Q.svg.png"
     "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Playing_card_spade_K.svg/800px-Playing_card_spade_K.svg.png"
-    
+
     "Coeur"
     "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Playing_card_heart_A.svg/800px-Playing_card_heart_A.svg.png"
     "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Playing_card_heart_2.svg/800px-Playing_card_heart_2.svg.png"
@@ -64,7 +63,6 @@ class CardDeck:
     "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Playing_card_heart_J.svg/800px-Playing_card_heart_J.svg.png"
     "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Playing_card_heart_Q.svg/800px-Playing_card_heart_Q.svg.png"
     "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Playing_card_heart_K.svg/800px-Playing_card_heart_K.svg.png"
-
 
     "Carreau"
     "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Playing_card_diamond_A.svg/800px-Playing_card_diamond_A.svg.png"
@@ -82,16 +80,17 @@ class CardDeck:
     "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Playing_card_diamond_K.svg/800px-Playing_card_diamond_K.svg.png"
 
 
-
 class Card:
-    categories = ['coeur', 'trèfle', 'carreau', 'pique']
-    number = [str(i) for i in range(10)] + ['jack', 'queen', 'king']
+    categories = ["coeur", "trèfle", "carreau", "pique"]
+    number = [str(i) for i in range(10)] + ["jack", "queen", "king"]
 
     def getUrl(self, category, number):
         """Find the the url of a given card."""
         pass
 
-    def __init__(self, category:str, number:str, visible:bool=False, sleeping:bool=False):
+    def __init__(
+        self, category: str, number: str, visible: bool = False, sleeping: bool = False
+    ):
         self.category = category
         self.number = number
         self.visible = visible
@@ -107,8 +106,9 @@ class Card:
         else:
             return [10]
 
+
 class Player:
-    def __init__(self, cards:list=[], sleeping:bool=False):
+    def __init__(self, cards: list = [], sleeping: bool = False):
         """Créee un joueur avec ses cartes et s'il est couché."""
         self.cards = cards
         self.sleeping = sleeping
@@ -127,14 +127,15 @@ class Player:
         """Affiche le total des cartes d'un joueur."""
         return sum([card.value for card in self.cards])
 
-    def draw(self, game, visible:bool=True):
+    def draw(self, game, visible: bool = True):
         """Retire une carte."""
         self.cards.append(game.cards.pop(0))
         self.cards[-1].visible = visible
         self.checkOutOfNumber(game)
 
+
 class NormalPlayer(Player):
-    def __init__(self, id:int, bet:int, cards:list=[], sleeping:bool=False):
+    def __init__(self, id: int, bet: int, cards: list = [], sleeping: bool = False):
         """Définit un joueur normal avec son id, pari, ses cartes et s'il est couché."""
         super().__init__(cards, sleeping)
         self.bet = bet
@@ -143,28 +144,32 @@ class NormalPlayer(Player):
     def gains(self, player, banker):
         """Calcule le gain d'un joueur."""
         if player.hasBlackJack():
-            return 1.5*player.bet
-        if  21 >= player.totalValue > banker.totalValue or (banker.totalValue >= 21 and player.totalValue <= 21):
-            return 2*player.bet
+            return 1.5 * player.bet
+        if 21 >= player.totalValue > banker.totalValue or (
+            banker.totalValue >= 21 and player.totalValue <= 21
+        ):
+            return 2 * player.bet
         if player.totalValue == banker.totalValue <= 21:
             return bet
         return 0
+
 
 class Cheater(Player):
     def play(self, game):
         game.cards[0]
 
+
 class Banker(Player):
-    def __init__(self, cards:list=[], sleeping:bool=False):
+    def __init__(self, cards: list = [], sleeping: bool = False):
         """Définit un banquier avec ses cartes et s'il est couché."""
         super().__init__(cards, sleeping)
 
     def play(self, game):
         """Le banquier joue."""
         for card in self.cards:
-            card.visible = True       #Rend toutes les cartes du banquier visibles
+            card.visible = True  # Rend toutes les cartes du banquier visibles
         if self.cardsValue(cards) <= 17:
-            self.draw(game, banker)            #Pioche jusqu'à avoir une valeur d'au moins 17
+            self.draw(game, banker)  # Pioche jusqu'à avoir une valeur d'au moins 17
         self.sleeping = True
 
     def drawAll(self, game, visible, n):
@@ -173,17 +178,16 @@ class Banker(Player):
             for player in game.players:
                 player.draw(game, visible)
 
-Vector = namedtuple('Vector', ['x', 'y'])
+
+Vector = namedtuple("Vector", ["x", "y"])
+
 
 class Table:
-    backgroundPath  = os.path.abspath('assets/blackjack/imgs/green-background.jpg')
-    borderPath = os.path.abspath('assets/blackjack/imgs/white-border.png')
+    backgroundPath = os.path.abspath("assets/blackjack/imgs/green-background.jpg")
+    borderPath = os.path.abspath("assets/blackjack/imgs/white-border.png")
     cardSize = Vector(1040, 832)
 
-    def __init__(self,
-            backgroundPath:str=None,
-            borderPath:str=None
-        ):
+    def __init__(self, backgroundPath: str = None, borderPath: str = None):
         self.backgroundPath = backgroundPath or Table.backgroundPath
         self.borderPath = borderPath or Table.borderPath
         self.background = Image.open(self.backgroundPath)
@@ -192,12 +196,12 @@ class Table:
     def resize(self):
         """Resize the image of the blackjack."""
         bg = Vector(*self.background.size)
-        ratio = Table.cardSize.y/Table.cardSize.x # card ratio in pixel
-        c = Vector(bg.x/10, ratio*bg.x/10)
+        ratio = Table.cardSize.y / Table.cardSize.x  # card ratio in pixel
+        c = Vector(bg.x / 10, ratio * bg.x / 10)
         self.border = self.border.resize((c.x, c.y))
         # bd = Vector(*self.border.size)
 
-    def save(self, filename:str):
+    def save(self, filename: str):
         """Save the image of the blackjack created."""
         pass
 
@@ -225,7 +229,7 @@ class BlackJack:
     @property
     def bankerTurn(self):
         return all([player.sleeping for player in self.players])
-    
+
     def burn(self, n):
         """Brûle n cartes."""
         for i in range(n):
@@ -243,14 +247,14 @@ class BlackJack:
             pass
         banker.play(self)
         self.gains
-        
+
     def firstTurn(self):
         self.burn(5)
-        self.banker.drawAll(self,True,2)
+        self.banker.drawAll(self, True, 2)
         self.banker.draw(self, False)
         self.banker.draw(self)
 
-    def allElementsFalse(self,liste):
+    def allElementsFalse(self, liste):
         for element in liste:
             if element:
                 return False
@@ -258,7 +262,6 @@ class BlackJack:
 
     def bankerTurn():
         return all([not player.drawing for player in self.players])
-
 
     def show(self):
         """Affiche la table de blackjack actuel."""
@@ -268,5 +271,3 @@ class BlackJack:
         # bdw, bdh = border.size[]
         n = len(self.players)
         # bd
-
-

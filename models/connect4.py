@@ -1,24 +1,29 @@
 import random
 import copy
 
+
 class Color:
-    blue   = (  0,  0,255)
-    red    = (255,  0,  0)
-    yellow = (255,255,  0)
-    black  = (  0,  0,  0)
-    white  = (255,255,255)
+    blue = (0, 0, 255)
+    red = (255, 0, 0)
+    yellow = (255, 255, 0)
+    black = (0, 0, 0)
+    white = (255, 255, 255)
+
 
 class Token:
     yellow = 1
     red = -1
     empty = 0
 
+
 done = False
 won = False
+
 
 class Board:
     class ColumnFull(Exception):
         pass
+
     def __init__(self, size=(7, 6)):
         self.size = (w, h) = size
         self.grid = [[0 for y in range(h)] for x in range(w)]
@@ -30,7 +35,7 @@ class Board:
     def __contains__(self, position):
         w, h = self.size
         x, y = position
-        return 0<=x<w and 0<=y<h
+        return 0 <= x < w and 0 <= y < h
 
     def update_full(self):
         for column in self.grid:
@@ -42,20 +47,44 @@ class Board:
         w, h = self.size
         for y in range(6):
             for x in range(4):
-                if self.grid[x][y]==self.grid[x+1][y]==self.grid[x+2][y]==self.grid[x+3][y]!=Token.empty:
+                if (
+                    self.grid[x][y]
+                    == self.grid[x + 1][y]
+                    == self.grid[x + 2][y]
+                    == self.grid[x + 3][y]
+                    != Token.empty
+                ):
                     self.won = True
                     return
         for y in range(3):
             for x in range(7):
-                if self.grid[x][y]==self.grid[x][y+1]==self.grid[x][y+2]==self.grid[x][y+3]!=Token.empty:
+                if (
+                    self.grid[x][y]
+                    == self.grid[x][y + 1]
+                    == self.grid[x][y + 2]
+                    == self.grid[x][y + 3]
+                    != Token.empty
+                ):
                     self.won = True
                     return
         for y in range(3):
             for x in range(4):
-                if self.grid[x][y]==self.grid[x+1][y+1]==self.grid[x+2][y+2]==self.grid[x+3][y+3]!=Token.empty:
+                if (
+                    self.grid[x][y]
+                    == self.grid[x + 1][y + 1]
+                    == self.grid[x + 2][y + 2]
+                    == self.grid[x + 3][y + 3]
+                    != Token.empty
+                ):
                     self.won = True
                     return
-                if self.grid[x+3][y]==self.grid[x+2][y+1]==self.grid[x+1][y+2]==self.grid[x][y+3]!=Token.empty:
+                if (
+                    self.grid[x + 3][y]
+                    == self.grid[x + 2][y + 1]
+                    == self.grid[x + 1][y + 2]
+                    == self.grid[x][y + 3]
+                    != Token.empty
+                ):
                     self.won = True
                     return
 
@@ -69,6 +98,7 @@ class Board:
         else:
             raise Board.ColumnFull
 
+
 class Metric:
     pass
 
@@ -76,9 +106,12 @@ class Metric:
 class Victory(Metric):
     """Measures victories in a game."""
 
+
 class Liberty(Metric):
     def __init__(self):
-        self.directions = [(x, y) for x in [-1,0,1] for y in [-1,0,1] if not x==y==0]
+        self.directions = [
+            (x, y) for x in [-1, 0, 1] for y in [-1, 0, 1] if not x == y == 0
+        ]
 
     def __call__(self, grid, token):
         positions = self.player_positions(grid, token)
@@ -98,8 +131,8 @@ class Liberty(Metric):
         w, h = len(grid), len(grid[0])
         n = 0
         for dx, dy in self.directions:
-            if 0<=x+dx<w and 0<=y+dy<h:
-                case = grid[x+dx][y+dy]
+            if 0 <= x + dx < w and 0 <= y + dy < h:
+                case = grid[x + dx][y + dy]
                 if case == Token.empty:
                     n += 1
         return n
@@ -108,37 +141,42 @@ class Liberty(Metric):
         w, h = len(grid), len(grid[0])
         n = 0
         for dx, dy in self.directions:
-            if 0<=x+dx<w and 0<=y+dy<h:
-                case = grid[x+dx][y+dy]
+            if 0 <= x + dx < w and 0 <= y + dy < h:
+                case = grid[x + dx][y + dy]
                 if case == Token.empty or case == token:
                     n += 1
         return n
 
+
 class LineLiberty(Metric):
     def value_grid(self, grid):
         pass
+
     def value_line(self, line):
         pass
 
 
-
 class Player:
     pass
+
 
 class Human(Player):
     def play(self, mouse):
         choice = mouse[0]
         return choice
 
+
 class Bot(Player):
     def play(self, board, token):
         pass
 
+
 class DumbBot(Bot):
     def play(self, board, token):
         w = board.size[0]
-        choice = random.randint(0,w-1)
+        choice = random.randint(0, w - 1)
         return choice
+
 
 class CleverBot(Bot):
     def __init__(self, max_level=5, metric=Liberty()):
@@ -152,28 +190,31 @@ class CleverBot(Bot):
         """Minimax."""
         if level == self.max_level:
             return self.metric(grid, token)
-        choice = 0; max_value = 0
-        for ix,column in enumerate(grid):
-            if column.count(Token.empty)>0:
+        choice = 0
+        max_value = 0
+        for ix, column in enumerate(grid):
+            if column.count(Token.empty) > 0:
                 grid_ = copy.deepcopy(grid)
                 grid_ = self.insert(grid_, ix, token)
-                value = self.minimax(grid_, -token, level+1)
-                if value>max_value:
+                value = self.minimax(grid_, -token, level + 1)
+                if value > max_value:
                     max_value = value
                     choice = ix
         return choice
-    
+
     def insert(self, grid, ix, token):
         for iy in reversed(range(len(grid[ix]))):
-            if grid[ix][iy]==Token.empty:
+            if grid[ix][iy] == Token.empty:
                 grid[ix][iy] = token
                 break
         return grid
+
 
 def main():
     players = [Human(), CleverBot()]
     game = Game(players)
     game.main()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

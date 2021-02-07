@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import str
 from builtins import range
@@ -19,10 +20,34 @@ import threading
 import queue
 
 
-IMAGE_FORMATS = ["bmp", "gif", "jpg", "png", "psd", "pspimage", "thm",
-                 "tif", "yuv", "ai", "drw", "eps", "ps", "svg", "tiff",
-                 "jpeg", "jif", "jfif", "jp2", "jpx", "j2k", "j2c", "fpx",
-                 "pcd", "png", "pdf"]
+IMAGE_FORMATS = [
+    "bmp",
+    "gif",
+    "jpg",
+    "png",
+    "psd",
+    "pspimage",
+    "thm",
+    "tif",
+    "yuv",
+    "ai",
+    "drw",
+    "eps",
+    "ps",
+    "svg",
+    "tiff",
+    "jpeg",
+    "jif",
+    "jfif",
+    "jp2",
+    "jpx",
+    "j2k",
+    "j2c",
+    "fpx",
+    "pcd",
+    "png",
+    "pdf",
+]
 
 
 # AUXILIARY CLASSES
@@ -47,13 +72,13 @@ class SizeCategory(object):
 class LargerThan(object):
     NONE = None
     QSVGA = "qsvga"  # 400 x 300
-    VGA = "vga"     # 640 x 480
-    SVGA = "svga"   # 800 x 600
-    XGA = "xga"     # 1024 x 768
-    MP_2 = "2mp"    # 2 MP (1600 x 1200)
-    MP_4 = "4mp"    # 4 MP (2272 x 1704)
-    MP_6 = "6mp"    # 6 MP (2816 x 2112)
-    MP_8 = "8mp"    # 8 MP (3264 x 2448)
+    VGA = "vga"  # 640 x 480
+    SVGA = "svga"  # 800 x 600
+    XGA = "xga"  # 1024 x 768
+    MP_2 = "2mp"  # 2 MP (1600 x 1200)
+    MP_4 = "4mp"  # 4 MP (2272 x 1704)
+    MP_6 = "6mp"  # 6 MP (2816 x 2112)
+    MP_8 = "8mp"  # 8 MP (3264 x 2448)
     MP_10 = "10mp"  # 10 MP (3648 x 2736)
     MP_12 = "12mp"  # 12 MP (4096 x 3072)
     MP_15 = "15mp"  # 15 MP (4480 x 3360)
@@ -99,7 +124,9 @@ class ImageOptions(object):
         if self.image_type:
             # clipart
             tbs = self._add_to_tbs(tbs, "itp", self.image_type)
-        if self.size_category and not (self.larger_than or (self.exact_width and self.exact_height)):
+        if self.size_category and not (
+            self.larger_than or (self.exact_width and self.exact_height)
+        ):
             # i = icon, l = large, m = medium, lt = larger than, ex = exact
             tbs = self._add_to_tbs(tbs, "isz", self.size_category)
         if self.larger_than:
@@ -161,7 +188,7 @@ class ImageResult(object):
             i=str(self.index),
             p=str(self.page),
             d=unidecode(self.domain) if self.domain else None,
-            l=unidecode(self.link) if self.link else None
+            l=unidecode(self.link) if self.link else None,
         )
         return string
 
@@ -181,9 +208,9 @@ class ImageResult(object):
             # req.add_header('Referer', referer)   # here is the trick
             # response = urllib2.urlopen(req)
 
-            if "image" in response.headers['content-type']:
+            if "image" in response.headers["content-type"]:
                 path_filename = self._get_path_filename(path)
-                with open(path_filename, 'wb') as output_file:
+                with open(path_filename, "wb") as output_file:
                     shutil.copyfileobj(response.raw, output_file)
                     # output_file.write(response.content)
             else:
@@ -232,8 +259,7 @@ class ImageResult(object):
             path_filename = os.path.join(path, default_filename)
             while os.path.isfile(path_filename):
                 i += 1
-                default_filename = self.ROOT_FILENAME + str(i) + "." + \
-                    file_format
+                default_filename = self.ROOT_FILENAME + str(i) + "." + file_format
                 path_filename = os.path.join(path, default_filename)
 
         return path_filename
@@ -259,7 +285,7 @@ def _parse_image_format(image_link):
     >>> Google._parse_image_format(link)
 
     """
-    parsed_format = image_link[image_link.rfind(".") + 1:]
+    parsed_format = image_link[image_link.rfind(".") + 1 :]
 
     # OLD: identify formats even with weird final characters
     if parsed_format not in IMAGE_FORMATS:
@@ -274,15 +300,21 @@ def _parse_image_format(image_link):
     return parsed_format
 
 
-def _get_images_req_url(query, image_options=None, page=0,
-                        per_page=20):
-    query = query.strip().replace(":", "%3A").replace(
-        "+", "%2B").replace("&", "%26").replace(" ", "+")
+def _get_images_req_url(query, image_options=None, page=0, per_page=20):
+    query = (
+        query.strip()
+        .replace(":", "%3A")
+        .replace("+", "%2B")
+        .replace("&", "%26")
+        .replace(" ", "+")
+    )
 
-    url = "https://www.google.com.ar/search?q={}".format(query) + \
-          "&es_sm=122&source=lnms" + \
-          "&tbm=isch&sa=X&ei=DDdUVL-fE4SpNq-ngPgK&ved=0CAgQ_AUoAQ" + \
-          "&biw=1024&bih=719&dpr=1.25"
+    url = (
+        "https://www.google.com.ar/search?q={}".format(query)
+        + "&es_sm=122&source=lnms"
+        + "&tbm=isch&sa=X&ei=DDdUVL-fE4SpNq-ngPgK&ved=0CAgQ_AUoAQ"
+        + "&biw=1024&bih=719&dpr=1.25"
+    )
 
     if image_options:
         tbs = image_options.get_tbs()
@@ -304,7 +336,7 @@ def _find_divs_with_images(soup):
 
 def _get_file_name(link):
 
-    temp_name = link.rsplit('/', 1)[-1]
+    temp_name = link.rsplit("/", 1)[-1]
     image_format = _parse_image_format(link)
 
     if image_format and temp_name.rsplit(".", 1)[-1] != image_format:
@@ -376,13 +408,14 @@ def search_old(query, image_options=None, pages=1):
         if html:
             if Google.DEBUG_MODE:
                 write_html_to_file(
-                    html, "images_{0}_{1}.html".format(query.replace(" ", "_"), i))
+                    html, "images_{0}_{1}.html".format(query.replace(" ", "_"), i)
+                )
             j = 0
             soup = BeautifulSoup(html)
             match = re.search("dyn.setResults\((.+)\);</script>", html)
             if match:
                 init = str(match.group(1), errors="ignore")
-                tokens = init.split('],[')
+                tokens = init.split("],[")
                 for token in tokens:
                     res = ImageResult()
                     res.page = i
@@ -391,20 +424,26 @@ def search_old(query, image_options=None, pages=1):
 
                     # should be 32 or 33, but seems to change, so just make sure no exceptions
                     # will be thrown by the indexing
-                    if (len(toks) > 22):
+                    if len(toks) > 22:
                         for t in range(len(toks)):
-                            toks[t] = toks[t].replace('\\x3cb\\x3e', '').replace(
-                                '\\x3c/b\\x3e', '').replace('\\x3d', '=').replace('\\x26', '&')
-                        match = re.search(
-                            "imgurl=(?P<link>[^&]+)&imgrefurl", toks[0])
+                            toks[t] = (
+                                toks[t]
+                                .replace("\\x3cb\\x3e", "")
+                                .replace("\\x3c/b\\x3e", "")
+                                .replace("\\x3d", "=")
+                                .replace("\\x26", "&")
+                            )
+                        match = re.search("imgurl=(?P<link>[^&]+)&imgrefurl", toks[0])
                         if match:
                             res.link = match.group("link")
-                        res.name = toks[6].replace('"', '')
-                        res.thumb = toks[21].replace('"', '')
-                        res.format = toks[10].replace('"', '')
-                        res.domain = toks[11].replace('"', '')
+                        res.name = toks[6].replace('"', "")
+                        res.thumb = toks[21].replace('"', "")
+                        res.format = toks[10].replace('"', "")
+                        res.domain = toks[11].replace('"', "")
                         match = re.search(
-                            "(?P<width>[0-9]+) &times; (?P<height>[0-9]+) - (?P<size>[^ ]+)", toks[9].replace('"', ''))
+                            "(?P<width>[0-9]+) &times; (?P<height>[0-9]+) - (?P<size>[^ ]+)",
+                            toks[9].replace('"', ""),
+                        )
                         if match:
                             res.width = match.group("width")
                             res.height = match.group("height")
@@ -510,8 +549,7 @@ def download(image_results, path=None):
     i = 1
     for image_result in image_results:
 
-        progress = "".join(["Downloading image ", str(i),
-                            " (", str(total_images), ")"])
+        progress = "".join(["Downloading image ", str(i), " (", str(total_images), ")"])
         print(progress)
         sys.stdout.flush()
 
@@ -536,8 +574,9 @@ class ThreadUrl(threading.Thread):
             image_result = self.queue.get()
 
             counter = self.total - self.queue.qsize()
-            progress = "".join(["Downloading image ", str(counter),
-                                " (", str(self.total), ")"])
+            progress = "".join(
+                ["Downloading image ", str(counter), " (", str(self.total), ")"]
+            )
             print(progress)
             sys.stdout.flush()
             _download_image(image_result, self.path)

@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import range
 from builtins import object
@@ -26,15 +27,19 @@ class GoogleResult(object):
         self.cached = None  # Cached version link of page
         self.page = None  # Results page this one was on
         self.index = None  # What index on this page it was on
-        self.number_of_results = None # The total number of results the query returned
+        self.number_of_results = None  # The total number of results the query returned
 
     def __repr__(self):
         name = self._limit_str_size(self.name, 55)
         description = self._limit_str_size(self.description, 49)
 
-        list_google = ["GoogleResult(",
-                       "name={}".format(name), "\n", " " * 13,
-                       "description={}".format(description)]
+        list_google = [
+            "GoogleResult(",
+            "name={}".format(name),
+            "\n",
+            " " * 13,
+            "description={}".format(description),
+        ]
 
         return "".join(list_google)
 
@@ -51,7 +56,17 @@ class GoogleResult(object):
 
 
 # PUBLIC
-def search(query, pages=1, lang='en', area='com', ncr=False, void=True, time_period=False, sort_by_date=False, first_page=0):
+def search(
+    query,
+    pages=1,
+    lang="en",
+    area="com",
+    ncr=False,
+    void=True,
+    time_period=False,
+    sort_by_date=False,
+    first_page=0,
+):
     """Returns a list of GoogleResult.
 
     Args:
@@ -66,7 +81,15 @@ def search(query, pages=1, lang='en', area='com', ncr=False, void=True, time_per
 
     results = []
     for i in range(first_page, first_page + pages):
-        url = _get_search_url(query, i, lang=lang, area=area, ncr=ncr, time_period=time_period, sort_by_date=sort_by_date)
+        url = _get_search_url(
+            query,
+            i,
+            lang=lang,
+            area=area,
+            ncr=ncr,
+            time_period=time_period,
+            sort_by_date=sort_by_date,
+        )
         html = get_html(url)
 
         if html:
@@ -110,44 +133,44 @@ def _get_name(li):
 
 
 def _filter_link(link):
-    '''Filter links found in the Google result pages HTML code.
+    """Filter links found in the Google result pages HTML code.
     Returns None if the link doesn't yield a valid result.
-    '''
+    """
     try:
         # Valid results are absolute URLs not pointing to a Google domain
         # like images.google.com or googleusercontent.com
-        o = urlparse(link, 'http')
+        o = urlparse(link, "http")
         # link type-1
         # >>> "https://www.gitbook.com/book/ljalphabeta/python-"
-        if o.netloc and 'google' not in o.netloc:
+        if o.netloc and "google" not in o.netloc:
             return link
         # link type-2
         # >>> "http://www.google.com/url?url=http://python.jobbole.com/84108/&rct=j&frm=1&q=&esrc=s&sa=U&ved=0ahUKEwj3quDH-Y7UAhWG6oMKHdQ-BQMQFggUMAA&usg=AFQjCNHPws5Buru5Z71wooRLHT6mpvnZlA"
-        if o.netloc and o.path.startswith('/url'):
+        if o.netloc and o.path.startswith("/url"):
             try:
-                link = parse_qs(o.query)['url'][0]
-                o = urlparse(link, 'http')
-                if o.netloc and 'google' not in o.netloc:
+                link = parse_qs(o.query)["url"][0]
+                o = urlparse(link, "http")
+                if o.netloc and "google" not in o.netloc:
                     return link
             except KeyError:
                 pass
         # Decode hidden URLs.
-        if link.startswith('/url?'):
+        if link.startswith("/url?"):
             try:
                 # link type-3
                 # >>> "/url?q=http://python.jobbole.com/84108/&sa=U&ved=0ahUKEwjFw6Txg4_UAhVI5IMKHfqVAykQFggUMAA&usg=AFQjCNFOTLpmpfqctpIn0sAfaj5U5gAU9A"
-                link = parse_qs(o.query)['q'][0]
+                link = parse_qs(o.query)["q"][0]
                 # Valid results are absolute URLs not pointing to a Google domain
                 # like images.google.com or googleusercontent.com
-                o = urlparse(link, 'http')
-                if o.netloc and 'google' not in o.netloc:
+                o = urlparse(link, "http")
+                if o.netloc and "google" not in o.netloc:
                     return link
             except KeyError:
                 # link type-4
                 # >>> "/url?url=https://machine-learning-python.kspax.io/&rct=j&frm=1&q=&esrc=s&sa=U&ved=0ahUKEwj3quDH-Y7UAhWG6oMKHdQ-BQMQFggfMAI&usg=AFQjCNEfkUI0RP_RlwD3eI22rSfqbYM_nA"
-                link = parse_qs(o.query)['url'][0]
-                o = urlparse(link, 'http')
-                if o.netloc and 'google' not in o.netloc:
+                link = parse_qs(o.query)["url"][0]
+                o = urlparse(link, "http")
+                if o.netloc and "google" not in o.netloc:
                     return link
 
     # Otherwise, or on error, return None.
@@ -209,6 +232,7 @@ def _get_cached(li):
         if link.startswith("/url?") or link.startswith("/search?"):
             return urllib.parse.urljoin("http://www.google.com", link)
     return None
+
 
 def _get_number_of_results(results_div):
     """Return the total number of results of the google search.

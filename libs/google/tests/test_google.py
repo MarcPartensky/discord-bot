@@ -27,6 +27,7 @@ def load_html_file(path):
             fn(self, html_f)
 
         return test_decorated
+
     return test_decorator
 
 
@@ -36,7 +37,6 @@ def get_dir_vcr(name):
 
 
 class GoogleTest(unittest.TestCase):
-
     @load_html_file("html_files")
     # @unittest.skip("skip")
     def test_search_images(self, html_f):
@@ -48,7 +48,11 @@ class GoogleTest(unittest.TestCase):
 
             def __init__(self, html_f):
                 self.page_source = html_f.read()
-                self.page_source = self.page_source.decode('utf8') if 'decode' in dir(self.page_source) else self.page_source
+                self.page_source = (
+                    self.page_source.decode("utf8")
+                    if "decode" in dir(self.page_source)
+                    else self.page_source
+                )
 
             def get(self, url):
                 pass
@@ -56,8 +60,7 @@ class GoogleTest(unittest.TestCase):
             def quit(self):
                 pass
 
-        google.images.get_browser_with_url = \
-            Mock(return_value=MockBrowser(html_f))
+        google.images.get_browser_with_url = Mock(return_value=MockBrowser(html_f))
 
         res = google.search_images("apple", num_images=10)
         self.assertEqual(len(res), 10)
@@ -110,15 +113,13 @@ class GoogleTest(unittest.TestCase):
 
 
 class ConvertCurrencyTest(unittest.TestCase):
-
     def test_get_currency_req_url(self):
         """Test method to get currency conversion request url."""
 
         amount = 10
         from_currency = "USD"
         to_currency = "EUR"
-        req_url = currency._get_currency_req_url(amount, from_currency,
-                                                 to_currency)
+        req_url = currency._get_currency_req_url(amount, from_currency, to_currency)
 
         exp_req_url = "https://www.google.com/finance/converter?a=10&from=USD&to=EUR"
 
@@ -129,11 +130,11 @@ class ConvertCurrencyTest(unittest.TestCase):
         """Test method to parse currency response. TODO!"""
         pass
 
+
 # @unittest.skip("skip")
 
 
 class SearchImagesTest(unittest.TestCase):
-
     def test_get_images_req_url(self):
 
         query = "banana"
@@ -145,23 +146,24 @@ class SearchImagesTest(unittest.TestCase):
 
         req_url = images._get_images_req_url(query, options)
 
-        exp_req_url = 'https://www.google.com.ar/search?q=banana&es_sm=122&source=lnms&tbm=isch&sa=X&ei=DDdUVL-fE4SpNq-ngPgK&ved=0CAgQ_AUoAQ&biw=1024&bih=719&dpr=1.25&tbs=itp:clipart,isz:lt,islt:4mp,ic:specific,isc:green,sur:fmc'
+        exp_req_url = "https://www.google.com.ar/search?q=banana&es_sm=122&source=lnms&tbm=isch&sa=X&ei=DDdUVL-fE4SpNq-ngPgK&ved=0CAgQ_AUoAQ&biw=1024&bih=719&dpr=1.25&tbs=itp:clipart,isz:lt,islt:4mp,ic:specific,isc:green,sur:fmc"
 
         self.assertEqual(req_url, exp_req_url)
 
     def test_repr(self):
         res = images.ImageResult()
-        assert repr(
-            res) == 'ImageResult(index=None, page=None, domain=None, link=None)'
+        assert repr(res) == "ImageResult(index=None, page=None, domain=None, link=None)"
         res.page = 1
         res.index = 11
-        res.name = 'test'
-        res.thumb = 'test'
-        res.format = 'test'
-        res.domain = 'test'
-        res.link = 'http://aa.com'
-        assert repr(
-            res) == 'ImageResult(index=11, page=1, domain=test, link=http://aa.com)'
+        res.name = "test"
+        res.thumb = "test"
+        res.format = "test"
+        res.domain = "test"
+        res.link = "http://aa.com"
+        assert (
+            repr(res)
+            == "ImageResult(index=11, page=1, domain=test, link=http://aa.com)"
+        )
 
     def test_download(self):
         pass
@@ -170,6 +172,6 @@ class SearchImagesTest(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # nose.main()
     nose.run(defaultTest=__name__)

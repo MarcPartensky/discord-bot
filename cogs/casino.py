@@ -10,14 +10,11 @@ import random
 import time
 import datetime
 
+
 class Casino(commands.Cog):
     @property
     def account_defaults(self):
-        return dict(
-            coins=self.coins_starter,
-            creation=time.time(),
-            time=time.time()
-        )
+        return dict(coins=self.coins_starter, creation=time.time(), time=time.time())
 
     def __init__(self, bot, **kwargs):
         self.bot = bot
@@ -28,17 +25,17 @@ class Casino(commands.Cog):
         self.max_coins = 200
         self.coins_starter = 50
         self.refill_coins = 10
-        self.refill_wait_time = 24*60*60 #1 day
+        self.refill_wait_time = 24 * 60 * 60  # 1 day
 
     @property
     def users(self):
         return cluster.users
 
-    async def cog_before_invoke(self, ctx:commands.Context):
+    async def cog_before_invoke(self, ctx: commands.Context):
         await self.connect(ctx)
 
-    @commands.group(name='casino', aliases=['csn'])
-    async def casino(self, ctx:commands.Context):
+    @commands.group(name="casino", aliases=["csn"])
+    async def casino(self, ctx: commands.Context):
         """Groupe de commandes du casino."""
         if not ctx.invoked_subcommand:
             await ctx.send(
@@ -46,30 +43,33 @@ class Casino(commands.Cog):
                 f"\n> Tapez `{ctx.bot.command_prefix}help casino` pour voir les commandes disponibles."
             )
 
-    @casino.command(name='claim')
-    async def claim(self, ctx:commands.Context):
+    @casino.command(name="claim")
+    async def claim(self, ctx: commands.Context):
         """Claime les coins quotidiens."""
         account = self.accounts[ctx.author.id]
-        if time.time()-account.time>self.refill_wait_time:
+        if time.time() - account.time > self.refill_wait_time:
             self.refill(ctx)
             await self.coins(ctx)
         else:
             await ctx.send("> Vous devez attendre la recharge.")
             await self.time_before_refill(ctx)
 
-    @casino.command(name='coins')
-    async def coins(self, ctx:commands.Context, member:discord.Member=None):
+    @casino.command(name="coins")
+    async def coins(self, ctx: commands.Context, member: discord.Member = None):
         """Affiche son nombre de coins."""
         member = member or ctx.author
         account = self.accounts[member.id]
-        if member==ctx.author:
+        if member == ctx.author:
             msg = f"> Vous avez **{account.coins}** coins au casino."
         else:
             msg = f"> **{member.name}** a **{account.coins}** au casino."
         await ctx.send(msg)
 
-    @casino.command(name='temps')
-    async def time_before_refill(self, ctx:commands.Context,):
+    @casino.command(name="temps")
+    async def time_before_refill(
+        self,
+        ctx: commands.Context,
+    ):
         """Affiche son nombre de coins."""
         account = self.accounts[ctx.author.id]
         seconds = int(self.refill_wait_time - (time.time() - account.time))
@@ -89,33 +89,35 @@ class Casino(commands.Cog):
         await ctx.send(msg)
 
     @casino.command(name="chiffre")
-    async def find_the_digit(self, ctx:commands.Context, n:int, bet:int=1):
+    async def find_the_digit(self, ctx: commands.Context, n: int, bet: int = 1):
         """Deviner un chiffre entre 0 et 9."""
         account = self.accounts[ctx.author.id]
         if account.coins < bet:
             await ctx.send(f"> Vous n'avez pas assez de coins pour miser **{bet}**.")
             return
         r = random.randint(0, 9)
-        if n==r:
-            account.coins += 10*bet
+        if n == r:
+            account.coins += 10 * bet
             await ctx.send(f"> Vous gagnez **{10*bet}** coins.")
         else:
             account.coins -= bet
             await ctx.send(f"> Vous perdez **{bet}** coins.")
 
-    @casino.command(name='compte', aliases=['account'])
-    async def account(self, ctx:commands.Context, member:discord.Member=None):
+    @casino.command(name="compte", aliases=["account"])
+    async def account(self, ctx: commands.Context, member: discord.Member = None):
         """Affiche un compte de casino."""
         member = member or ctx.author
         account = self.accounts[member.id]
         embed = discord.Embed(title=member.name, color=member.color)
         embed.set_thumbnail(url=member.avatar_url)
-        for k,v in account.items():
+        for k, v in account.items():
             embed.add_field(name=k, value=v)
         await ctx.send(embed=embed)
 
-    @casino.command(name="vendre", aliases=['sell'])
-    async def sell(self, ctx:commands.Context, coins:int=None, member:discord.Member=None):
+    @casino.command(name="vendre", aliases=["sell"])
+    async def sell(
+        self, ctx: commands.Context, coins: int = None, member: discord.Member = None
+    ):
         """Vend les coins pour de l'argent."""
         member = member or ctx.author
         if member != ctx.author and ctx.author.id not in masters:
@@ -135,7 +137,9 @@ class Casino(commands.Cog):
 
     @casino.command(name="coins=")
     @access.admin
-    async def set_coins(self, ctx:commands.Context, coins:int, member:discord.Member=None):
+    async def set_coins(
+        self, ctx: commands.Context, coins: int, member: discord.Member = None
+    ):
         """Choisi les coins d'un membre."""
         member = member or ctx.author
         self.casino.accounts[member.id].coins = coins
@@ -143,7 +147,9 @@ class Casino(commands.Cog):
 
     @casino.command(name="coins+=")
     @access.admin
-    async def add_coins(self, ctx:commands.Context, coins:int, member:discord.Member=None):
+    async def add_coins(
+        self, ctx: commands.Context, coins: int, member: discord.Member = None
+    ):
         """Ajoute des coins à un membre."""
         member = member or ctx.author
         self.casino.accounts[member.id].coins += coins
@@ -151,7 +157,9 @@ class Casino(commands.Cog):
 
     @casino.command(name="coins-=")
     @access.admin
-    async def remove_coins(self, ctx:commands.Context, coins:int, member:discord.Member=None):
+    async def remove_coins(
+        self, ctx: commands.Context, coins: int, member: discord.Member = None
+    ):
         """Retire des coins à un membre."""
         member = member or ctx.author
         self.casino.accounts[member.id].coins -= coins
@@ -165,7 +173,7 @@ class Casino(commands.Cog):
     def update(self, account):
         account.setdefaults(**self.account_defaults)
 
-    def refill(self, ctx:commands.Context):
+    def refill(self, ctx: commands.Context):
         """Rajoute des coins régulièrement."""
         account = self.accounts[ctx.author.id]
         account.coins += self.refill_coins
@@ -176,6 +184,7 @@ class Casino(commands.Cog):
         account = self.accounts[user_id]
         self.update(account)
         return account
+
 
 def setup(bot):
     bot.add_cog(Casino(bot))

@@ -8,96 +8,95 @@ import os
 
 
 class Git(commands.Cog):
-    def __init__(self, bot:commands.Bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     @commands.group()
-    async def github(self, ctx:commands.Context):
+    async def github(self, ctx: commands.Context):
         """Utilise github."""
-        self.github = Github(os.environ['PYGITHUB_TOKEN'])
+        self.github = Github(os.environ["PYGITHUB_TOKEN"])
 
-    @github.command(name='user')
-    async def show_user(self, ctx:commands.Context):
+    @github.command(name="user")
+    async def show_user(self, ctx: commands.Context):
         """Affiche un répositoire."""
         user = self.github.get_user()
         embed = discord.Embed(title=user.name, color=discord.Color.purple())
-        for k,v in getattr(user, '_rawData').items():
+        for k, v in getattr(user, "_rawData").items():
             embed.add_field(name=k, value=v or "aucun")
         await ctx.send(embed=embed)
 
-    @github.group(name='repos')
-    async def repositories(self, ctx:commands.Context):
+    @github.group(name="repos")
+    async def repositories(self, ctx: commands.Context):
         """Affiches les répositoires github."""
         self.repos = self.github.get_user().get_repos()
         # if not msg:
         #     await self.names(ctx)
 
     @repositories.command()
-    async def names(self, ctx:commands.Context):
+    async def names(self, ctx: commands.Context):
         """Affiches les noms des répositoires githubs."""
         print("")
-        msg = '\n'.join(map(lambda r:r.name, self.repos))
+        msg = "\n".join(map(lambda r: r.name, self.repos))
         await ctx.send(msg)
 
     @repositories.command()
-    async def number(self, ctx:commands.Context):
+    async def number(self, ctx: commands.Context):
         """Affiche le nombre de repo."""
         pass
 
-    @github.group(name='repo')
-    async def repository(self, ctx:commands.Context):
+    @github.group(name="repo")
+    async def repository(self, ctx: commands.Context):
         """Affiche des informations sur un répositoire."""
         # await ctx
 
-
-    @repository.command(name='choose', aliases=['='])
-    async def choose(self, ctx:commands.Context, name:str):
+    @repository.command(name="choose", aliases=["="])
+    async def choose(self, ctx: commands.Context, name: str):
         """Choisi un répositoire github."""
         self.repos = self.github.get_user().get_repos()
-        self.repo = next(filter(lambda r:r.name==name, self.repos))
+        self.repo = next(filter(lambda r: r.name == name, self.repos))
 
     @repository.command(name="show")
-    async def show_repo(self, ctx:commands.Context):
+    async def show_repo(self, ctx: commands.Context):
         """Affiche un répositoire."""
         embed = discord.Embed(title=self.repo.name, color=discord.Color.purple())
-        for k,v in getattr(self.repo, '_rawData').items():
-            if k!='owner':
+        for k, v in getattr(self.repo, "_rawData").items():
+            if k != "owner":
                 embed.add_field(name=k, value=v)
         await ctx.send(embed=embed)
 
     @commands.group()
     @access.admin
-    async def git(self, ctx:commands.Context):
+    async def git(self, ctx: commands.Context):
         """Utilise git."""
         if ctx.invoked_subcommand is None:
-            await ctx.send('Commande git invalide.')
+            await ctx.send("Commande git invalide.")
 
     @git.command()
-    async def add(self, ctx:commands.Context, msg:str="."):
+    async def add(self, ctx: commands.Context, msg: str = "."):
         """Ajoute dans git."""
-        cmd = f'git add {msg}'
+        cmd = f"git add {msg}"
         with tools.Capturing() as out:
             os.system(cmd)
         print(out)
-        await ctx.send('\n'.join([cmd]+out))
+        await ctx.send("\n".join([cmd] + out))
 
     @git.command()
-    async def commit(self, ctx:commands.Context, msg:str):
+    async def commit(self, ctx: commands.Context, msg: str):
         """Commit dans git."""
-        cmd = f'git commit -m {msg}'
+        cmd = f"git commit -m {msg}"
         with tools.Capturing() as out:
             os.system(cmd)
         print(out)
-        await ctx.send('\n'.join([cmd]+out))
+        await ctx.send("\n".join([cmd] + out))
 
     @git.command()
-    async def push(self, ctx:commands.Context, remote:str, branch:str="master"):
+    async def push(self, ctx: commands.Context, remote: str, branch: str = "master"):
         """Push dans git."""
-        cmd = f'git push {remote} {branch}'
+        cmd = f"git push {remote} {branch}"
         with tools.Capturing() as out:
             os.system(cmd)
         print(out)
-        await ctx.send('\n'.join([cmd]+out))
+        await ctx.send("\n".join([cmd] + out))
 
 
 def setup(bot):

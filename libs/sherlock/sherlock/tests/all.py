@@ -21,16 +21,13 @@ class SherlockDetectTests(SherlockBaseTest):
         Will trigger an assert if detection mechanism did not work as expected.
         """
 
-        site = 'Instructables'
+        site = "Instructables"
         site_data = self.site_data_all[site]
 
-        #Ensure that the site's detection method has not changed.
+        # Ensure that the site's detection method has not changed.
         self.assertEqual("message", site_data["errorType"])
 
-        self.username_check([site_data["username_claimed"]],
-                            [site],
-                            exist_check=True
-                           )
+        self.username_check([site_data["username_claimed"]], [site], exist_check=True)
 
         return
 
@@ -48,16 +45,15 @@ class SherlockDetectTests(SherlockBaseTest):
         Will trigger an assert if detection mechanism did not work as expected.
         """
 
-        site = 'Instructables'
+        site = "Instructables"
         site_data = self.site_data_all[site]
 
-        #Ensure that the site's detection method has not changed.
+        # Ensure that the site's detection method has not changed.
         self.assertEqual("message", site_data["errorType"])
 
-        self.username_check([site_data["username_unclaimed"]],
-                            [site],
-                            exist_check=False
-                           )
+        self.username_check(
+            [site_data["username_unclaimed"]], [site], exist_check=False
+        )
 
         return
 
@@ -75,16 +71,13 @@ class SherlockDetectTests(SherlockBaseTest):
         Will trigger an assert if detection mechanism did not work as expected.
         """
 
-        site = 'Facebook'
+        site = "Facebook"
         site_data = self.site_data_all[site]
 
-        #Ensure that the site's detection method has not changed.
+        # Ensure that the site's detection method has not changed.
         self.assertEqual("status_code", site_data["errorType"])
 
-        self.username_check([site_data["username_claimed"]],
-                            [site],
-                            exist_check=True
-                           )
+        self.username_check([site_data["username_claimed"]], [site], exist_check=True)
 
         return
 
@@ -102,16 +95,15 @@ class SherlockDetectTests(SherlockBaseTest):
         Will trigger an assert if detection mechanism did not work as expected.
         """
 
-        site = 'Facebook'
+        site = "Facebook"
         site_data = self.site_data_all[site]
 
-        #Ensure that the site's detection method has not changed.
+        # Ensure that the site's detection method has not changed.
         self.assertEqual("status_code", site_data["errorType"])
 
-        self.username_check([site_data["username_unclaimed"]],
-                            [site],
-                            exist_check=False
-                           )
+        self.username_check(
+            [site_data["username_unclaimed"]], [site], exist_check=False
+        )
 
         return
 
@@ -129,16 +121,13 @@ class SherlockDetectTests(SherlockBaseTest):
         Will trigger an assert if detection mechanism did not work as expected.
         """
 
-        site = 'Quora'
+        site = "Quora"
         site_data = self.site_data_all[site]
 
-        #Ensure that the site's detection method has not changed.
+        # Ensure that the site's detection method has not changed.
         self.assertEqual("response_url", site_data["errorType"])
 
-        self.username_check([site_data["username_claimed"]],
-                            [site],
-                            exist_check=True
-                           )
+        self.username_check([site_data["username_claimed"]], [site], exist_check=True)
 
         return
 
@@ -156,16 +145,15 @@ class SherlockDetectTests(SherlockBaseTest):
         Will trigger an assert if detection mechanism did not work as expected.
         """
 
-        site = 'Quora'
+        site = "Quora"
         site_data = self.site_data_all[site]
 
-        #Ensure that the site's detection method has not changed.
+        # Ensure that the site's detection method has not changed.
         self.assertEqual("response_url", site_data["errorType"])
 
-        self.username_check([site_data["username_unclaimed"]],
-                            [site],
-                            exist_check=False
-                           )
+        self.username_check(
+            [site_data["username_unclaimed"]], [site], exist_check=False
+        )
 
         return
 
