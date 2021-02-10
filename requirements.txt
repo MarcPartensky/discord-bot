@@ -35,7 +35,7 @@ joblib==0.17.0
 keyring==9.3.1
 keyrings.alt==3.4.0
 lazy-object-proxy==1.5.1
-lxml==4.6.1
+lxml==4.6.2
 mccabe==0.6.1
 more-itertools==8.6.0
 multidict==4.7.6
