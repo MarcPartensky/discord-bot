@@ -9,5 +9,6 @@ COPY . .
 WORKDIR .
 
 RUN pip install -r requirements.txt
+RUN pip install -U pip
 
 ENTRYPOINT ["python", "."]
