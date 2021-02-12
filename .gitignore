@@ -7,3 +7,4 @@ __pycache__/
 venv/
 .env
 .env.dev
+./config/marc_store.yml
