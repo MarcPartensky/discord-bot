@@ -31,18 +31,16 @@ class Marc(commands.Cog):
 
     # c'est pour me chauffer
     @commands.command()
-    @access.admin
     async def who_is_marc(self, ctx: commands.Context):
         """Répond Marc est Marc."""
         await ctx.send(f"> **{Marc.marc}** est **Marc**.")
 
     @commands.command()
-    @access.admin
     async def is_marc_the_owner(self, ctx: commands.Context):
         """Évidemment on le sait tous!"""
         await ctx.send(__doc__)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @access.admin
     async def load_marc_cogs(self, ctx: commands.Context):
         """Charge les cogs de Marc."""
@@ -77,7 +75,7 @@ class Marc(commands.Cog):
         if not ctx.invoked_subcommand:
             raise Exception("Toutes les commandes de Marc sont permises!")
 
-    @marc.command()
+    @marc.command(hidden=True)
     @access.admin
     async def run(self, ctx: commands.Context, *, command):
         """Run code."""

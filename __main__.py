@@ -119,12 +119,25 @@ class Main(commands.Cog):
 
     @tasks.loop(seconds=10)
     async def change_status(self):
-        """Change le statut."""
-        await self.bot.change_presence(activity=discord.Game(next(self.status)))
+        """Change le statut.
+
+        Exemples de status:
+            - discord.ActivityType.listening,
+            - discord.ActivityType.playing,
+            - discord.ActivityType.playing,
+            - discord.ActivityType.watching,
+            - discord.ActivityType.competing
+        """
+        await self.bot.change_presence(
+            activity=discord.Activity(
+                type=discord.ActivityType.watching,
+                name=next(self.status)
+            )
+        )
 
     @commands.Cog.listener()
     async def on_ready(self):
-        """Déclarer être prêt."""
+        """Déclare être prêt."""
         self.change_status.start()
         print(f"{self.bot.user} is connected to Discord!")
 

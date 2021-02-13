@@ -19,8 +19,9 @@ class Jail(commands.Cog):
     """
 
     insults = [
-        "Confinement gratuit pour toi!",
         "You have been **confined**.",
+        "Current status: **confined**.",
+        "Es la **¡confinacìon!**",
     ]
 
     def __init__(self, bot: commands.Bot):
@@ -28,7 +29,7 @@ class Jail(commands.Cog):
         self.bot = bot
         # cluster -> database -> collection -> document
         # self.jail = cluster.jail
-        self.prisonners = cluster.jail.prisonners
+        self.jail = cluster.jail
         self.term = 10  # in minute
         self.unit = "min"
         self.role_name = "Jail"
@@ -82,21 +83,33 @@ class Jail(commands.Cog):
         unit = unit or self.unit
         term = self.convert_term(term, unit)
 
-        text_jail = discord.utils.get(ctx.guild.channels, "jail")
+        guild_info = self.jail.info[ctx.guild.id]
+
+        text_jail = discord.utils.get(ctx.guild.channels, name="jail")
         if not text_jail:
+            guild_info.text_jail_existed = False
             await ctx.guild.create_text_channel("jail")
-        voice_jail = discord.utils.get(ctx.guild.channels, "jail")
+        else:
+            if not "text_jail_existed" in guild_info:
+                guild_info.text_jail_existed = True
+
+        voice_jail = discord.utils.get(ctx.guild.channels, name="Jail")
         if not voice_jail:
+            guild_info.voice_jail_existed = False
             voice_jail = await ctx.guild.create_voice_channel("Jail")
+        else:
+            if not "text_jail_existed" in guild_info:
+                guild_info.voice_jail_existed = True
 
         insult = random.choice(Jail.insults)
         message = (
-            f"> **{member}**:\n"
+            f"> 🔒 **{member}** 🔒\n"
             "> Tu va être dépouillé de **tout** ce que tu as:\n\n```diff\n"
             "Roles:"
         )
 
         roles = []
+        undeleted_roles = []
         for role in member.roles[1:]:
             try:
                 message += "\n- " + role.name
@@ -104,6 +117,7 @@ class Jail(commands.Cog):
                 await member.remove_roles(role)
                 roles.append(role)
             except discord.Forbidden:
+                undeleted_roles.append(role)
                 print(
                     f"Impossible de supprimer {role} \
                       pour {member} par {ctx.author}."
@@ -111,10 +125,13 @@ class Jail(commands.Cog):
 
         jail_role = discord.utils.get(ctx.guild.roles, name=self.role_name)
         await member.add_roles(jail_role)
-        message += "\n+ Jail\n```"
-        message += "\n\n> " + insult
+        message += "\n+ Jail"
+        for role in undeleted_roles:
+            message += "\n+ " + role.name
+        message += "\n```"
+        message += "\n> " + insult
 
-        self.prisonners[member.id] = dict(
+        self.jail.prisonners[member.id] = dict(
             police_officer=ctx.author.id,
             timestamp=time.time(),
             release=time.time() + term,
@@ -125,7 +142,8 @@ class Jail(commands.Cog):
         await ctx.send(message)
 
         # await asyncio.sleep(term)
-        self.check.start()
+        if not self.check.is_running():
+            self.check.start()
 
     @commands.command(name="prison", aliases=["jail"])
     async def jail(self, ctx: commands.Context):
@@ -133,8 +151,10 @@ class Jail(commands.Cog):
         embed = discord.Embed(
             title="Prison", color=0x555555, description="Les prisonniers sont :"
         )
-        for prisonner in self.prisonners:
-            member = self.bot.get_user(prisonner._id)
+        for prisonner in self.jail.prisonners:
+            print(type(prisonner._id))
+            member = self.bot.get_user(int(prisonner._id))
+            # discord.utils.get(prisonner.police_officer, name=)
             police_officer = self.bot.get_user(prisonner.police_officer)
             timestamp = datetime.datetime.fromtimestamp(prisonner.timestamp)
             release = datetime.datetime.fromtimestamp(prisonner.release)
@@ -149,9 +169,9 @@ class Jail(commands.Cog):
     @commands.command(name="libérer", aliases=["unjail", "release", "free"])
     async def unjail(self, ctx: commands.Context, member: discord.Member):
         """Libère un membre par pur bonté."""
-        print(self.prisonners)
+        print(self.jail.prisonners)
         print(member.id)
-        if not member.id in self.prisonners:
+        if not member.id in self.jail.prisonners:
             await ctx.send(f"> **{member}** n'est pas en prison")
             await asyncio.sleep(1)
             await ctx.send(f"> enfin ...", delete_after=10)
@@ -159,9 +179,9 @@ class Jail(commands.Cog):
             await ctx.send(f"> pour le moment ...", delete_after=9)
             return
 
-        del self.prisonners[member.id]
+        del self.jail.prisonners[member.id]
 
-        text_jail = discord.utils.get(ctx.guild.channels, "jail")
+        text_jail = discord.utils.get(ctx.guild.channels, name="jail")
         if not text_jail:
             await ctx.guild.create_text_channel("jail")
         voice_jail = discord.utils.get(ctx.guild.channels, "jail")
@@ -169,7 +189,7 @@ class Jail(commands.Cog):
             voice_jail = await ctx.guild.create_voice_channel("Jail")
 
         message = (
-            f"> **{member} !**\n"
+            f"> 🔓 **{member} !** 🔓\n"
             "> Vous êtes placé en libération conditionnelle.\n"
             "> Au moindre faux pas vous retournerez en prison.\n"
             "> Tâcher de ne pas recommencer!\n"
