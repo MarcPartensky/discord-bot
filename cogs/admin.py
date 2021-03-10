@@ -229,7 +229,7 @@ class Admin(commands.Cog):
             await ctx.send("> Je n'ai pas le droit de destituer un membre d'un rôle.")
 
     @commands.command()
-    @access.admin
+    @shops.commands.sell
     async def mute(
         self, ctx: commands.Context, member: discord.Member, *, reason: str = None
     ):
