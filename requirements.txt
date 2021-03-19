@@ -13,11 +13,13 @@ cfgv==3.2.0
 chardet==3.0.4
 click==7.1.2
 colorama==0.4.4
+commonmark==0.9.1
+cryptography==3.4.6
 DateTime==4.3
 Deprecated==1.2.10
 discord.py==1.5.1
 distlib==0.3.1
-dnspython @ git+git://github.com/rthalley/dnspython.git@26642eb9e77e4c44ee6852016ec14d7d748db8fc
+dnspython==2.0.0
 fake-useragent==0.1.11
 fbchat==1.9.7
 filelock==3.0.12
@@ -31,6 +33,7 @@ inflect==4.1.0
 isort==5.6.4
 jaraco.itertools==5.0.0
 jedi==0.17.2
+jeepney==0.6.0
 joblib==0.17.0
 keyring==9.3.1
 keyrings.alt==3.4.0
@@ -55,6 +58,7 @@ pycodestyle==2.6.0
 pycparser==2.20
 pydub==0.24.1
 PyGithub==1.53
+Pygments==2.8.1
 pyicloud==0.9.7
 PyJWT==1.7.1
 pylint==2.6.0
@@ -68,8 +72,10 @@ pytz==2020.4
 PyYAML==5.3.1
 requests==2.25.0
 requests-futures==1.0.0
+rich==9.13.0
 scikit-learn==0.23.2
 scipy==1.5.4
+SecretStorage==3.3.1
 selenium==2.53.6
 six==1.15.0
 soupsieve==2.0.1
