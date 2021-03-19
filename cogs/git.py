@@ -3,11 +3,14 @@ from utils import tools
 from config.config import access
 
 from github import Github
+
 import discord
 import os
 
 
 class Git(commands.Cog):
+    """Manage my git projects."""
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 

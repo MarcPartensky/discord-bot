@@ -10,6 +10,7 @@ import wolframalpha
 
 from models.mongo import MongoCluster
 
+
 cluster = MongoCluster(mongo_url)
 db = cluster.esclave
 
@@ -17,6 +18,7 @@ link = "https://discordapp.com/oauth2/authorize?&client_id=703347349623144549&sc
 prefix = os.environ["DISCORD_PREFIX"]
 masters = [478552571510915072]  # , 219949869220102147]
 wolfram = wolframalpha.Client(wolfram_alpha_id)
+ialab_bot_url = "https://ialab.marcpartensky.com"
 
 roles = ["@Maître", "@Admin"]
 

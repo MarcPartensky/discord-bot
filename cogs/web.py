@@ -25,6 +25,8 @@ import re
 
 
 class Web(commands.Cog):
+    """Simple api usage."""
+
     def __init__(self, bot, **kwargs):
         super().__init__(**kwargs)
         self.bot = bot
