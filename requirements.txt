@@ -88,7 +88,7 @@ translate==3.5.0
 typing-extensions==3.7.4.3
 tzlocal==2.1
 Unidecode==1.1.1
-urllib3==1.26.2
+urllib3==1.26.3
 vcrpy==4.1.1
 virtualenv==20.1.0
 websockets==8.1
