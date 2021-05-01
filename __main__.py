@@ -14,6 +14,9 @@ import progressbar
 import discord
 import html
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from config.config import prefix, masters, delete_after_time, status, access
 from config.credentials import token, client_id
 from discord.ext import commands, tasks
