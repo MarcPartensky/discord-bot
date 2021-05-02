@@ -44,34 +44,86 @@ class Docker(commands.Cog):
         container = requests.get(f"{self.url}/container/{container_id}").json()
         print(container)
 
-        embed = discord.Embed(
-            title=container["Name"][1:],
-            color=self.states[container["State"]["Status"]],
-            description=f"Image: **{container['Config']['Image']}**"
+        title = container["Name"][1:]
+        color = self.states[container["State"]["Status"]]
+        description = (
+            f"Image: **{container['Config']['Image']}**"
+            + f"\nPorts: {', '.join(container['NetworkSettings']['Ports'].keys())}"
+            + f"\nNetworks: {', '.join(container['NetworkSettings']['Networks'].keys())}"
             + f"\nState: {container['State']['Status']}"
-            + f"\nRestart Count: {container['RestartCount']}"
             + f"\nPause: {container['State']['Paused']}"
+            + f"\nRestart Count: {container['RestartCount']}"
             + f"\nPid: {container['State']['Pid']}"
-            + f"\nPorts: {', '.join(container['NetworkSettings']['Ports'].keys())}",
         )
-        # embed.add_field(name="Ports", value=container["NetworkSettings"]["Ports"])
-        embed.add_field(
-            name="Networks",
-            value=" ".join(container["NetworkSettings"]["Networks"].keys()),
-        )
-        embed.add_field(
-            name="Entrypoint", value=" ".join(container["Config"]["Entrypoint"])
-        )
-        embed.add_field(name="Args", value=" ".join(container["Args"]))
-        embed.add_field(name="Mounts", value="\n".join(map(str, container["Mounts"])))
-        # embed.set_thumbnail(
-        #     url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1VTGChfJWev0H4oLu4CqZpMRWMEG4p9wLQwSlVH72X-HYRXB1kGy8Fg5IsRn3TD5Cdlg&usqp=CAU"
-        # )
+        print(title)
+        print(color)
+        print(description)
+
+        embed = discord.Embed(title=title, color=color, description=description)
+        if "Entrypoint" in container["Config"]:
+            embed.add_field(
+                name="Entrypoint", value=" ".join(container["Config"]["Entrypoint"])
+            )
+
+        if "Args" in container:
+            embed.add_field(name="Args", value=" ".join(container["Args"]))
+
+        if "Binds" in container["HostConfig"]:
+            embed.add_field(
+                name="Volumes", value="\n".join(container["HostConfig"]["Binds"])
+            )
+
+        # icon_url=f"https://hub.docker.com/u/{container['Config']['Image']}",
+
         embed.set_footer(
             text="id: " + container["Id"],
-            icon_url=f"https://hub.docker.com/u/{container['Config']['Image']}",
+            icon_url="https://blog.knoldus.com/wp-content/uploads/2017/12/docker_facebook_share.png",
         )
         await ctx.send(embed=embed)
+
+    @docker.command()
+    async def restart(self, ctx: commands.Context, name: str):
+        """Restart a container."""
+        async with ctx.typing():
+            response = requests.post(f"{self.url}/container/{name}/restart")
+        print(response)
+        if response.status_code == 200:
+            return await ctx.send(f"> Restarted **{name}** successfully!")
+        else:
+            return await ctx.send(f"> Failed restarting **{name}**!")
+
+    @docker.command()
+    async def kill(self, ctx: commands.Context, name: str):
+        """Kill a container."""
+        async with ctx.typing():
+            response = requests.post(f"{self.url}/container/{name}/kill")
+        print(response)
+        if response.status_code == 200:
+            return await ctx.send(f"> Killed **{name}** successfully!")
+        else:
+            return await ctx.send(f"> Failed killing **{name}**!")
+
+    @docker.command()
+    async def stop(self, ctx: commands.Context, name: str):
+        """Stop a container."""
+        async with ctx.typing():
+            response = requests.post(f"{self.url}/container/{name}/stop")
+        print(response)
+        if response.status_code == 200:
+            return await ctx.send(f"> Stopped **{name}** successfully!")
+        else:
+            return await ctx.send(f"> Failed stopping **{name}**!")
+
+    @docker.command(aliases=["rm"])
+    async def remove(self, ctx: commands.Context, name: str, *args):
+        """Remove a container."""
+        async with ctx.typing():
+            response = requests.post(f"{self.url}/container/{name}/remove")
+        print(response)
+        if response.status_code == 200:
+            return await ctx.send(f"> Removed **{name}** successfully!")
+        else:
+            return await ctx.send(f"> Failed removing **{name}**!")
 
     @docker.group(aliases=["ps"])
     async def containers(self, ctx: commands.Context):
@@ -138,7 +190,10 @@ class Docker(commands.Cog):
         """List all images."""
         images = requests.get(f"{self.url}/images").json()
         lines = ["".join(image["RepoTags"]) for image in images]
-        text = "".join([f"\n* {line.replace('_', '‗')}" for line in lines if line.replace(" ", "")])
+        text = "".join(
+            [f"\n* {line.replace('_', '‗')}" for line in lines if line.replace(" ", "")]
+        )
+        print(text)
         return await ctx.send(f"```md\n{text}\n```")
 
 
