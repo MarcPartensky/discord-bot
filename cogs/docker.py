@@ -20,12 +20,6 @@ class Docker(commands.Cog):
         super().__init__(**kwargs)
         self.bot: commands.Bot = bot
         self.url: str = os.environ["DOCKER_API_URL"]
-        self.keys = [
-            "ExposedPorts",
-            "Hostname",
-            "Labels",
-            "Args",
-        ]
         self.states = dict(
             exited=discord.Color.red(),
             running=discord.Color.green(),
