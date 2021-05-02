@@ -188,7 +188,7 @@ class Docker(commands.Cog):
             [f"\n* {line.replace('_', '‗')}" for line in lines if line.replace(" ", "")]
         )
         print(text)
-        return await ctx.send(text)
+        return await ctx.send(f"```md\n{text}\n```")
 
 
 def setup(bot: commands.Bot):
