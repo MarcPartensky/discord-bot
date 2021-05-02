@@ -21,6 +21,7 @@ class User(BindPost):
             use=0,
             last_use=None,
             xp=0,
+            messages=0,
             energy=0,
             energy_timestamp=0,
             energy_limit=User.default_energy_limit,

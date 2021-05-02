@@ -43,18 +43,20 @@ class User(commands.Cog, name="Utilisateur"):
     #     """Renvoie un compte d'utilisateur étant donné le membre."""
     #     return UserAccount(_collection=self.accounts, _id=member.id)
 
-    @commands.group(aliases=["prf"])
-    async def profil(self, ctx: commands.Context):
+    @commands.group(aliases=["pr"])
+    async def profil(self, ctx: commands.Context, member:
+                     discord.Member):
         """Groupe de commande sur les profils des membres."""
         if not ctx.invoked_subcommand:
-            await self.profil_info(ctx)
+            await self.profil_info(ctx, member)
 
     @profil.command(name="information", aliases=["info", "i"])
     async def profil_info(self, ctx: commands.Context, member: discord.Member = None):
         """Affiche le profil d'un membre."""
+        print("member:", member)
         member = member or ctx.author
         account = self[member]
-        account.update()
+        account.update(member)
         embed = discord.Embed(title=str(member), color=member.color)
         embed.set_thumbnail(url=member.avatar_url)
         embed.add_field(name="xp", value=f"{account.xp} {emoji.xp}")
@@ -138,6 +140,7 @@ class User(commands.Cog, name="Utilisateur"):
         account.xp += 1
         account.messages += 1
         account.last_message = msg.id
+        account.roles = [role.id for role in msg.author.roles]
 
     @commands.group(name="xp", aliases=["expérience", "experience"])
     async def xp(self, ctx: commands.Context):
@@ -173,22 +176,22 @@ class User(commands.Cog, name="Utilisateur"):
 
     @xp.command(name="ajouter", aliases=["+=", "add", "a"])
     @access.admin
-    async def xp_add(self, ctx: commands.Context, member: discord.Member = None):
+    async def xp_add(self, ctx: commands.Context, xp: int, member: discord.Member = None):
         """Augmente l'expérience d'un utilisateur."""
         member = member or ctx.author
         account = self.accounts[member.id]
         account.setdefaults(xp=0)
-        account.xp += 1
+        account.xp += xp
         await self.xp_info(ctx, member)
 
     @xp.command(name="retirer", aliases=["-=", "soustraire", "sub", "s", "remove"])
     @access.admin
-    async def xp_remove(self, ctx: commands.Context, member: discord.Member = None):
+    async def xp_remove(self, ctx: commands.Context, xp: int, member: discord.Member = None):
         """Reitre l'expérience d'un utilisateur."""
         member = member or ctx.author
         account = self[member]
         account.setdefaults(xp=0)
-        account.xp -= 1
+        account.xp -= xp
         await self.xp_info(ctx, member)
 
     @xp.command(name="restant", aliases=["left"])
