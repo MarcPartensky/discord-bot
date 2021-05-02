@@ -108,6 +108,7 @@ PyYAML = "*"
 SecretStorage = "*"
 Unidecode = "*"
 youtube_dl = "*"
+python-dotenv = "*"
 
 [dev-packages]
 black = "*"
