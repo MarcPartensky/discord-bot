@@ -131,8 +131,8 @@ class Docker(commands.Cog):
         infos = []
         for container in containers:
             info = dict(
-                name=container["Name"][1:].replace("_", "‗"),
-                image=container["Config"]["Image"].replace("_", "‗"),
+                name=container["Name"][1:].replace("_", " 𛲖 "),
+                image=container["Config"]["Image"].replace("_", "𛲖"),
                 ports=",".join(container["NetworkSettings"]["Ports"].keys()).replace(
                     "/tcp", ""
                 ),
@@ -185,7 +185,7 @@ class Docker(commands.Cog):
         images = requests.get(f"{self.url}/images").json()
         lines = ["".join(image["RepoTags"]) for image in images]
         text = "".join(
-            [f"\n* {line.replace('_', '‗')}" for line in lines if line.replace(" ", "")]
+            [f"\n* {line.replace('_', '𛲖')}" for line in lines if line.replace(" ", "")]
         )
         print(text)
         return await ctx.send(f"```md\n{text}\n```")

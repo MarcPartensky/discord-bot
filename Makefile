@@ -1,0 +1,2 @@
+run:
+	pipenv run python .
