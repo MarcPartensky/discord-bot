@@ -7,6 +7,8 @@ from libs.google import google
 from discord.ext import commands, tasks
 from translate import Translator
 from bs4 import BeautifulSoup
+from rich import print
+
 import wikipedia
 
 wikipedia.set_lang("fr")
@@ -22,6 +24,7 @@ import urllib.parse
 import html
 import json
 import re
+import os
 
 
 class Web(commands.Cog):
@@ -626,6 +629,26 @@ class Web(commands.Cog):
         embed.add_field(name="tags", value=html.unescape(" ".join(d["tags"])))
         embed.set_footer(text=f"{d['originator']['name']}, {d['originator']['url']}")
         await ctx.send(embed=embed)
+
+    @commands.command(name="url")
+    async def url(
+        self, ctx: commands.Context, url: str, name: str = "", description: str = ""
+    ):
+        """Shorten given url."""
+        shortener_token = os.environ.get("SHORTENER_TOKEN")
+        shortener_url = os.environ.get("SHORTENER_URL")
+        # headers = {"content-type": "application/json"}
+        data = dict(target=url)
+        if shortener_token:
+            data["token"] = shortener_token
+        if description:
+            data["description"] = description
+        post_url = shortener_url + "//" + name # <- 2 slash are required
+        session = requests.Session()
+        response = session.post(post_url, data, allow_redirects=True)
+        # print(post_url, data, response.request.headers, response.request.body, response.headers, response.reason)
+        shortened_url = response.text
+        return await ctx.send(shortened_url)
 
 
 def setup(bot):
