@@ -16,6 +16,7 @@ import html
 
 
 class Basic(commands.Cog):
+    """Basic commands."""
     def __init__(self, bot: commands.Bot, **kwargs):
         super().__init__(**kwargs)
         self.bot = bot
@@ -333,6 +334,27 @@ class Basic(commands.Cog):
         """Envoie un messages à un membre sur discord."""
         await member.send(msg)
         await ctx.send(f"> Message **{msg}** envoyé.")
+
+
+    @commands.command(name="nettoyer-salon", aliases=["nettoyer-chat"])
+    async def clean_channel(self, ctx: commands.Context, limit: int=1000):
+        """Nettoie le salon textuel.
+        Cherche tous les messages de bot et les supprime ainsi que
+        le message précédent."""
+
+        n = 0
+        delete = False
+        async for message in ctx.channel.history(limit=limit):
+            if message.author.bot and message.author != self.bot.user:
+                n += 1
+                delete = True
+                await message.delete()
+            elif delete:
+                n += 1
+                delete = False
+                await message.delete()
+
+        await ctx.send(f"> **{n}** messages nettoyés")
 
     # @commands.Cog.listener(name="reaction_add")
     # async def reaction_add(self, reaction, user):
