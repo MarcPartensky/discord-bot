@@ -19,6 +19,7 @@ prefix = os.environ["DISCORD_PREFIX"]
 masters = [478552571510915072]  # , 219949869220102147]
 wolfram = wolframalpha.Client(wolfram_alpha_id)
 ialab_bot_url = "https://ialab.marcpartensky.com"
+docker_role = "Docker"
 
 roles = ["@Maître", "@Admin"]
 

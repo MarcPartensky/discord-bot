@@ -1,5 +1,5 @@
 """
-Control over my docker cluster.
+Control over my docker containers.
 """
 
 import os
@@ -8,9 +8,9 @@ import requests
 import discord
 
 from discord.ext import commands, tasks
+from config.config import docker_role
 
 from rich import print
-
 
 class Docker(commands.Cog):
     """Manage my docker containers."""
@@ -20,6 +20,7 @@ class Docker(commands.Cog):
         super().__init__(**kwargs)
         self.bot: commands.Bot = bot
         self.url: str = os.environ["DOCKER_API_URL"]
+        self.color = discord.Colour(0x4eb3f2)
         self.states = dict(
             exited=discord.Color.red(),
             running=discord.Color.green(),
@@ -29,9 +30,12 @@ class Docker(commands.Cog):
     @commands.group(aliases=["d"])
     async def docker(self, ctx: commands.Context):
         """Main command group of docker."""
+        if not get(ctx.guild.roles, name=docker_role):
+            await ctx.guild.create_role(name=docker_role, colour=self.color)
         if not ctx.invoked_subcommand:
             await ctx.send(os.path.join(self.url, "docs"))
 
+    @commands.has_role(docker_role)
     @docker.group(aliases=["c"])
     async def container(self, ctx: commands.Context, container_id: str):
         """Group of command about one container."""
@@ -75,6 +79,7 @@ class Docker(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    @commands.has_role(docker_role)
     @docker.command()
     async def restart(self, ctx: commands.Context, name: str):
         """Restart a container."""
@@ -86,6 +91,19 @@ class Docker(commands.Cog):
         else:
             return await ctx.send(f"> Failed restarting **{name}**!")
 
+    @commands.has_role(docker_role)
+    @docker.command()
+    async def exec(self, ctx: commands.Context, name: str, cmd: str):
+        """Run a command in a container."""
+        async with ctx.typing():
+            response = requests.post(f"{self.url}/container/{name}/exec/{cmd}")
+        print(response)
+        if response.status_code == 200:
+            return await ctx.send("> {response.content}")
+        else:
+            return await ctx.send(f"> Failed to run **{cmd}**!")
+
+    @commands.has_role(docker_role)
     @docker.command()
     async def kill(self, ctx: commands.Context, name: str):
         """Kill a container."""
@@ -97,6 +115,7 @@ class Docker(commands.Cog):
         else:
             return await ctx.send(f"> Failed killing **{name}**!")
 
+    @commands.has_role(docker_role)
     @docker.command()
     async def stop(self, ctx: commands.Context, name: str):
         """Stop a container."""
@@ -108,6 +127,7 @@ class Docker(commands.Cog):
         else:
             return await ctx.send(f"> Failed stopping **{name}**!")
 
+    @commands.has_role(docker_role)
     @docker.command(aliases=["rm"])
     async def remove(self, ctx: commands.Context, name: str, *args):
         """Remove a container."""
@@ -119,6 +139,7 @@ class Docker(commands.Cog):
         else:
             return await ctx.send(f"> Failed removing **{name}**!")
 
+    @commands.has_role(docker_role)
     @docker.group(aliases=["ps"])
     async def containers(self, ctx: commands.Context):
         """List all containers."""
@@ -162,6 +183,7 @@ class Docker(commands.Cog):
         print(text)
         await ctx.send(text + "\n```")
 
+    @commands.has_role(docker_role)
     @containers.command(aliases=["ids"])
     async def containers_ids(self, ctx: commands.Context):
         """List all containers."""
@@ -179,6 +201,7 @@ class Docker(commands.Cog):
         print(text)
         await ctx.send(text + "\n")
 
+    @commands.has_role(docker_role)
     @docker.command(aliases=["is"])
     async def images(self, ctx: commands.Context):
         """List all images."""
