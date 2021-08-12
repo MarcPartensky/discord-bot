@@ -341,7 +341,6 @@ class Basic(commands.Cog):
         """Nettoie le salon textuel.
         Cherche tous les messages de bot et les supprime ainsi que
         le message précédent."""
-
         n = 0
         delete = False
         async for message in ctx.channel.history(limit=limit):
@@ -353,8 +352,14 @@ class Basic(commands.Cog):
                 n += 1
                 delete = False
                 await message.delete()
-
         await ctx.send(f"> **{n}** messages nettoyés")
+
+    # @commands.Cog.listener()
+    # async def on_message(self, msg: discord.Message):
+    #     """Nettoie les messages des salons innapropriés, dès que
+    #     ceux-ci sont postés."""
+    #     if msg.author.bot:
+    #         return
 
     # @commands.Cog.listener(name="reaction_add")
     # async def reaction_add(self, reaction, user):
