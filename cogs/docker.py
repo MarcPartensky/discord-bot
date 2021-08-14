@@ -120,7 +120,7 @@ class Docker(commands.Cog):
             response = requests.post(f"{self.url}/exec/{name}/{cmd}")
         print(response)
         if response.status_code == 200:
-            return await ctx.send("> {response.content}")
+            return await ctx.send(f"> {response.content}")
         else:
             return await ctx.send(f"> Failed to run **{cmd}**!")
 
