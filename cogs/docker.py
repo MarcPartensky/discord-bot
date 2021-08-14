@@ -118,9 +118,10 @@ class Docker(commands.Cog):
         """Run a command in a container."""
         async with ctx.typing():
             response = requests.post(f"{self.url}/exec/{name}/{command}")
-        print(response.json())
+        content = response.json()
+        print(content)
         if response.status_code == 200:
-            return await ctx.send(f"> {response.json()[1]}")
+            return await ctx.send(f"> {content[1]}")
         else:
             return await ctx.send(f"> Failed to run **{command}**!")
 
@@ -208,9 +209,10 @@ class Docker(commands.Cog):
         for name in names:
             async with ctx.typing():
                 response = requests.get(f"{self.url}/top/{name}")
-            print(response)
+            content = response.json()
+            print(content)
             if response.status_code == 200:
-                return await ctx.send(f"> Top processes:\n" + response.text)
+                return await ctx.send(f"> Top processes:\n" + content[1])
             else:
                 return await ctx.send(f"> {response.reason}")
 
@@ -220,9 +222,10 @@ class Docker(commands.Cog):
         """Return the logs of a container."""
         async with ctx.typing():
             response = requests.get(f"{self.url}/logs/{name}/{since}")
-        print(response)
+        content = response.json()
+        print(content)
         if response.status_code == 200:
-            return await ctx.send(f"> {response.text}")
+            return await ctx.send(f"> {content[1]}")
         else:
             return await ctx.send(f"> {response.reason}")
 
