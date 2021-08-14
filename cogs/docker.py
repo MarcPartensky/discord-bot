@@ -8,9 +8,10 @@ import requests
 import discord
 
 from discord.ext import commands, tasks
-from config.config import docker_role
+from config.config import docker_role, masters
 
 from rich import print
+
 
 class Docker(commands.Cog):
     """Manage my docker containers."""
@@ -20,7 +21,7 @@ class Docker(commands.Cog):
         super().__init__(**kwargs)
         self.bot: commands.Bot = bot
         self.url: str = os.environ["DOCKER_API_URL"]
-        self.color = discord.Colour(0x4eb3f2)
+        self.color = discord.Colour(0x4EB3F2)
         self.states = dict(
             exited=discord.Color.red(),
             running=discord.Color.green(),
@@ -29,9 +30,25 @@ class Docker(commands.Cog):
 
     @commands.group(aliases=["d"])
     async def docker(self, ctx: commands.Context):
-        """Main command group of docker."""
-        if not get(ctx.guild.roles, name=docker_role):
-            await ctx.guild.create_role(name=docker_role, colour=self.color)
+        """Main command group of docker.
+        Only members with the docker role can run those commands."""
+        print(masters)
+        print(ctx.guild.members)
+        if not docker_role in [role.name for role in ctx.guild.roles]:
+            role = await ctx.guild.create_role(name=docker_role, colour=self.color)
+            await ctx.send(f"> Created `{docker_role}` role.")
+            members = []
+            for master in masters:
+                if member := await ctx.guild.fetch_member(master):
+                    print(member, member.id, master)
+                    await member.add_roles(role)
+                    members.append(member)
+            if members:
+                members = "\n".join(map(lambda m: f"+ {member}", members))
+                await ctx.send(
+                    '```diff\nAdded "' + docker_role + '" role to:\n' + members + "```"
+                )
+                return
         if not ctx.invoked_subcommand:
             await ctx.send(os.path.join(self.url, "docs"))
 
