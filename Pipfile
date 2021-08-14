@@ -112,6 +112,8 @@ python-dotenv = "*"
 
 [dev-packages]
 black = "*"
+pylint = "*"
+jedi = "*"
 
 [requires]
 python_version = "3.8.3"
