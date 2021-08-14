@@ -53,67 +53,71 @@ class Docker(commands.Cog):
             await ctx.send(os.path.join(self.url, "docs"))
 
     @commands.has_role(docker_role)
-    @docker.group(aliases=["c"])
-    async def container(self, ctx: commands.Context, container_id: str):
+    @docker.group()
+    async def ps(self, ctx: commands.Context, *container_ids: str):
         """Group of command about one container."""
-        container = requests.get(f"{self.url}/container/{container_id}").json()
-        print(container)
+        if len(list(container_ids)) == 0:
+            return await self.ps_all(ctx)
+        for container_id in container_ids:
+            container = requests.get(f"{self.url}/ps/{container_id}").json()
+            print(container)
 
-        title = container["Name"][1:]
-        color = self.states[container["State"]["Status"]]
-        description = (
-            f"Image: **{container['Config']['Image']}**"
-            + f"\nPorts: {', '.join(container['NetworkSettings']['Ports'].keys())}"
-            + f"\nNetworks: {', '.join(container['NetworkSettings']['Networks'].keys())}"
-            + f"\nState: {container['State']['Status']}"
-            + f"\nPause: {container['State']['Paused']}"
-            + f"\nRestart Count: {container['RestartCount']}"
-            + f"\nPid: {container['State']['Pid']}"
-        )
-        print(title)
-        print(color)
-        print(description)
-
-        embed = discord.Embed(title=title, color=color, description=description)
-        if "Entrypoint" in container["Config"]:
-            embed.add_field(
-                name="Entrypoint", value=" ".join(container["Config"]["Entrypoint"])
+            title = container["Name"][1:]
+            color = self.states[container["State"]["Status"]]
+            description = (
+                f"Image: **{container['Config']['Image']}**"
+                + f"\nPorts: {', '.join(container['NetworkSettings']['Ports'].keys())}"
+                + f"\nNetworks: {', '.join(container['NetworkSettings']['Networks'].keys())}"
+                + f"\nState: {container['State']['Status']}"
+                + f"\nPause: {container['State']['Paused']}"
+                + f"\nRestart Count: {container['RestartCount']}"
+                + f"\nPid: {container['State']['Pid']}"
             )
+            print(title)
+            print(color)
+            print(description)
 
-        if "Args" in container:
-            embed.add_field(name="Args", value=" ".join(container["Args"]))
+            embed = discord.Embed(title=title, color=color, description=description)
+            if "Entrypoint" in container["Config"]:
+                embed.add_field(
+                    name="Entrypoint", value=" ".join(container["Config"]["Entrypoint"])
+                )
 
-        if "Binds" in container["HostConfig"]:
-            embed.add_field(
-                name="Volumes", value="\n".join(container["HostConfig"]["Binds"])
+            if "Args" in container:
+                embed.add_field(name="Args", value=" ".join(container["Args"]))
+
+            if "Binds" in container["HostConfig"]:
+                embed.add_field(
+                    name="Volumes", value="\n".join(container["HostConfig"]["Binds"])
+                )
+
+            # icon_url=f"https://hub.docker.com/u/{container['Config']['Image']}",
+
+            embed.set_footer(
+                text="id: " + container["Id"],
+                icon_url="https://blog.knoldus.com/wp-content/uploads/2017/12/docker_facebook_share.png",
             )
-
-        # icon_url=f"https://hub.docker.com/u/{container['Config']['Image']}",
-
-        embed.set_footer(
-            text="id: " + container["Id"],
-            icon_url="https://blog.knoldus.com/wp-content/uploads/2017/12/docker_facebook_share.png",
-        )
-        await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
 
     @commands.has_role(docker_role)
     @docker.command()
-    async def restart(self, ctx: commands.Context, name: str):
-        """Restart a container."""
-        async with ctx.typing():
-            response = requests.post(f"{self.url}/container/{name}/restart")
-        print(response)
-        if response.status_code == 200:
-            return await ctx.send(f"> Restarted **{name}** successfully!")
-        else:
-            return await ctx.send(f"> Failed restarting **{name}**!")
+    async def restart(self, ctx: commands.Context, *names: str):
+        """Restart some containers."""
+        for name in names:
+            async with ctx.typing():
+                response = requests.post(f"{self.url}/restart/{name}")
+            print(response)
+            if response.status_code == 200:
+                return await ctx.send(f"> Restarted **{name}** successfully!")
+            else:
+                return await ctx.send(f"> Failed restarting **{name}**!")
 
     @commands.has_role(docker_role)
     @docker.command()
     async def exec(self, ctx: commands.Context, name: str, cmd: str):
         """Run a command in a container."""
         async with ctx.typing():
-            response = requests.post(f"{self.url}/container/{name}/exec/{cmd}")
+            response = requests.post(f"{self.url}/exec/{name}/{cmd}")
         print(response)
         if response.status_code == 200:
             return await ctx.send("> {response.content}")
@@ -122,47 +126,111 @@ class Docker(commands.Cog):
 
     @commands.has_role(docker_role)
     @docker.command()
-    async def kill(self, ctx: commands.Context, name: str):
-        """Kill a container."""
-        async with ctx.typing():
-            response = requests.post(f"{self.url}/container/{name}/kill")
-        print(response)
-        if response.status_code == 200:
-            return await ctx.send(f"> Killed **{name}** successfully!")
-        else:
-            return await ctx.send(f"> Failed killing **{name}**!")
+    async def kill(self, ctx: commands.Context, *names: str):
+        """Kill some containers."""
+        for name in names:
+            async with ctx.typing():
+                response = requests.post(f"{self.url}/kill/{name}")
+            print(response)
+            if response.status_code == 200:
+                return await ctx.send(f"> Killed **{name}** successfully!")
+            else:
+                return await ctx.send(f"> Failed killing **{name}**!")
 
     @commands.has_role(docker_role)
     @docker.command()
-    async def stop(self, ctx: commands.Context, name: str):
-        """Stop a container."""
-        async with ctx.typing():
-            response = requests.post(f"{self.url}/container/{name}/stop")
-        print(response)
-        if response.status_code == 200:
-            return await ctx.send(f"> Stopped **{name}** successfully!")
-        else:
-            return await ctx.send(f"> Failed stopping **{name}**!")
+    async def stop(self, ctx: commands.Context, *names: str):
+        """Stop some containers."""
+        for name in names:
+            async with ctx.typing():
+                response = requests.post(f"{self.url}/stop/{name}")
+            print(response)
+            if response.status_code == 200:
+                return await ctx.send(f"> Stopped **{name}** successfully!")
+            else:
+                return await ctx.send(f"> Failed stopping **{name}**!")
 
     @commands.has_role(docker_role)
     @docker.command(aliases=["rm"])
-    async def remove(self, ctx: commands.Context, name: str, *args):
-        """Remove a container."""
-        async with ctx.typing():
-            response = requests.post(f"{self.url}/container/{name}/remove")
-        print(response)
-        if response.status_code == 200:
-            return await ctx.send(f"> Removed **{name}** successfully!")
-        else:
-            return await ctx.send(f"> Failed removing **{name}**!")
+    async def remove(self, ctx: commands.Context, *names: str):
+        """Remove some containers."""
+        for name in names:
+            async with ctx.typing():
+                response = requests.post(f"{self.url}/remove/{name}")
+            print(response)
+            if response.status_code == 200:
+                return await ctx.send(f"> Removed **{name}** successfully!")
+            else:
+                return await ctx.send(f"> Failed removing **{name}**!")
 
     @commands.has_role(docker_role)
-    @docker.group(aliases=["ps"])
-    async def containers(self, ctx: commands.Context):
+    @docker.command(aliases=["p"])
+    async def pause(self, ctx: commands.Context, *names: str):
+        """Pause some containers."""
+        for name in names:
+            async with ctx.typing():
+                response = requests.post(f"{self.url}/pause/{name}")
+            print(response)
+            if response.status_code == 200:
+                return await ctx.send(f"> Paused **{name}** successfully!")
+            else:
+                return await ctx.send(f"> Failed pausing **{name}**!")
+
+    @commands.has_role(docker_role)
+    @docker.command(aliases=["unp"])
+    async def unpause(self, ctx: commands.Context, *names: str):
+        """Un pause some containers."""
+        for name in names:
+            async with ctx.typing():
+                response = requests.post(f"{self.url}/unpause/{name}")
+            print(response)
+            if response.status_code == 200:
+                return await ctx.send(f"> Paused **{name}** successfully!")
+            else:
+                return await ctx.send(f"> Failed pausing **{name}**!")
+
+    @commands.has_role(docker_role)
+    @docker.command(aliases=["rn"])
+    async def rename(self, ctx: commands.Context, name: str, to: str):
+        """Remove a container."""
+        async with ctx.typing():
+            response = requests.post(f"{self.url}/rename/{name}/{to}")
+        print(response)
+        if response.status_code == 200:
+            return await ctx.send(f"> Renamed **{name}** to **{to}** successfully!")
+        else:
+            return await ctx.send(f"> Failed renaming **{name}** to **{to}**!")
+
+    @commands.has_role(docker_role)
+    @docker.command()
+    async def top(self, ctx: commands.Context, *names: str):
+        """Return the top proccesses of some containers."""
+        for name in names:
+            async with ctx.typing():
+                response = requests.post(f"{self.url}/top/{name}")
+            print(response)
+            if response.status_code == 200:
+                return await ctx.send(f"> Top processes:\n" + response.content)
+            else:
+                return await ctx.send(f"> {response.reason}")
+
+    @commands.has_role(docker_role)
+    @docker.command()
+    async def logs(self, ctx: commands.Context, name: str, since: int):
+        """Return the logs of a container."""
+        async with ctx.typing():
+            response = requests.post(f"{self.url}/logs/{name}/{since}")
+        print(response)
+        if response.status_code == 200:
+            return await ctx.send(f"> {response.content}")
+        else:
+            return await ctx.send(f"> {response.reason}")
+
+    async def ps_all(self, ctx: commands.Context):
         """List all containers."""
         if ctx.invoked_subcommand:
             return
-        containers = requests.get(f"{self.url}/containers").json()
+        containers = requests.get(f"{self.url}/ps").json()
         # print(containers)
         # max_name = 0
         # max_image = 0
@@ -201,10 +269,10 @@ class Docker(commands.Cog):
         await ctx.send(text + "\n```")
 
     @commands.has_role(docker_role)
-    @containers.command(aliases=["ids"])
+    @docker.command(aliases=["ids"])
     async def containers_ids(self, ctx: commands.Context):
         """List all containers."""
-        lines = requests.get(f"{self.url}/containers/ids").json()
+        lines = requests.get(f"{self.url}/ps/ids").json()
         print(lines)
         text = ""
         for line in lines:
