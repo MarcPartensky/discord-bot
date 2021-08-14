@@ -53,9 +53,9 @@ class Docker(commands.Cog):
             await ctx.send(os.path.join(self.url, "docs"))
 
     @commands.has_role(docker_role)
-    @docker.group()
+    @docker.command()
     async def ps(self, ctx: commands.Context, *container_ids: str):
-        """Group of command about one container."""
+        """Show status of some containers."""
         if len(list(container_ids)) == 0:
             return await self.ps_all(ctx)
         for container_id in container_ids:
@@ -120,7 +120,7 @@ class Docker(commands.Cog):
             response = requests.post(f"{self.url}/exec/{name}/{cmd}")
         print(response)
         if response.status_code == 200:
-            return await ctx.send(f"> {response.content}")
+            return await ctx.send(f"> {response.text}")
         else:
             return await ctx.send(f"> Failed to run **{cmd}**!")
 
@@ -210,7 +210,7 @@ class Docker(commands.Cog):
                 response = requests.post(f"{self.url}/top/{name}")
             print(response)
             if response.status_code == 200:
-                return await ctx.send(f"> Top processes:\n" + response.content)
+                return await ctx.send(f"> Top processes:\n" + response.text)
             else:
                 return await ctx.send(f"> {response.reason}")
 
@@ -222,7 +222,7 @@ class Docker(commands.Cog):
             response = requests.post(f"{self.url}/logs/{name}/{since}")
         print(response)
         if response.status_code == 200:
-            return await ctx.send(f"> {response.content}")
+            return await ctx.send(f"> {response.text}")
         else:
             return await ctx.send(f"> {response.reason}")
 
@@ -269,8 +269,8 @@ class Docker(commands.Cog):
         await ctx.send(text + "\n```")
 
     @commands.has_role(docker_role)
-    @docker.command(aliases=["ids"])
-    async def containers_ids(self, ctx: commands.Context):
+    @docker.command()
+    async def ids(self, ctx: commands.Context):
         """List all containers."""
         lines = requests.get(f"{self.url}/ps/ids").json()
         print(lines)
