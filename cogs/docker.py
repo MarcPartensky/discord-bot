@@ -211,11 +211,24 @@ class Docker(commands.Cog):
             async with ctx.typing():
                 response = requests.get(f"{self.url}/top/{name}")
             content = response.json()
+            if response.status_code != 200:
+                await ctx.send(f"> {response.reason}")
+                continue
             print(content)
-            if response.status_code == 200:
-                return await ctx.send(str("\n".join(content)))
-            else:
-                return await ctx.send(f"> {response.reason}")
+            texts = []
+            text = f"{name}\n" + "_" * len(name) + "\n\n   " + "".join([f"{word: <10}" for word in content["Titles"]])
+            n = len(text)
+            for process in content["Processes"]:
+                line = " \n * " + "".join([f"{word: <10}" for word in process])
+                if len(text + line) > 2000:
+                    texts.append(text)
+                    text = line
+                else:
+                    text += line
+            texts.append(text)
+            for text in texts:
+                text = text.replace('_', '‗')
+                await ctx.send("```md\n" + text + "\n```")
 
     @commands.has_role(docker_role)
     @docker.command()
