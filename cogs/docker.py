@@ -25,7 +25,8 @@ class Docker(commands.Cog):
         self.states = dict(
             exited=discord.Color.red(),
             running=discord.Color.green(),
-            restarting=discord.Color.orange(),
+            paused=discord.Color.orange(),
+            restarting=discord.Color.blue(),
         )
 
     @commands.group(aliases=["d"])
@@ -114,14 +115,14 @@ class Docker(commands.Cog):
 
     @commands.has_role(docker_role)
     @docker.command()
-    async def exec(self, ctx: commands.Context, name: str, command: str):
+    async def exec(self, ctx: commands.Context, name: str, *, command: str):
         """Run a command in a container."""
         async with ctx.typing():
             response = requests.post(f"{self.url}/exec/{name}/{command}")
         content = response.json()
         print(content)
         if response.status_code == 200:
-            return await ctx.send(f"> {content[1]}")
+            return await ctx.send(content[1])
         else:
             return await ctx.send(f"> Failed to run **{command}**!")
 
@@ -180,13 +181,13 @@ class Docker(commands.Cog):
     @commands.has_role(docker_role)
     @docker.command(aliases=["unp"])
     async def unpause(self, ctx: commands.Context, *names: str):
-        """Un pause some containers."""
+        """Unpause some containers."""
         for name in names:
             async with ctx.typing():
                 response = requests.post(f"{self.url}/unpause/{name}")
             print(response)
             if response.status_code == 200:
-                return await ctx.send(f"> Paused **{name}** successfully!")
+                return await ctx.send(f"> Unpaused **{name}** successfully!")
             else:
                 return await ctx.send(f"> Failed pausing **{name}**!")
 
@@ -212,7 +213,7 @@ class Docker(commands.Cog):
             content = response.json()
             print(content)
             if response.status_code == 200:
-                return await ctx.send(f"> Top processes:\n" + content[1])
+                return await ctx.send(str("\n".join(content)))
             else:
                 return await ctx.send(f"> {response.reason}")
 
@@ -240,8 +241,8 @@ class Docker(commands.Cog):
         infos = []
         for container in containers:
             info = dict(
-                name=container["Name"][1:].replace("_", " 𛲖 "),
-                image=container["Config"]["Image"].replace("_", "𛲖"),
+                name=container["Name"][1:].replace("_", "‗"),
+                image=container["Config"]["Image"].replace("_", "‗"),
                 ports=",".join(container["NetworkSettings"]["Ports"].keys()).replace(
                     "/tcp", ""
                 ),
@@ -296,7 +297,7 @@ class Docker(commands.Cog):
         images = requests.get(f"{self.url}/images").json()
         lines = ["".join(image["RepoTags"]) for image in images]
         text = "".join(
-            [f"\n* {line.replace('_', '𛲖')}" for line in lines if line.replace(" ", "")]
+            [f"\n* {line.replace('_', '‗')}" for line in lines if line.replace(" ", "")]
         )
         print(text)
         return await ctx.send(f"```md\n{text}\n```")
