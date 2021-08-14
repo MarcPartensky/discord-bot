@@ -114,15 +114,15 @@ class Docker(commands.Cog):
 
     @commands.has_role(docker_role)
     @docker.command()
-    async def exec(self, ctx: commands.Context, name: str, cmd: str):
+    async def exec(self, ctx: commands.Context, name: str, command: str):
         """Run a command in a container."""
         async with ctx.typing():
-            response = requests.post(f"{self.url}/exec/{name}/{cmd}")
-        print(response)
+            response = requests.post(f"{self.url}/exec/{name}/{command}")
+        print(response.json())
         if response.status_code == 200:
-            return await ctx.send(f"> {response.text}")
+            return await ctx.send(f"> {response.json()[1]}")
         else:
-            return await ctx.send(f"> Failed to run **{cmd}**!")
+            return await ctx.send(f"> Failed to run **{command}**!")
 
     @commands.has_role(docker_role)
     @docker.command()
@@ -207,7 +207,7 @@ class Docker(commands.Cog):
         """Return the top proccesses of some containers."""
         for name in names:
             async with ctx.typing():
-                response = requests.post(f"{self.url}/top/{name}")
+                response = requests.get(f"{self.url}/top/{name}")
             print(response)
             if response.status_code == 200:
                 return await ctx.send(f"> Top processes:\n" + response.text)
@@ -219,7 +219,7 @@ class Docker(commands.Cog):
     async def logs(self, ctx: commands.Context, name: str, since: int):
         """Return the logs of a container."""
         async with ctx.typing():
-            response = requests.post(f"{self.url}/logs/{name}/{since}")
+            response = requests.get(f"{self.url}/logs/{name}/{since}")
         print(response)
         if response.status_code == 200:
             return await ctx.send(f"> {response.text}")
