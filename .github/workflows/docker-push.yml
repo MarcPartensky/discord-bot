@@ -21,10 +21,10 @@ jobs:
     - uses: actions/checkout@v2
     - name: Update apt
       run: sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y
-    - name: Install Python3.7
+    - name: Install Python3.8
       uses: actions/setup-python@v1
       with:
-        python-version: 3.7
+        python-version: 3.8
         architecture: x64
     - name: Update pip
       run: pip install -U pip
