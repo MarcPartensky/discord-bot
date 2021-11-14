@@ -1,3 +1,5 @@
+[![Docker](https://github.com/MarcPartensky/discord-bot/actions/workflows/docker-push.yml/badge.svg)](https://github.com/MarcPartensky/discord-bot/actions/workflows/docker-push.yml)
+
 # Discord bot
 A discord bot who obeys me.
 
