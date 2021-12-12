@@ -8,8 +8,6 @@ from urllib.parse import quote
 
 import requests
 import asyncio
-import random
-import os
 import re
 
 

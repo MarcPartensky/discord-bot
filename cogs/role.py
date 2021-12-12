@@ -1,6 +1,6 @@
 from discord.ext import commands
 from discord.utils import get
-from config.config import cluster, prefix, access
+from config.config import cluster, access
 from utils.tools import not_invoked_command
 from functools import reduce
 
