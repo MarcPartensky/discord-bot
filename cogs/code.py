@@ -120,7 +120,7 @@ class Code(commands.Cog):
             embed.add_field(name=k, value=v)
         await ctx.send(embed=embed)
 
-    @commands.command(name="python", aliases=["shell", "p"])
+    @commands.command(name="python", aliases=["p"])
     async def python(self, ctx: commands.Context):
         """Utilise la shell python sans commandes."""
         self.users_list.append(ctx.author.id)

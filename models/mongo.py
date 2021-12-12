@@ -2,8 +2,7 @@
 import discord
 from pymongo import MongoClient
 from pymongo.database import Database
-from pymongo.collection import Collection
-from pymongo.son_manipulator import ObjectId
+from pymongo.collection import Collection, ObjectId
 import pymongo
 
 # from pymongo.cursor import Cursor

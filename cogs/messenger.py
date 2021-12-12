@@ -1,14 +1,17 @@
-from discord.ext import commands
+import os
 import discord
+
+from discord.ext import commands
 
 from config.config import access
 from models.messenger import MessengerClient
-import os
-import datetime
 
 
 class Messenger(commands.Cog):
+    """Bridge between messenger and discord."""
+
     def __init__(self, bot: commands.Bot):
+        """Initialize the cog."""
         self.bot = bot
         self.client: MessengerClient = None
         self.color = discord.Color.blue()

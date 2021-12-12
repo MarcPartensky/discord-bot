@@ -22,11 +22,14 @@ click = "==7.1.2"
 colorama = "*"
 commonmark = "*"
 cryptography = "*"
-"discord.py" = "*"
+# "discord.py[voice]" = "*"
+# "discord.py" = {file = "https://github.com/Rapptz/discord.py/archive/async.zip#egg=discord.py[voice]"}
+"discord.py" = {git = "https://github.com/Rapptz/discord.py"}
 distlib = "*"
 dnspython = "*"
 fake-useragent = "*"
-fbchat = "*"
+# fbchat = "*"
+fbchat = {git = "git://github.com/carpedm20/fbchat.git"}
 filelock = "*"
 future = "*"
 html2text = "*"
