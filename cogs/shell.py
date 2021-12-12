@@ -5,7 +5,7 @@ from discord.ext import commands
 import discord
 
 from utils import tools
-from config.config import access, masters
+from config.config import access, masters, cluster
 from config import emoji
 from urllib.parse import quote
 
@@ -21,8 +21,9 @@ class Shell(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def shell(self, ctx: commands.Context, *, command: str):
+    async def shell(self, ctx: commands.Context):
         """Run a command in a shell"""
+        ctx.author.id
         await ctx.send(command)
 
 

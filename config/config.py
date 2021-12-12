@@ -1,14 +1,10 @@
-from .credentials import mongo_url, wolfram_alpha_id
-from utils import access, check
-
-import itertools
-
-from pymongo import MongoClient
-import pymongo
 import os
+import itertools
 import wolframalpha
 
+from utils import access, check
 from models.mongo import MongoCluster
+from .credentials import mongo_url, wolfram_alpha_id
 
 
 cluster = MongoCluster(mongo_url)
@@ -19,7 +15,8 @@ prefix = os.environ["DISCORD_PREFIX"]
 masters = [478552571510915072]  # , 219949869220102147]
 wolfram = wolframalpha.Client(wolfram_alpha_id)
 ialab_bot_url = "https://ialab.marcpartensky.com"
-docker_role = "Docker"
+DOCKER_ROLE = "Docker"
+SHELL_ROLE = "Shell"
 
 roles = ["@Maître", "@Admin"]
 
