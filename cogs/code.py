@@ -142,7 +142,7 @@ class Code(commands.Cog):
             author = msg.author
 
         if ctx.author.id in self.users_list:
-            if msg.content == "?python":
+            if msg.content == self.bot.command_prefix + "python":
                 pass
             else:
                 await self.execute(ctx, cmd=code)
@@ -157,9 +157,6 @@ class Code(commands.Cog):
                     and (user == msg.author or user.id in masters)
                     and str(reaction.emoji) in emojis
                 )
-
-            class DestroyReactions(Exception):
-                """Destroy the reactions."""
 
             try:
                 reaction, user = await self.bot.wait_for(
