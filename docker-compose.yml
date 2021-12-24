@@ -8,8 +8,8 @@ services:
     env_file:
       - .env
     volumes:
-      - ./cogs:./cogs
-      - ./config:./config
-      - ./models:./models
+      - ./cogs:/app/cogs
+      - ./config:/app/config
+      - ./models:/app/models
 
 
