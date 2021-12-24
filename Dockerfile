@@ -12,11 +12,19 @@ RUN apt-get update && apt-get upgrade -y && apt autoremove -y
 RUN apt-get install -y ffmpeg git
 
 WORKDIR /app
-COPY assets cogs config libs models tts utils __main__.py LICENSE ./
+COPY ./tts tts
+COPY ./libs libs
+COPY ./assets assets
+COPY ./utils utils
+COPY ./utils utils
+COPY ./config config
+COPY ./models models
+COPY ./cogs cogs
+COPY  __main__.py LICENSE ./
 # COPY --from=builder requirements.txt ./
 COPY requirements.txt ./
 
 RUN pip install -U pip
 RUN pip install -r requirements.txt
 
-ENTRYPOINT ["python", "."]
+ENTRYPOINT ["python", "__main__.py"]
