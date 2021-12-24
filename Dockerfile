@@ -9,11 +9,12 @@ FROM python:3.8.12-slim
 LABEL maintainer="marc.partensky@gmail.com"
 RUN apt-get update && apt-get upgrade -y && apt autoremove -y
 # RUN add-apt-repository ppa:mc3man/trusty-media
-RUN apt-get install -y ffmpeg
+RUN apt-get install -y ffmpeg git
 
 WORKDIR /app
 COPY assets cogs config libs models tts utils __main__.py LICENSE ./
-COPY --from=builder requirements.txt ./
+# COPY --from=builder requirements.txt ./
+COPY requirements.txt ./
 
 RUN pip install -U pip
 RUN pip install -r requirements.txt
