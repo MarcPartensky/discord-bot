@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  discord-bot:
+    image: marcpartensky/discord-bot
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./cogs:./cogs
+      - ./config:./config
+      - ./models:./models
+
+
