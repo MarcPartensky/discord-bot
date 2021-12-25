@@ -32,14 +32,15 @@ class API(commands.Cog):
         await self.bot.wait_until_ready()
         await self.server.start()
 
-    # async def checker(self, request):
-    #     return request.headers.get("authorization") == "password"
+    async def checker(self, request):
+        # return request.headers.get("authorization") == "password"
+        return True
 
     async def fail_handler(self, request):
         return web.json_response(data={"message": "you are not authorized"}, status=401)
 
     @server.add_route(path="/", method="GET", cog="API")
-    @server.check(predicate="checker", fail_handler="fail_handler")
+    @server.check(predicate=checker, fail_handler="fail_handler")
     async def home(self, request):
         # self.bot.mes
         return web.json_response(data={"foo": "bar"}, status=200)
