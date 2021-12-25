@@ -2,6 +2,7 @@ version: "3.9"
 services:
   discord-bot:
     image: marcpartensky/discord-bot
+    restart: unless-stopped
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -11,5 +12,6 @@ services:
       - ./cogs:/app/cogs
       - ./config:/app/config
       - ./models:/app/models
+      - ./__main__.py:/app/__main__.py
 
 
