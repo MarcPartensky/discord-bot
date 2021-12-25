@@ -1,2 +1,13 @@
 .env
 .git
+.gitignore
+Makefile
+Dockerfile
+docker-compose.yml
+README.md
+LICENSE
+Procfile
+Pipfile.lock
+requirements.txt
+run.sh
+runtime.txt
