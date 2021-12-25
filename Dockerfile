@@ -13,6 +13,12 @@ RUN apt-get update && apt-get upgrade -y && apt autoremove -y
 # RUN add-apt-repository ppa:mc3man/trusty-media
 RUN apt-get install -y ffmpeg git
 
+# COPY --from=builder requirements.txt ./
+COPY requirements.txt ./
+
+RUN pip install -U pip
+RUN pip install -r requirements.txt
+
 WORKDIR /app
 COPY ./tts tts
 COPY ./libs libs
@@ -22,10 +28,5 @@ COPY ./config config
 COPY ./models models
 COPY ./cogs cogs
 COPY  __main__.py LICENSE ./
-# COPY --from=builder requirements.txt ./
-COPY requirements.txt ./
-
-RUN pip install -U pip
-RUN pip install -r requirements.txt
 
 ENTRYPOINT ["python", "__main__.py"]
