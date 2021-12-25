@@ -18,7 +18,6 @@ COPY ./tts tts
 COPY ./libs libs
 COPY ./assets assets
 COPY ./utils utils
-COPY ./utils utils
 COPY ./config config
 COPY ./models models
 COPY ./cogs cogs
