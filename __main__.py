@@ -170,7 +170,7 @@ class Main(commands.Cog):
         print(f"{self.bot.user} is connected to Discord!")
 
     @commands.Cog.listener()
-    async def on_member_join(self, member):
+    async def on_member_join(self, member: discord.Member):
         """Venue un nouveau membre."""
         await member.add_roles(self.invited)
         await ctx.send(f"{member.name} à été promu en {role.name}.")
@@ -217,7 +217,7 @@ class Main(commands.Cog):
                     await ctx.send(f"{member.name} à été promu en {role.name}.")
 
     @commands.Cog.listener()
-    async def on_member_remove(self, member):
+    async def on_member_remove(self, member: discord.Member):
         """Départ un nouveau membre."""
         timeout = 60
         for channel in member.guild.channels:
@@ -241,7 +241,7 @@ class Main(commands.Cog):
                     )
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx, error, translating=None):
+    async def on_command_error(self, ctx: commands.Context, error, translating=None):
         """Envoie l'erreur aux utilisateurs."""
         if not translating:
             translating = ctx.author.id not in masters
