@@ -9,6 +9,7 @@ __author__ = "Marc Partensky"
 from discord.ext import commands
 
 # import discord
+import os
 
 import server
 from aiohttp import web
@@ -21,8 +22,8 @@ class API(commands.Cog):
         self.bot = bot
         self.server = server.HTTPServer(
             bot=self.bot,
-            host="0.0.0.0",
-            port=8000,
+            host=os.environ.get("DISCORD_BOT_HOST") or "localhost",
+            port=int(os.environ.get("DISCORD_BOT_PORT") or "8000"),
         )
         self.bot.loop.create_task(self._start_server())
 
