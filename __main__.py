@@ -15,6 +15,7 @@ import discord
 import html
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from config.config import prefix, masters, delete_after_time, status, access
@@ -93,6 +94,18 @@ class Main(commands.Cog):
                     # print(filename)
                     self.bot.load_extension(f"cogs.{filename[:-3]}")
 
+    @commands.command()
+    async def cogs(self, ctx: commands.Context):
+        """Liste tous les cogs."""
+        cog_list = []
+        for file in os.listdir("./cogs"):
+            if file.endswith(".py"):
+                file = "- " + file[:-3]
+                cog_list.append(file)
+        list_text = "\n".join(cog_list)
+        text = "```md\n" + list_text + "\n```"
+        await ctx.send(text)
+
     @commands.command(name="décharge-tous")
     @access.admin
     async def unload_all(self, ctx: commands.Context):
@@ -133,8 +146,7 @@ class Main(commands.Cog):
         """
         await self.bot.change_presence(
             activity=discord.Activity(
-                type=discord.ActivityType.watching,
-                name=next(self.status)
+                type=discord.ActivityType.watching, name=next(self.status)
             )
         )
 

@@ -14,4 +14,5 @@ setup:
 	pip install pipenv
 	pipenv shell
 	pipenv install
-
+recreate:
+	docker-compose -f docker-compose.yml up --force-recreate
