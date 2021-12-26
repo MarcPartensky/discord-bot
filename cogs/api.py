@@ -8,6 +8,10 @@ __author__ = "Marc Partensky"
 
 import os
 import discord
+import typing
+import uuid
+import discord
+import traceback
 from discord.ext import commands
 
 import server
@@ -28,6 +32,7 @@ class API(commands.Cog):
             os.environ.get("DISCORD_BOT_GUILD_ID") or "550332212340326428"
         )
         self.bot.loop.create_task(self._start_server())
+        self.contexts: typing.Dict[str, commands.Context] = {}
 
     async def _start_server(self):
         """Task to run the HTTP server."""
@@ -43,6 +48,92 @@ class API(commands.Cog):
     async def fail_handler(self, request):
         return web.json_response(data={"message": "you are not authorized"}, status=401)
 
+    @server.add_route(path="/send/user", method="POST", cog="API")
+    async def send_user(self, request: web.Request):
+        """API home path."""
+        body = await request.json()
+        user: discord.User = await self.bot.fetch_user(body["id"])
+        await user.send(body["message"])
+        return web.json_response(
+            data={"text": "Successfully sent message."}, status=200
+        )
+
+    @server.add_route(path="/send/channel", method="POST", cog="API")
+    async def send_channel(self, request: web.Request):
+        """API home path."""
+        body = await request.json()
+        channel: discord.TextChannel = await self.bot.fetch_channel(body["id"])
+        await channel.send(body["message"])
+        self.bot.commands
+        return web.json_response(
+            data={"text": "Successfully sent message."}, status=200
+        )
+
+    # def build_context(self, channel: discord.TextChannel, args: list) -> commands.Context:
+    #     """Build a fake context to run bot commands."""
+    #     # state = discord
+    #     data = {}
+    #     state = discord.message.ConnectionState({}, {}, {}, http, loop)
+    #     message = discord.Message(state, channel, data)
+    #     view = discord.channel.TextChannel
+    #     return commands.Context(message, self.bot, view, args=args))
+
+    @server.add_route(path="/command/channel", method="POST", cog="API")
+    async def command_channel(self, request: web.Request):
+        """API home path."""
+        body = await request.json()
+        ctx_id = body["ctx"]
+        cmd = body["cmd"]
+        if "args" in body:
+            args = body["args"]
+        else:
+            args = []
+        if "kwargs" in body:
+            kwargs = body["kwargs"]
+        else:
+            kwargs = {}
+        channel: discord.TextChannel = await self.bot.fetch_channel(body["id"])
+        command_list = []
+        for command in self.bot.commands:
+            command_list.append(dict(name=command.name, doc=command.short_doc))
+            print(command.name)
+            if command.name == cmd:
+                # context = self.build_context(channel, args)
+                ctx = self.contexts[ctx_id]
+                try:
+                    print(ctx.args)
+                    print(ctx.kwargs)
+                    ctx.args = args
+                    ctx.kwargs = kwargs
+                    # command.clean_params
+                    # for param in command.params:
+
+                    # print(command._parse_arguments(ctx))
+                    # await command.prepare(ctx)
+                    # await converter._construct_default(ctx)
+                    # await command.callback(context, __p1=command.clean_params)
+                    # print(command.clean_params)
+                    # print(command.params)
+                    # print(command.invoke())
+                    # ctx.args = args
+                    result = await command.invoke(ctx)
+                    return web.json_response(data={"text": str(result)}, status=200)
+                except Exception as exception:
+                    traceback.print_exc()
+                    return web.json_response(
+                        data={"error": str(exception), "doc": command.short_doc},
+                        status=500,
+                    )
+        return web.json_response(
+            data={"error": "No match found.", "commands": command_list}, status=404
+        )
+
+    @server.add_route(path="/debug/bot", method="GET", cog="API")
+    async def debug_bot(self, request: web.Request):
+        """API home path."""
+        body = await request.json()
+        return web.json_response(data=self.bot, status=200)
+
     @server.add_route(path="/", method="POST", cog="API")
     # @server.check(predicate=checker, fail_handler="fail_handler")
     async def home(self, request: web.Request):
@@ -52,6 +143,13 @@ class API(commands.Cog):
         print(guild.text_channels)
         print(guild)
         return web.json_response(data={"foo": "bar"}, status=200)
+
+    @commands.command(name="save-context")
+    async def save_context(self, ctx: commands.Context, context_id: str or None):
+        """Save a context since it is really hard to build one from scratch."""
+        context_id = context_id or str(uuid.uuid1())
+        self.contexts[context_id] = ctx
+        await ctx.send(f"> Saved context as **{context_id}**")
 
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):
