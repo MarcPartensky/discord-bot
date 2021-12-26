@@ -7,7 +7,7 @@ dev:
 build:
 	docker-compose -f docker-compose.yml build discord-bot
 push: build
-	docker-compose -f docker-compose push discord-bot
+	docker-compose -f docker-compose.yml push discord-bot
 requirements:
 	pipenv lock -r > requirements.txt
 setup:
