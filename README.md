@@ -114,7 +114,7 @@ docker container rm discord-bot
 
 ## Option 2: Build the docker image with docker-compose once the source code is cloned
 ```
-docker-compose up -d discord-bot --remove-orphans --build
+docker-compose up -d discord-bot-prod --remove-orphans --build
 ```
 
 ## Option 3: Build it yourself

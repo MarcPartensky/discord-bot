@@ -17,4 +17,4 @@ setup:
 	pipenv shell
 	pipenv install
 recreate:
-	docker-compose -f docker-compose.yml up --force-recreate
+	docker-compose -f docker-compose.yml up --force-recreate discord-bot-dev
