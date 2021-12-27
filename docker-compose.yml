@@ -13,6 +13,8 @@ services:
       - ./config:/app/config
       - ./models:/app/models
       - ./__main__.py:/app/__main__.py
+      - ~/.config:/root/.config
+      - ~/Downloads/squashfs-root/usr/bin/nvim:/usr/bin/nvim
 
   discord-bot-prod:
     image: marcpartensky/discord-bot
