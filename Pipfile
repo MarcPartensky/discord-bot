@@ -112,6 +112,7 @@ SecretStorage = "*"
 Unidecode = "*"
 youtube_dl = "*"
 python-dotenv = "*"
+dpy-http-server = "*"
 
 [dev-packages]
 black = "*"

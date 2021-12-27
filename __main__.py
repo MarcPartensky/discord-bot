@@ -2,11 +2,10 @@
 """Entry point for executing the bot."""
 
 import os
-import re
-import time
 import random
 import itertools
 import warnings
+from rich import print
 
 warnings.filterwarnings("ignore")
 
@@ -15,6 +14,7 @@ import discord
 import html
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from config.config import prefix, masters, delete_after_time, status, access
@@ -76,6 +76,12 @@ class Main(commands.Cog):
             i += self.help_every
         self.status = itertools.cycle(self.status)
 
+    @commands.command()
+    async def environment(self, ctx: commands.Context):
+        """Affiche l'environnement dans lequel le bot tourne."""
+        host = os.environ.get("HOST")
+        await ctx.send(f"> Environment: **{host}**")
+
     @commands.command(name="charge-tous")
     @access.admin
     async def load_all(self, ctx: commands.Context):
@@ -90,8 +96,28 @@ class Main(commands.Cog):
             for i, filename in enumerate(cogs):
                 bar.update(i)
                 if filename.endswith(".py"):
-                    # print(filename)
                     self.bot.load_extension(f"cogs.{filename[:-3]}")
+
+    @commands.command()
+    async def cogs(self, ctx: commands.Context):
+        """Liste tous les cogs."""
+        cog_list = []
+        for file in os.listdir("./cogs"):
+            if file.endswith(".py"):
+                if file.endswith(".py"):
+                    file = "- " + file[:-3]
+                    cog_list.append(file)
+        list_text = "\n".join(cog_list)
+        text = "```md\n" + list_text + "\n```"
+        await ctx.send(text)
+
+    @commands.command()
+    async def loaded_cogs(self, ctx: commands.Context):
+        """Liste tous les cogs."""
+        loaded_cog_list = [f"- {s[5:]}" for s in self.bot.extensions.keys()]
+        list_text = "\n".join(loaded_cog_list)
+        text = "```md\n" + list_text + "\n```"
+        await ctx.send(text)
 
     @commands.command(name="décharge-tous")
     @access.admin
@@ -133,8 +159,7 @@ class Main(commands.Cog):
         """
         await self.bot.change_presence(
             activity=discord.Activity(
-                type=discord.ActivityType.watching,
-                name=next(self.status)
+                type=discord.ActivityType.watching, name=next(self.status)
             )
         )
 
@@ -145,7 +170,7 @@ class Main(commands.Cog):
         print(f"{self.bot.user} is connected to Discord!")
 
     @commands.Cog.listener()
-    async def on_member_join(self, member):
+    async def on_member_join(self, member: discord.Member):
         """Venue un nouveau membre."""
         await member.add_roles(self.invited)
         await ctx.send(f"{member.name} à été promu en {role.name}.")
@@ -192,7 +217,7 @@ class Main(commands.Cog):
                     await ctx.send(f"{member.name} à été promu en {role.name}.")
 
     @commands.Cog.listener()
-    async def on_member_remove(self, member):
+    async def on_member_remove(self, member: discord.Member):
         """Départ un nouveau membre."""
         timeout = 60
         for channel in member.guild.channels:
@@ -216,7 +241,7 @@ class Main(commands.Cog):
                     )
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx, error, translating=None):
+    async def on_command_error(self, ctx: commands.Context, error, translating=None):
         """Envoie l'erreur aux utilisateurs."""
         if not translating:
             translating = ctx.author.id not in masters

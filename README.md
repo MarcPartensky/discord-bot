@@ -71,6 +71,8 @@ DISCORD_CLIENT_ID=
 DISCORD_MONGO_CLUSTER=
 DISCORD_MONGO_USERNAME=
 DISCORD_MONGO_PASSWORD=
+DISCORD_BOT_PORT=
+DISCORD_BOT_HOST=
 ```
 
 Other parameters can be added in the .env file but are not required.
@@ -90,13 +92,9 @@ GITHUB_TOKEN=
 CAPTCHA_WEBSITE_KEY=
 CAPTCHA_SECRET_KEY=
 LEEKWARS_USERNAME=
-BRAWLSTARS_ID=
-BRAWLSTARS_MAIL=
-BRAWLSTARS_PASSWORD=
-BRAWLSTARS_TOKEN=
 ```
 
-## Option 1 :Run with Docker recommended
+## Option 1 :Run with Docker
 
 ### Then run:
 
@@ -104,16 +102,9 @@ BRAWLSTARS_TOKEN=
 docker run --env-file .env marcpartensky/discord-bot
 ```
 
-#### Or run in background:
-
-Run with:
-```sh
-docker run --env-file .env --name discord-bot marcpartensky/discord-bot
-```
-
 Stop with:
 ```sh
-docker kill discord-bot
+docker stop discord-bot
 ```
 
 Clean with:
@@ -121,7 +112,12 @@ Clean with:
 docker container rm discord-bot
 ```
 
-## Option 2: Build it yourself
+## Option 2: Build the docker image with docker-compose once the source code is cloned
+```
+docker-compose up -d discord-bot-prod --remove-orphans --build
+```
+
+## Option 3: Build it yourself
 
 **Download python3.8 (Tested in 3.8.2)**
 - Download from the official website (recommended): https://www.python.org/
