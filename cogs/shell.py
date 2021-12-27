@@ -8,7 +8,7 @@ import discord
 from discord.ext.commands.core import has_role
 
 from utils import tools
-from config.config import access, masters, cluster, SHELL_ROLE
+from config.config import access, masters, cluster
 from config import emoji
 from urllib.parse import quote
 
@@ -18,6 +18,8 @@ import subprocess
 
 class Shell(commands.Cog):
     """Control shells"""
+
+    role = "Shell"
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -30,29 +32,28 @@ class Shell(commands.Cog):
 
     async def give_shell_role_to_masters(self, ctx: commands.Context):
         """Give shell tole to masters."""
-        if not SHELL_ROLE in [role.name for role in ctx.guild.roles]:
-            role = await ctx.guild.create_role(name=SHELL_ROLE, colour=self.color)
-            await ctx.send(f"> Created `{SHELL_ROLE}` role.")
+        if not Shell.role in [role.name for role in ctx.guild.roles]:
+            role = await ctx.guild.create_role(name=Shell.role, colour=self.color)
+            await ctx.send(f"> Created `{Shell.role}` role.")
             members = []
             for master in masters:
                 if member := await ctx.guild.fetch_member(master):
-                    if SHELL_ROLE in [role.name for role in member.roles]:
+                    if Shell.role in [role.name for role in member.roles]:
                         print(member, member.id, master)
                         await member.add_roles(role)
                         members.append(member)
             if members:
                 members = "\n".join(map(lambda m: f"+ {member}", members))
                 await ctx.send(
-                    '```diff\nAdded "' + SHELL_ROLE + '" role to:\n' + members + "```"
+                    '```diff\nAdded "' + Shell.role + '" role to:\n' + members + "```"
                 )
                 return
 
-    # @commands.has_role(SHELL_ROLE)
     @commands.command(aliases=["sh"])
     async def shell(self, ctx: commands.Context):
         """Run a command in a shell"""
         await self.give_shell_role_to_masters(ctx)
-        if SHELL_ROLE in [role.name for role in ctx.author.roles]:
+        if Shell.role in [role.name for role in ctx.author.roles]:
             embed = discord.Embed(color=self.color)
             embed.set_thumbnail(url=self.thumbnail)
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
