@@ -75,6 +75,7 @@ jobs:
           DISCORD_MONGO_USERNAME: fake
           DISCORD_MONGO_PASSWORD: fake
           DISCORD_MONGO_CLUSTER: fake
+          WOLFRAM_ALPHA_ID: fake
       - name: Check api
         run: curl localhost:8000/live
 
