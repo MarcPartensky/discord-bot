@@ -39,7 +39,6 @@ filelock==3.4.2
 future==0.18.2
 git+git://github.com/carpedm20/fbchat.git@916a14062d31f3624dfe8dd4ab672648a3e508c0#egg=fbchat
 git+https://github.com/Rapptz/discord.py#egg=discord.py
-git+https://github.com/Rapptz/discord.py@45d498c1b76deaf3b394d17ccf56112fa691d160#egg=discord-py
 gtts-token==1.1.4
 gtts==2.2.3
 h11==0.12.0; python_version >= '3.6'
