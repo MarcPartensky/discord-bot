@@ -138,7 +138,7 @@ class API(commands.Cog):
     # @server.check(predicate=checker, fail_handler="fail_handler")
     async def live(self, request: web.Request):
         """API home path."""
-        return web.HTTPFound
+        return web.json_response(text="OK", status=200)
 
     @commands.command(name="save-context")
     async def save_context(self, ctx: commands.Context, context_id: str or None):
