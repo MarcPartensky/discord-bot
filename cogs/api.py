@@ -134,15 +134,11 @@ class API(commands.Cog):
         body = await request.json()
         return web.json_response(data=self.bot, status=200)
 
-    @server.add_route(path="/", method="POST", cog="API")
+    @server.add_route(path="/live", method="GET", cog="API")
     # @server.check(predicate=checker, fail_handler="fail_handler")
-    async def home(self, request: web.Request):
+    async def live(self, request: web.Request):
         """API home path."""
-        body = await request.json()
-        guild = await self.bot.fetch_guild(body["guild_id"])
-        print(guild.text_channels)
-        print(guild)
-        return web.json_response(data={"foo": "bar"}, status=200)
+        return web.HTTPFound
 
     @commands.command(name="save-context")
     async def save_context(self, ctx: commands.Context, context_id: str or None):
