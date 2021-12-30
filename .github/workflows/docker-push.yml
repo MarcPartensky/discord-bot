@@ -60,17 +60,4 @@ jobs:
         run: pip install -r requirements.txt
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
-      - name: Run the bot
-        run: python __main__.py
-        env:
-          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-          DISCORD_PREFIX: ${{ secrets.DISCORD_PREFIX }}
-          DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
-          DISCORD_MONGO_CLUSTER: discord-cluster-5ckni.mongodb.net/test
-          DISCORD_MONGO_USERNAME: esclave
-          DISCORD_MONGO_PASSWORD: esclave
-          WOLFRAM_ALPHA_ID: fake
-          DOCKER_API_URL: fake
-      - name: Check api
-        run: curl localhost:8000/live
 
