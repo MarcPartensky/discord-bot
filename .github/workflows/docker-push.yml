@@ -72,10 +72,10 @@ jobs:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           DISCORD_PREFIX: ${{ secrets.DISCORD_PREFIX }}
           DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
-          DISCORD_MONGO_USERNAME: fake
-          DISCORD_MONGO_PASSWORD: fake
-          DISCORD_MONGO_CLUSTER: fake
           WOLFRAM_ALPHA_ID: fake
+          DISCORD_MONGO_CLUSTER: discord-cluster-5ckni.mongodb.net/test
+          DISCORD_MONGO_USERNAME: esclave
+          DISCORD_MONGO_PASSWORD: esclave
       - name: Check api
         run: curl localhost:8000/live
 
