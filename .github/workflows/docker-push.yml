@@ -41,7 +41,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         push: true
-        tags: marcpartensky/discord-bot:latest
+        tags: marcpartensky/discord-bot:$(date +%s)
 
   test-python-versions:
     runs-on: ${{ matrix.os }}
