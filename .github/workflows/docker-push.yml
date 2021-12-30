@@ -8,8 +8,9 @@ on:
     tags:
       - v*
 
-  # Run tests for any PRs.
   pull_request:
+    branches:
+      - master
 
 env:
   IMAGE_NAME: website
@@ -26,16 +27,6 @@ jobs:
       with:
         python-version: 3.8
         architecture: x64
-    - name: Update pip
-      run: pip install -U pip
-    - name: Install pipenv
-      run: pip install pipenv
-    - name: Lock pip dependencies
-      run: pipenv lock --pre --clear
-    - name: Install dependencies
-      run: pipenv install
-    - name: Export to requirements.txt
-      run: pipenv lock -r > requirements.txt
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
     - name: Set up Docker Buildx
@@ -51,3 +42,22 @@ jobs:
       with:
         push: true
         tags: marcpartensky/discord-bot:latest
+
+  test-python-versions:
+   runs-on: ${{ matrix.os }}
+   strategy:
+     matrix:
+       os: [ubuntu-latest, macos-latest, windows-latest]
+       python-version: ['3.8', '3.9', '3.10', 'pypy-3.8', 'pypy-3.9', 'pypy-3.10']
+   steps:
+     - uses: actions/checkout@v2
+     - name: Set up Python
+       uses: actions/setup-python@v2
+       with:
+         python-version: ${{ matrix.python-version }}
+         cache: pip
+     - run: pip install -r requirements.txt
+     - name: Display Python version
+       run: python -c "import sys; print(sys.version)"
+     - name: Check api
+       run: curl localhost:8000/live
