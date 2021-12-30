@@ -64,7 +64,7 @@ jobs:
           path: ~/.cache/pip
           key: ${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
       - name: Install requirements
-        run: pip install -r requirements.txt -e .
+        run: pip install -r requirements.txt
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
       - name: Run the bot
