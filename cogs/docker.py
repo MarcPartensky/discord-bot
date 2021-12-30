@@ -7,10 +7,13 @@ import os
 import requests
 import discord
 
-from discord.ext import commands, tasks
-from config.config import docker_role, masters
-
+from discord.ext import commands
 from rich import print
+
+from config.config import masters
+
+
+DOCKER_ROLE="Docker"
 
 
 class Docker(commands.Cog):
@@ -35,9 +38,9 @@ class Docker(commands.Cog):
         Only members with the docker role can run those commands."""
         print(masters)
         print(ctx.guild.members)
-        if not docker_role in [role.name for role in ctx.guild.roles]:
-            role = await ctx.guild.create_role(name=docker_role, colour=self.color)
-            await ctx.send(f"> Created `{docker_role}` role.")
+        if not DOCKER_ROLE in [role.name for role in ctx.guild.roles]:
+            role = await ctx.guild.create_role(name=DOCKER_ROLE, colour=self.color)
+            await ctx.send(f"> Created `{DOCKER_ROLE}` role.")
             members = []
             for master in masters:
                 if member := await ctx.guild.fetch_member(master):
@@ -47,13 +50,13 @@ class Docker(commands.Cog):
             if members:
                 members = "\n".join(map(lambda m: f"+ {member}", members))
                 await ctx.send(
-                    '```diff\nAdded "' + docker_role + '" role to:\n' + members + "```"
+                    '```diff\nAdded "' + DOCKER_ROLE + '" role to:\n' + members + "```"
                 )
                 return
         if not ctx.invoked_subcommand:
             await ctx.send(os.path.join(self.url, "docs"))
 
-    @commands.has_role(docker_role)
+    @commands.has_role(DOCKER_ROLE)
     @docker.command()
     async def ps(self, ctx: commands.Context, *container_ids: str):
         """Show status of some containers."""
@@ -100,7 +103,7 @@ class Docker(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @commands.has_role(docker_role)
+    @commands.has_role(DOCKER_ROLE)
     @docker.command()
     async def restart(self, ctx: commands.Context, *names: str):
         """Restart some containers."""
@@ -113,7 +116,7 @@ class Docker(commands.Cog):
             else:
                 return await ctx.send(f"> Failed restarting **{name}**!")
 
-    @commands.has_role(docker_role)
+    @commands.has_role(DOCKER_ROLE)
     @docker.command()
     async def exec(self, ctx: commands.Context, name: str, *, command: str):
         """Run a command in a container."""
@@ -126,7 +129,7 @@ class Docker(commands.Cog):
         else:
             return await ctx.send(f"> Failed to run **{command}**!")
 
-    @commands.has_role(docker_role)
+    @commands.has_role(DOCKER_ROLE)
     @docker.command()
     async def kill(self, ctx: commands.Context, *names: str):
         """Kill some containers."""
@@ -139,7 +142,7 @@ class Docker(commands.Cog):
             else:
                 return await ctx.send(f"> Failed killing **{name}**!")
 
-    @commands.has_role(docker_role)
+    @commands.has_role(DOCKER_ROLE)
     @docker.command()
     async def stop(self, ctx: commands.Context, *names: str):
         """Stop some containers."""
@@ -152,7 +155,7 @@ class Docker(commands.Cog):
             else:
                 return await ctx.send(f"> Failed stopping **{name}**!")
 
-    @commands.has_role(docker_role)
+    @commands.has_role(DOCKER_ROLE)
     @docker.command(aliases=["rm"])
     async def remove(self, ctx: commands.Context, *names: str):
         """Remove some containers."""
@@ -165,7 +168,7 @@ class Docker(commands.Cog):
             else:
                 return await ctx.send(f"> Failed removing **{name}**!")
 
-    @commands.has_role(docker_role)
+    @commands.has_role(DOCKER_ROLE)
     @docker.command(aliases=["p"])
     async def pause(self, ctx: commands.Context, *names: str):
         """Pause some containers."""
@@ -178,7 +181,7 @@ class Docker(commands.Cog):
             else:
                 return await ctx.send(f"> Failed pausing **{name}**!")
 
-    @commands.has_role(docker_role)
+    @commands.has_role(DOCKER_ROLE)
     @docker.command(aliases=["unp"])
     async def unpause(self, ctx: commands.Context, *names: str):
         """Unpause some containers."""
@@ -191,7 +194,7 @@ class Docker(commands.Cog):
             else:
                 return await ctx.send(f"> Failed pausing **{name}**!")
 
-    @commands.has_role(docker_role)
+    @commands.has_role(DOCKER_ROLE)
     @docker.command(aliases=["rn"])
     async def rename(self, ctx: commands.Context, name: str, to: str):
         """Remove a container."""
@@ -203,7 +206,7 @@ class Docker(commands.Cog):
         else:
             return await ctx.send(f"> Failed renaming **{name}** to **{to}**!")
 
-    @commands.has_role(docker_role)
+    @commands.has_role(DOCKER_ROLE)
     @docker.command()
     async def top(self, ctx: commands.Context, *names: str):
         """Return the top proccesses of some containers."""
@@ -230,7 +233,7 @@ class Docker(commands.Cog):
                 text = text.replace('_', '‗')
                 await ctx.send("```md\n" + text + "\n```")
 
-    @commands.has_role(docker_role)
+    @commands.has_role(DOCKER_ROLE)
     @docker.command()
     async def logs(self, ctx: commands.Context, name: str, since: int):
         """Return the logs of a container."""
@@ -285,7 +288,7 @@ class Docker(commands.Cog):
         print(text)
         await ctx.send(text + "\n```")
 
-    @commands.has_role(docker_role)
+    @commands.has_role(DOCKER_ROLE)
     @docker.command()
     async def ids(self, ctx: commands.Context):
         """List all containers."""
@@ -303,7 +306,7 @@ class Docker(commands.Cog):
         print(text)
         await ctx.send(text + "\n")
 
-    @commands.has_role(docker_role)
+    @commands.has_role(DOCKER_ROLE)
     @docker.command(aliases=["is"])
     async def images(self, ctx: commands.Context):
         """List all images."""
