@@ -66,6 +66,7 @@ Go to:
 Make a .env file with the following parameters.
 
 ```.env
+DISCORD_PREFIX=
 DISCORD_TOKEN=
 DISCORD_CLIENT_ID=
 DISCORD_MONGO_CLUSTER=
