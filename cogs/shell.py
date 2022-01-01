@@ -7,21 +7,19 @@ from discord.ext import commands
 import discord
 from discord.ext.commands.core import has_role
 
-from utils import tools
-from config.config import access, masters, cluster
-from config import emoji
-from urllib.parse import quote
+from utils.tools import create_role_if_missing
 
 
-import subprocess
+import pexpect
+
+SHELL_ROLE = "Shell"
 
 
 class Shell(commands.Cog):
     """Control shells"""
 
-    role = "Shell"
-
     def __init__(self, bot: commands.Bot):
+        """Initialize the cog with the bot."""
         self.bot = bot
         self.color: discord.Color = discord.Color.darker_grey()
         # self.thumbnail: str = (
@@ -30,45 +28,24 @@ class Shell(commands.Cog):
         self.thumbnail: str = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/GNOME_Terminal_icon_2019.svg/1200px-GNOME_Terminal_icon_2019.svg.png"
         self.shells: list = []
 
-    async def give_shell_role_to_masters(self, ctx: commands.Context):
-        """Give shell tole to masters."""
-        if not Shell.role in [role.name for role in ctx.guild.roles]:
-            role = await ctx.guild.create_role(name=Shell.role, colour=self.color)
-            await ctx.send(f"> Created `{Shell.role}` role.")
-            members = []
-            for master in masters:
-                if member := await ctx.guild.fetch_member(master):
-                    if Shell.role in [role.name for role in member.roles]:
-                        print(member, member.id, master)
-                        await member.add_roles(role)
-                        members.append(member)
-            if members:
-                members = "\n".join(map(lambda m: f"+ {member}", members))
-                await ctx.send(
-                    '```diff\nAdded "' + Shell.role + '" role to:\n' + members + "```"
-                )
-                return
-
+    @has_role(SHELL_ROLE)
     @commands.command(aliases=["sh"])
     async def shell(self, ctx: commands.Context):
         """Run a command in a shell"""
-        await self.give_shell_role_to_masters(ctx)
-        if Shell.role in [role.name for role in ctx.author.roles]:
-            embed = discord.Embed(color=self.color)
-            embed.set_thumbnail(url=self.thumbnail)
-            embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
-            embed.description = os.environ.get("SHELL")
+        await create_role_if_missing(ctx, SHELL_ROLE, self.color)
+        embed = discord.Embed(color=self.color)
+        embed.set_thumbnail(url=self.thumbnail)
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
+        embed.description = os.environ.get("SHELL")
 
-            if ctx.author.id in self.shells:
-                self.shells.remove(ctx.author.id)
-                embed.title = "Closed shell"
-                await ctx.send(embed=embed)
-            else:
-                embed.title = "Opened shell"
-                await ctx.send(embed=embed)
-                self.shells.append(ctx.author.id)
+        if ctx.author.id in self.shells:
+            self.shells.remove(ctx.author.id)
+            embed.title = "Closed shell"
+            await ctx.send(embed=embed)
         else:
-            await ctx.send("Unauthorized")
+            embed.title = "Opened shell"
+            await ctx.send(embed=embed)
+            self.shells.append(ctx.author.id)
 
     @commands.command(name="shells")
     async def list_shells(self, ctx: commands.Context):

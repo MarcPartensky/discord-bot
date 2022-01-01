@@ -1,9 +1,10 @@
+import sys
 import signal
 from contextlib import contextmanager
 from io import StringIO
-import sys
 from discord.ext import commands
 import discord
+from config.config import masters
 
 
 def parse(cmd, *args, key="$"):
@@ -150,3 +151,32 @@ def lazy_embed(
     if footer:
         embed.set_footer(text=footer)
     return embed
+
+
+async def create_role_if_missing(
+    ctx: commands.Context, role_name: str, role_color: discord.Color
+):
+    """Create a role if it does not already exist."""
+    if not role_name in [role.name for role in ctx.guild.roles]:
+        # Create the role
+        role = await ctx.guild.create_role(name=role_name, colour=role_color)
+        await ctx.send(f"> Created `{role}` role.")
+        # Define a list of role members
+        role_members = []
+        # Add the role to all the masters
+        for master in masters:
+            if member := await ctx.guild.fetch_member(master):
+                if role_name in [role.name for role in member.roles]:
+                    print(member, member.id, master)
+                    await member.add_roles(role)
+                    role_members.append(member)
+        # Send a message to show the new role members
+        if role_members:
+            role_members_text = "\n".join(f"+ {member}" for member in role_members)
+            await ctx.send(
+                '```diff\nAdded "'
+                + role_name
+                + '" role to:\n'
+                + role_members_text
+                + "```"
+            )
