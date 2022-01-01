@@ -8,9 +8,12 @@ import requests
 import discord
 
 from discord.ext import commands
-from config.config import DOCKER_ROLE, masters
-
 from rich import print
+
+from config.config import masters
+
+
+DOCKER_ROLE="Docker"
 
 
 class Docker(commands.Cog):
