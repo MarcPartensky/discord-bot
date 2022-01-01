@@ -4,7 +4,6 @@ from contextlib import contextmanager
 from io import StringIO
 from discord.ext import commands
 import discord
-from config.config import masters
 
 
 def parse(cmd, *args, key="$"):
@@ -58,20 +57,6 @@ class DictObject(dict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__dict__ = self
-
-
-def post_passer(func, *passed_args, **passed_kwargs):
-    """Decorator that passes additionnal arguments (after its own) to a function."""
-
-    def decorated(*args, **kwargs):
-        args = list(args)
-        args.extend(passed_args)
-        args = tuple(args)
-        kwargs.update(passed_kwargs)
-        return func(*args, **kwargs)
-
-    return decorated
-
 
 def for_all_cog_methods(decorator_method):
     def decorate(cls):
@@ -134,7 +119,7 @@ def lazy_embed(
     fields: dict,
     title: str = None,
     description: str = None,
-    color: bytes = None,
+    color: discord.Colour = None,
     footer: str = None,
     url: str = None,
     thumbnail: str = None,
@@ -146,15 +131,15 @@ def lazy_embed(
         embed.set_thumbnail(url=thumbnail)
     if image:
         embed.set_image(url=image)
-    for k, v in fields.items():
-        embed.add_field(name=k, value=v)
+    for name, value in fields.items():
+        embed.add_field(name=name, value=value)
     if footer:
         embed.set_footer(text=footer)
     return embed
 
 
 async def create_role_if_missing(
-    ctx: commands.Context, role_name: str, role_color: discord.Color
+        ctx: commands.Context, role_name: str, role_color: discord.Color, masters: list
 ):
     """Create a role if it does not already exist."""
     if not role_name in [role.name for role in ctx.guild.roles]:

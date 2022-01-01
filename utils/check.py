@@ -1,7 +1,19 @@
 import inspect
 from discord.ext import commands
-from utils import tools
 from config import emoji
+
+
+def post_passer(func, *passed_args, **passed_kwargs):
+    """Decorator that passes additionnal arguments (after its own) to a function."""
+
+    def decorated(*args, **kwargs):
+        args = list(args)
+        args.extend(passed_args)
+        args = tuple(args)
+        kwargs.update(passed_kwargs)
+        return func(*args, **kwargs)
+
+    return decorated
 
 
 class Check:
@@ -27,7 +39,7 @@ class Check:
         try:
             msg = await ctx.bot.wait_for(
                 "message",
-                check=tools.post_passer(Check.same_author, ctx),
+                check=post_passer(Check.same_author, ctx),
                 timeout=self.timeout,
             )
             if msg.content.lower() in self.yes:
@@ -42,13 +54,13 @@ class Check:
 
     def consent(self, message):
         message = self.consent_message + " " + message
-        return tools.post_passer(self.validation, message=message)
+        return post_passer(self.validation, message=message)
 
     def validate(self, message):
-        return tools.post_passer(self.validation, message=message)
+        return post_passer(self.validation, message=message)
 
     def warn(self, message):
-        return tools.post_passer(self.validation, message=message, warning=True)
+        return post_passer(self.validation, message=message, warning=True)
 
     def validation(self, func, message=None, warning=False):
         async def decorated(command, ctx: commands.Context, *args):

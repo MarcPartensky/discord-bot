@@ -2,7 +2,8 @@ import os
 import itertools
 import wolframalpha
 
-from utils import access, check
+from utils.access import Access
+from utils.check import Check
 from models.mongo import MongoCluster
 from .credentials import mongo_url, wolfram_alpha_id
 
@@ -28,5 +29,5 @@ status = itertools.cycle(
         "finaliser la théorie quantique",
     ]
 )
-access = access.Access(masters)  # Create access for commands
-check = check.Check()
+access = Access(masters)  # Create access for commands
+check = Check()

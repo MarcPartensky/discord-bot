@@ -32,7 +32,7 @@ class Shell(commands.Cog):
     @commands.command(aliases=["sh"])
     async def shell(self, ctx: commands.Context):
         """Run a command in a shell"""
-        await create_role_if_missing(ctx, SHELL_ROLE, self.color)
+        await create_role_if_missing(ctx, SHELL_ROLE, self.color, masters)
         embed = discord.Embed(color=self.color)
         embed.set_thumbnail(url=self.thumbnail)
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
