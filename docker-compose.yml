@@ -2,7 +2,6 @@ version: "3.9"
 services:
   dev:
     image: marcpartensky/discord-bot:dev
-    restart: unless-stopped
     build:
       context: .
       dockerfile: ./Dockerfile
