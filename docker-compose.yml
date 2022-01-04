@@ -1,8 +1,7 @@
 version: "3.9"
 services:
-  discord-bot-dev:
-    image: marcpartensky/discord-bot
-    restart: unless-stopped
+  dev:
+    image: marcpartensky/discord-bot:dev
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -16,8 +15,8 @@ services:
       - ./models:/app/models
       - ./__main__.py:/app/__main__.py
 
-  discord-bot-prod:
-    image: marcpartensky/discord-bot
+  prod:
+    image: marcpartensky/discord-bot:latest
     restart: unless-stopped
     build:
       context: .

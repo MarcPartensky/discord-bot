@@ -4,7 +4,7 @@ LABEL image="https://hub.docker.com/r/marcpartensky/discord-bot"
 LABEL source="https://github.com/marcpartensky/discord-bot"
 RUN apt-get update && apt-get upgrade -y && apt autoremove -y
 # RUN add-apt-repository ppa:mc3man/trusty-media
-RUN apt-get install -y ffmpeg git
+RUN apt-get install -y ffmpeg git curl
 COPY requirements.txt ./
 
 RUN pip install -U pip
@@ -22,6 +22,6 @@ COPY  __main__.py LICENSE ./
 
 ENV DISCORD_BOT_HOST 0.0.0.0
 ENV DISCORD_BOT_PORT 8000
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "curl", "-fsS", "http://localhost:$DISCORD_BOT_PORT/live"]
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl -f http://localhost:8000/live || exit 1
 
 ENTRYPOINT ["python", "__main__.py"]
