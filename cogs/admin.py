@@ -1,12 +1,9 @@
-from config.config import access, status, delete_after_time, masters, cluster
+from config.config import access, cluster
 from config import shops
-from utils import tools
 
-from discord.ext import commands, tasks
+from discord.ext import commands
 from models.terminal import Terminal
 import discord
-import random
-import time
 import os
 import typing
 
@@ -27,6 +24,7 @@ class Muted(commands.Converter):
 
 class Admin(commands.Cog):
     def __init__(self, bot: commands.Bot, **kwargs):
+        """Cog pour administrer un serveur."""
         super().__init__(**kwargs)
         self.bot = bot
         self.kick_reason = "c'est la vie"
