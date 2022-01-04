@@ -1,6 +1,6 @@
 version: "3.9"
 services:
-  discord-bot-dev:
+  dev:
     image: marcpartensky/discord-bot
     restart: unless-stopped
     build:
@@ -16,7 +16,7 @@ services:
       - ./models:/app/models
       - ./__main__.py:/app/__main__.py
 
-  discord-bot-prod:
+  prod:
     image: marcpartensky/discord-bot
     restart: unless-stopped
     build:
