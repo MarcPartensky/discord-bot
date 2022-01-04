@@ -3,9 +3,9 @@ start:
 update:
 	pipenv lock --pre --clear
 dev:
-	docker-compose -f docker-compose.yml up --build --force-recreate --remove-orphans dev
+	docker-compose -f docker-compose.yml up -d --build --force-recreate --remove-orphans dev
 prod:
-	docker-compose -f docker-compose.yml up --build --force-recreate --remove-orphans prod
+	docker-compose -f docker-compose.yml up -d --build --force-recreate --remove-orphans prod
 build:
 	docker-compose -f docker-compose.yml build prod
 push: build
