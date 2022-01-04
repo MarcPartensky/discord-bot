@@ -4,7 +4,7 @@ LABEL image="https://hub.docker.com/r/marcpartensky/discord-bot"
 LABEL source="https://github.com/marcpartensky/discord-bot"
 RUN apt-get update && apt-get upgrade -y && apt autoremove -y
 # RUN add-apt-repository ppa:mc3man/trusty-media
-RUN apt-get install -y ffmpeg git
+RUN apt-get install -y ffmpeg git curl
 COPY requirements.txt ./
 
 RUN pip install -U pip
