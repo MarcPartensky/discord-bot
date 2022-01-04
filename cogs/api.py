@@ -7,8 +7,8 @@ __author__ = "Marc Partensky"
 # from utils import tools
 
 import os
-import discord
 import typing
+import discord
 import uuid
 import discord
 import traceback
