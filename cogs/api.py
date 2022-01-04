@@ -10,7 +10,6 @@ import os
 import typing
 import discord
 import uuid
-import discord
 import traceback
 from discord.ext import commands
 
