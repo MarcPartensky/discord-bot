@@ -4,7 +4,6 @@ from typing import List
 import discord
 from discord.ext import commands
 from discord import Message, PartialEmoji
-from utils.date
 
 
 class VoiceChannel(commands.Cog):
@@ -16,8 +15,6 @@ class VoiceChannel(commands.Cog):
         self.bot = bot
         self.role = "Voix"
 
-
-
     @commands.Cog.listener()
     async def on_voice_state_update(
         self,
@@ -28,7 +25,6 @@ class VoiceChannel(commands.Cog):
         """Detect any changes on voice channels"""
         # if after.channel.id == channel_id and not member.bot:
         #     voice_client = await channel.connect()
-        self.
         if not after.channel:
             await self.leave(member, before)
         elif not before.channel:
@@ -54,7 +50,7 @@ class VoiceChannel(commands.Cog):
         print(member, before)
         channel: discord.VoiceChannel = before.channel
         members: List[discord.Member] = channel.members
-        self.mute_if_single(members)
+        await self.mute_if_single(members)
 
     async def join(
         self,
@@ -65,7 +61,7 @@ class VoiceChannel(commands.Cog):
         print(member, after)
         channel: discord.VoiceChannel = after.channel
         members: List[discord.Member] = channel.members
-        self.mute_if_single(members)
+        await self.mute_if_single(members)
 
     async def move(
         self,
@@ -77,16 +73,16 @@ class VoiceChannel(commands.Cog):
         print(member, before, after)
         before_channel: discord.VoiceChannel = before.channel
         members: List[discord.Member] = before_channel.members
-        self.mute_if_single(members)
+        await self.mute_if_single(members)
         self.join_if_single(members)
 
-    def mute_if_single(self, members: List[discord.Member]):
+    async def mute_if_single(self, members: List[discord.Member]):
         """Mute a member if single."""
         members = list(filter(lambda m: not m.bot, members))
         if len(members) == 1:
             member = members[0]
             if self.role in map(lambda r: r.name, member.roles):
-                member.voice.mute = True
+                await member.edit(mute=True)
 
     def join_if_single(self, members: List[discord.Member]):
         """Mute a member if single."""
@@ -95,13 +91,13 @@ class VoiceChannel(commands.Cog):
             member = members[0]
             member.voice.mute = True
 
-    async def join(self, ctx: commands.Context):
-        """Rejoins un salon vocal."""
-        destination = ctx.author.voice.channel
-        if ctx.voice_state.voice:
-            await ctx.voice_state.voice.move_to(destination)
-            return
-        ctx.voice_state.voice = await destination.connect()
+    # async def join(self, ctx: commands.Context):
+    #     """Rejoins un salon vocal."""
+    #     destination = ctx.author.voice.channel
+    #     if ctx.voice_state.voice:
+    #         await ctx.voice_state.voice.move_to(destination)
+    #         return
+    #     ctx.voice_state.voice = await destination.connect()
 
     # @commands.command(name="nettoyer-salon", aliases=["nettoyer-chat"])
     # async def notify_on_join(self, ctx: commands.Context):

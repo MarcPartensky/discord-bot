@@ -243,11 +243,7 @@ class Admin(commands.Cog):
                     name=self.muted_role_name,
                     reason="Pour muter les gens trop bavards.",
                 )
-                for (
-                    channel
-                ) in (
-                    ctx.guild.channels
-                ):  # removes permission to view and send in the channel
+                for channel in ctx.guild.channels:  # removes permission to view and send in the channel
                     await channel.set_permissions(
                         role,
                         send_messages=False,
