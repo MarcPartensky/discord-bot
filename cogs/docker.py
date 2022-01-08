@@ -219,7 +219,12 @@ class Docker(commands.Cog):
                 continue
             print(content)
             texts = []
-            text = f"{name}\n" + "_" * len(name) + "\n\n   " + "".join([f"{word: <10}" for word in content["Titles"]])
+            text = (
+                f"{name}\n"
+                + "_" * len(name)
+                + "\n\n   "
+                + "".join([f"{word: <10}" for word in content["Titles"]])
+            )
             n = len(text)
             for process in content["Processes"]:
                 line = " \n * " + "".join([f"{word: <10}" for word in process])
@@ -230,7 +235,7 @@ class Docker(commands.Cog):
                     text += line
             texts.append(text)
             for text in texts:
-                text = text.replace('_', '‗')
+                text = text.replace("_", "‗")
                 await ctx.send("```md\n" + text + "\n```")
 
     @commands.has_role(DOCKER_ROLE)

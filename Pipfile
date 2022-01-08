@@ -113,6 +113,7 @@ Unidecode = "*"
 youtube_dl = "*"
 python-dotenv = "*"
 dpy-http-server = "*"
+pexpect = "*"
 
 [dev-packages]
 black = "*"
