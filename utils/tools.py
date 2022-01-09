@@ -59,6 +59,7 @@ class DictObject(dict):
         super().__init__(*args, **kwargs)
         self.__dict__ = self
 
+
 def for_all_cog_methods(decorator_method):
     def decorate(cls):
         def decorator__new__(new):
@@ -140,7 +141,7 @@ def lazy_embed(
 
 
 async def create_role_if_missing(
-        guild: discord.Guild, role_name: str, role_color: discord.Color
+    ctx: commands.Context, role_name: str, role_color: discord.Color
 ):
     """Create a role if it does not already exist."""
     if not role_name in [role.name for role in ctx.guild.roles]:
