@@ -27,6 +27,7 @@ python-dotenv = "*"
 dpy-http-server = "*"
 pexpect = "*"
 dnspython = "*"
+requests-futures = "*"
 
 [dev-packages]
 black = "*"
