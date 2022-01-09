@@ -3,7 +3,6 @@ LABEL maintainer="marc.partensky@gmail.com"
 LABEL image="https://hub.docker.com/r/marcpartensky/discord-bot"
 LABEL source="https://github.com/marcpartensky/discord-bot"
 RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
-# RUN add-apt-repository ppa:mc3man/trusty-media
 RUN apt-get install -y ffmpeg git curl
 COPY requirements.txt ./
 

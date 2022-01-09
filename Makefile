@@ -2,7 +2,7 @@ start:
 	pipenv run python .
 update:
 	pipenv lock --pre --clear
-	pipenv run pip freeze > requirements.txt
+	pipenv lock -r > requirements.txt
 dev:
 	docker-compose -f docker-compose.yml up -d --build --force-recreate --remove-orphans dev
 prod:
