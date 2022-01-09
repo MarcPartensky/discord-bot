@@ -6,12 +6,10 @@ dev:
 	docker-compose -f docker-compose.yml up -d --build --force-recreate --remove-orphans dev
 prod:
 	docker-compose -f docker-compose.yml up -d --build --force-recreate --remove-orphans prod
-build: requirements
+build: update
 	docker-compose -f docker-compose.yml build prod
 push: build
 	docker-compose -f docker-compose.yml push prod
-requirements:
-	pipenv lock -r > requirements.txt
 setup:
 	pip install pipenv
 	pipenv shell
