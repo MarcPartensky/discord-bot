@@ -7,7 +7,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
 RUN apt-get install -y ffmpeg git curl
 COPY requirements.txt ./
 
-RUN pip install -U pip pipenv
+RUN pip install -U pip
 RUN pip install -r requirements.txt
 
 WORKDIR /app
