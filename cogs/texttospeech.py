@@ -4,6 +4,7 @@ import nightcore as nc
 
 import discord
 import os
+import logging
 
 
 class TextToSpeech(commands.Cog):
@@ -15,7 +16,10 @@ class TextToSpeech(commands.Cog):
         """Assure que l'opus est chargé."""
         music = self.bot.get_cog("Music")
         await music.cog_before_invoke(ctx)
-        await music._join(ctx)
+        try:
+            await music._join(ctx)
+        except discord.errors.ClientException:
+            logging.debug("attempted to connect to voice channel but already connected")
         # if os.environ.get('DEVELOPMENT'):
         #     if not discord.opus.is_loaded():
         #         discord.opus.load_opus('libopus.so')
