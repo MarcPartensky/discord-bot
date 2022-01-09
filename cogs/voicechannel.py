@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from config.config import masters
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 
 class VoiceChannel(commands.Cog):
