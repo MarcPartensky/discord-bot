@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "62668149c57eeb73d6184c9b8711b0e31479fe0eff3989ef036723af0472710b"
+            "sha256": "c9db6682b8933a9c7040d1117a40190f291dd9fda74be856c2de309c657d2476"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -298,6 +298,14 @@
             ],
             "markers": "python_version >= '3.6'",
             "version": "==0.12.0"
+        },
+        "html2text": {
+            "hashes": [
+                "sha256:c7c629882da0cf377d66f073329ccf34a12ed2adf0169b9285ae4e63ef54c82b",
+                "sha256:e296318e16b059ddb97f7a8a1d6a5c1d7af4544049a01e261731d2d5cc277bbb"
+            ],
+            "index": "pypi",
+            "version": "==2020.1.16"
         },
         "idna": {
             "hashes": [
@@ -998,12 +1006,14 @@
             "version": "==1.3.2"
         },
         "urllib3": {
-            "extras": [],
+            "extras": [
+                "secure"
+            ],
             "hashes": [
                 "sha256:000ca7f471a233c2251c6c7023ee85305721bfdf18621ebff4fd17a8653427ed",
                 "sha256:0e7c33d9a63e7ddfcb86780aac87befc2fbddf46c58dbb487e0855f7ceec283c"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4.0'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_full_version < '4.0.0'",
             "version": "==1.26.8"
         },
         "wikipedia": {

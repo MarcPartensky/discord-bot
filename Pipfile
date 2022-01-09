@@ -30,6 +30,7 @@ pexpect = "*"
 # libs/sherlock
 dnspython = "*"
 requests-futures = "*"
+torrequest = "*"
 # libs/google
 unidecode = '*'
 future = '*'
