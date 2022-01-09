@@ -140,7 +140,7 @@ def lazy_embed(
 
 
 async def create_role_if_missing(
-        ctx: commands.Context, role_name: str, role_color: discord.Color
+        guild: discord.Guild, role_name: str, role_color: discord.Color
 ):
     """Create a role if it does not already exist."""
     if not role_name in [role.name for role in ctx.guild.roles]:
