@@ -6,7 +6,6 @@ from typing import List
 
 import discord
 from discord.ext import commands
-from rich import print
 
 from config.config import masters
 
@@ -39,7 +38,6 @@ class VoiceChannel(commands.Cog):
         for master in masters:
             if member := await guild.fetch_member(master):
                 if self.role in [role.name for role in member.roles]:
-                    print(member, member.id, master)
                     await member.add_roles(role)
 
     @commands.Cog.listener()
@@ -53,22 +51,12 @@ class VoiceChannel(commands.Cog):
         await self.create_role_if_missing(member.guild)
         if member.bot:
             return
-        # if after.channel.id == channel_id and not member.bot:
-        #     voice_client = await channel.connect()
         if not after.channel:
             await self.leave(member, before)
         elif not before.channel:
             await self.join(member, after)
         else:
             await self.move(member, before, after)
-        # after_channel: discord.VoiceChannel = after.channel
-        # after_members: typing.List[discord.Member] = after_channel.members
-        # before_channel: discord.VoiceChannel = before.channel
-        # before_members: typing.List[discord.Member] = before_channel.members
-        # print(member, before, after)
-        # # if len(members) == 1:
-        # print(after_members)
-        # print(before_members)
 
     async def leave(
         self,
@@ -127,7 +115,6 @@ class VoiceChannel(commands.Cog):
         member = members[0]
         if member.voice:
             if self.role in map(lambda r: r.name, member.roles):
-                print(member.voice)
                 await member.edit(mute=True)
 
     async def join_if_single(self, members: List[discord.Member]):
@@ -145,11 +132,8 @@ class VoiceChannel(commands.Cog):
             elif voice_client.channel in member.guild.voice_channels:
                 await voice_client.move_to(destination)
                 return
-        print(destination.members)
-        print(repr(destination))
         if self.bot.user.id not in [m.id for m in destination.members]:
-            print(await destination.connect())
-            print(destination.members)
+            await destination.connect()
 
     async def notify_on_join(self, member: discord.Member):
         """Notify me if a member joins."""
@@ -172,16 +156,12 @@ class VoiceChannel(commands.Cog):
         if len(true_members) > 0:
             return
         bot_search_results = list(filter(lambda m: m.id == self.bot.user.id, members))
-        print(bot_search_results)
         if len(bot_search_results) == 0:
             return
         for voice_client in self.bot.voice_clients:
             if voice_client.channel.id == channel.id:
                 await voice_client.disconnect()
                 break
-        # tmp_channel = await guild.create_voice_channel(name=self.tmp_channel_name)
-        # await bot_member.move_to(tmp_channel)
-        # await tmp_channel.delete()
 
 
 def setup(bot):
