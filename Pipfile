@@ -26,6 +26,7 @@ youtube_dl = "*"
 python-dotenv = "*"
 dpy-http-server = "*"
 pexpect = "*"
+dnspython = "*"
 
 [dev-packages]
 black = "*"
