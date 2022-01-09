@@ -30,6 +30,7 @@ dnspython = "*"
 requests-futures = "*"
 unidecode = '*'
 future = '*'
+selenium = "*"
 
 [dev-packages]
 black = "*"
