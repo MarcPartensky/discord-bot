@@ -5,10 +5,10 @@ LABEL source="https://github.com/marcpartensky/discord-bot"
 RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
 # RUN add-apt-repository ppa:mc3man/trusty-media
 RUN apt-get install -y ffmpeg git curl
-COPY Pipfile.lock ./
+COPY requirements ./
 
 RUN pip install -U pip pipenv
-RUN pipenv install --system
+RUN pip install -r requirements.txt
 
 WORKDIR /app
 COPY ./tts tts
