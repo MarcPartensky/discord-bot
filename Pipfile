@@ -29,6 +29,7 @@ pexpect = "*"
 dnspython = "*"
 requests-futures = "*"
 unidecode = '*'
+future = '*'
 
 [dev-packages]
 black = "*"
