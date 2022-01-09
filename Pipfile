@@ -43,5 +43,4 @@ pylint = "*"
 jedi = "*"
 
 [requires]
-# python_version = "3.8.3"
 python_version = "3.8.12"
