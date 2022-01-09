@@ -28,6 +28,7 @@ dpy-http-server = "*"
 pexpect = "*"
 dnspython = "*"
 requests-futures = "*"
+unidecode = '*'
 
 [dev-packages]
 black = "*"
