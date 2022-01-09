@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c9db6682b8933a9c7040d1117a40190f291dd9fda74be856c2de309c657d2476"
+            "sha256": "36a782695eb1b266b5484668559353a9856b298f8a5ffcef195724462e88d372"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -767,6 +767,15 @@
             ],
             "version": "==21.0.0"
         },
+        "pysocks": {
+            "hashes": [
+                "sha256:08e69f092cc6dbe92a0fdd16eeb9b9ffbc13cadfe5ca4c7bd92ffb078b293299",
+                "sha256:2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5",
+                "sha256:3f8804571ebe159c380ac6de37643bb4685970655d3bba243530d6558b799aa0"
+            ],
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
+            "version": "==1.7.1"
+        },
         "python-dotenv": {
             "hashes": [
                 "sha256:32b2bdc1873fd3a3c346da1c6db83d0053c3c62f28f1f38516070c4c8971b1d3",
@@ -957,6 +966,12 @@
             "markers": "python_version >= '3.6'",
             "version": "==2.3.1"
         },
+        "stem": {
+            "hashes": [
+                "sha256:a0b48ea6224e95f22aa34c0bc3415f0eb4667ddeae3dfb5e32a6920c185568c2"
+            ],
+            "version": "==1.8.0"
+        },
         "threadpoolctl": {
             "hashes": [
                 "sha256:4fade5b3b48ae4b1c30f200b28f39180371104fccc642e039e0f2435ec8cc211",
@@ -964,6 +979,13 @@
             ],
             "markers": "python_version >= '3.6'",
             "version": "==3.0.0"
+        },
+        "torrequest": {
+            "hashes": [
+                "sha256:3745d4ea3ffda98d7a034363c787adb37aab77bdab40094a4d937392cd4dae82"
+            ],
+            "index": "pypi",
+            "version": "==0.1.0"
         },
         "translate": {
             "hashes": [
@@ -1006,14 +1028,12 @@
             "version": "==1.3.2"
         },
         "urllib3": {
-            "extras": [
-                "secure"
-            ],
+            "extras": [],
             "hashes": [
                 "sha256:000ca7f471a233c2251c6c7023ee85305721bfdf18621ebff4fd17a8653427ed",
                 "sha256:0e7c33d9a63e7ddfcb86780aac87befc2fbddf46c58dbb487e0855f7ceec283c"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_full_version < '4.0.0'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4.0'",
             "version": "==1.26.8"
         },
         "wikipedia": {
