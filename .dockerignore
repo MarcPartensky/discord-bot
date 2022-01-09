@@ -6,7 +6,6 @@ Dockerfile
 docker-compose.yml
 README.md
 Procfile
-Pipfile.lock
-# requirements.txt
+requirements.txt
 run.sh
 runtime.txt
