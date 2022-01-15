@@ -520,7 +520,7 @@ class Music(commands.Cog):
         else:
             await ctx.send("Vous avez voté pour changer de musique.")
 
-    @commands.command(name="queue")
+    @commands.command(name="queue", aliases=["q"])
     async def _queue(self, ctx: commands.Context, *, page: int = 1):
         """Affiche la queue à une page."""
         voice_state = self.voice_states[ctx.guild.id]
