@@ -445,7 +445,7 @@ class Music(commands.Cog):
     async def _leave(self, ctx: commands.Context):
         """Nettoie la queue, quitte le salon vocal."""
         if not ctx.voice_state.voice:
-            return await ctx.send("Pas connecté à un salon vocal.")
+            return await ctx.send("> Pas connecté à un salon vocal.")
         await ctx.voice_state.stop()
         del self.voice_states[ctx.guild.id]
 
@@ -453,11 +453,11 @@ class Music(commands.Cog):
     async def _volume(self, ctx: commands.Context, *, volume: int):
         """Change le volume de la playliste."""
         if not ctx.voice_state.is_playing:
-            return await ctx.send("Aucune musique n'est jouée pour le moment.")
+            return await ctx.send("> Aucune musique n'est jouée pour le moment.")
         if 0 > volume > 100:
-            return await ctx.send("Le son doit être compris entre 0 et 100.")
+            return await ctx.send("> Le son doit être compris entre 0 et 100.")
         ctx.voice_state.volume = volume / 100
-        await ctx.send("Le volume de la playliste est réglé à {}%".format(volume))
+        await ctx.send("> Le volume de la playliste est réglé à {}%".format(volume))
 
     @commands.command(name="now", aliases=["current", "playing", "maintenant", "mtn"])
     async def _now(self, ctx: commands.Context):
@@ -468,9 +468,9 @@ class Music(commands.Cog):
     async def _left(self, ctx: commands.Context):
         """Affiche le nombre de musiques restantes."""
         try:
-            await ctx.send(f"Il reste {ctx.voice_state.queue.qsize()} musiques.")
+            await ctx.send(f"> Il reste {ctx.voice_state.queue.qsize()} musiques.")
         except AttributeError:
-            await ctx.send(f"La queue est vide.")
+            await ctx.send(f"> La queue est vide.")
 
     @commands.command(name="pause")
     async def _pause(self, ctx: commands.Context):
@@ -502,7 +502,7 @@ class Music(commands.Cog):
         un certain nombre de votes sont nécessaires pour
         passer une musique, sauf pour le demandeur."""
         if not ctx.voice_state.is_playing:
-            return await ctx.send("Je ne joue pas de musique pour le moment")
+            return await ctx.send("> Je ne joue pas de musique pour le moment")
         voter = ctx.message.author
         if voter == ctx.voice_state.current.requester:
             await ctx.message.add_reaction("⏭")
@@ -515,10 +515,10 @@ class Music(commands.Cog):
                 ctx.voice_state.skip()
             else:
                 await ctx.send(
-                    "Le compte de vote est maintenant à **{}/3**".format(total_votes)
+                    "> Le compte de vote est maintenant à **{}/3**".format(total_votes)
                 )
         else:
-            await ctx.send("Vous avez voté pour changer de musique.")
+            await ctx.send("> Vous avez voté pour changer de musique.")
 
     @commands.command(name="queue")
     async def _queue(self, ctx: commands.Context, *, page: int = 1):
@@ -530,7 +530,7 @@ class Music(commands.Cog):
             songs = []
         songs += list(voice_state.songs)
         if len(songs) == 0:
-            return await ctx.send("Queue vide.")
+            return await ctx.send("> Queue vide.")
         items_per_page = 10
         pages = math.ceil(len(songs) / items_per_page)
         start = (page - 1) * items_per_page
@@ -559,7 +559,7 @@ class Music(commands.Cog):
     async def _shuffle(self, ctx: commands.Context):
         """Mélange la queue."""
         if len(ctx.voice_state.songs) == 0:
-            return await ctx.send("Queue vide.")
+            return await ctx.send("> Queue vide.")
         ctx.voice_state.songs.shuffle()
         await ctx.message.add_reaction("✅")
 
@@ -567,7 +567,7 @@ class Music(commands.Cog):
     async def _remove(self, ctx: commands.Context, index: int):
         """Retire une musique avec un numéro."""
         if len(ctx.voice_state.songs) == 0:
-            return await ctx.send("Queue vide.")
+            return await ctx.send("> Queue vide.")
         ctx.voice_state.songs.remove(index - 1)
         await ctx.message.add_reaction("✅")
 
@@ -576,7 +576,7 @@ class Music(commands.Cog):
         """Joue en boucle la musique en cours.
         Pour arrêter la boucle, retapez la commande."""
         if not ctx.voice_state.is_playing:
-            return await ctx.send("Nothing being played at the moment.")
+            return await ctx.send("> Nothing being played at the moment.")
         # Inverse boolean value to loop and unloop.
         ctx.voice_state.loop = not ctx.voice_state.loop
         await ctx.message.add_reaction("✅")
@@ -599,7 +599,7 @@ class Music(commands.Cog):
                 )
             except YTDLError as e:
                 await ctx.send(
-                    "Une erreur s'est produite pendant le traitement de: {}".format(
+                    "> Une erreur s'est produite pendant le traitement de: {}".format(
                         str(e)
                     )
                 )
@@ -618,10 +618,10 @@ class Music(commands.Cog):
     @_join.before_invoke
     async def ensure_voice_state(self, ctx: commands.Context):
         if not ctx.author.voice or not ctx.author.voice.channel:
-            raise commands.CommandError("Vous n'êtes pas connecté à un salon vocal.")
+            raise commands.CommandError("> Vous n'êtes pas connecté à un salon vocal.")
         if ctx.voice_client:
             if ctx.voice_client.channel != ctx.author.voice.channel:
-                raise commands.CommandError("Le bot est déjà dans un salon vocal.")
+                raise commands.CommandError("> Le bot est déjà dans un salon vocal.")
         print("voice_state ok")
 
 
