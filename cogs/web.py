@@ -645,9 +645,11 @@ class Web(commands.Cog):
             data["description"] = description
         post_url = shortener_url + "//" + name # <- 2 slash are required
         session = requests.Session()
+        print(post_url, data)
         response = session.post(post_url, data, allow_redirects=True)
         # print(post_url, data, response.request.headers, response.request.body, response.headers, response.reason)
         shortened_url = response.text
+        print(shortened_url)
         return await ctx.send(shortened_url)
 
 
