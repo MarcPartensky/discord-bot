@@ -636,7 +636,7 @@ class Web(commands.Cog):
     ):
         """Shorten given url."""
         shortener_token = os.environ.get("SHORTENER_TOKEN")
-        shortener_url = os.environ.get("SHORTENER_URL")
+        shortener_url = os.environ["SHORTENER_URL"]
         # headers = {"content-type": "application/json"}
         data = dict(target=url)
         if shortener_token:
