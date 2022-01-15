@@ -16,11 +16,14 @@ import functools
 import itertools
 import math
 import random
+# import logging
 
 import discord
 import youtube_dl
 from async_timeout import timeout
 from discord.ext import commands
+
+# logging.basicConfig(level=logging.INFO)
 
 # Silence useless bug reports messages
 youtube_dl.utils.bug_reports_message = lambda: ""
@@ -367,6 +370,7 @@ class Music(commands.Cog):
         self.bot = bot
         self.voice_states = {}
         self.color = discord.Color(0xFF66CC)  # pink
+        self.victims_channel_name = "Temporaire"
 
     def get_voice_state(self, ctx: commands.Context):
         state = self.voice_states.get(ctx.guild.id)
@@ -441,13 +445,51 @@ class Music(commands.Cog):
             return
         ctx.voice_state.voice = await destination.connect()
 
-    @commands.command(name="leave", aliases=["disconnect", "quitte"])
+
+    async def _kick_from_voice_channel(
+        self, ctx: commands.Context, member: discord.Member = None
+    ):
+        """Kick un membre du salon vocal."""
+        try:
+            victims_channel = await ctx.guild.create_voice_channel(
+                name=self.victims_channel_name
+            )
+            await member.move_to(victims_channel)
+        except Exception as e:
+            print(e)
+        finally:
+            await victims_channel.delete()
+
+
+    @commands.command(name="leave", aliases=["disconnect", "quit"])
     async def _leave(self, ctx: commands.Context):
         """Nettoie la queue, quitte le salon vocal."""
-        if not ctx.voice_state.voice:
-            return await ctx.send("> Pas connecté à un salon vocal.")
-        await ctx.voice_state.stop()
-        del self.voice_states[ctx.guild.id]
+        voice_state : discord.VoiceState = ctx.voice_state
+        if voice_state.voice:
+            await voice_state.stop()
+            del self.voice_states[ctx.guild.id]
+            return
+        print("self.bot.voice_clients:")
+        print(self.bot.voice_clients)
+        for voice_client in self.bot.voice_clients:
+            print(voice_client.__dict__)
+        print("ctx.voice_client:")
+        print(ctx.voice_client)
+        for voice_channel in ctx.guild.voice_channels:
+            member: discord.Member
+            for member in voice_channel.members:
+                print(member.id, self.bot.id)
+                print(member.id == int(self.bot.id))
+                if int(self.bot.id) == member.id:
+                    for voice_client in self.bot.voice_clients:
+                        print("voice_client.channel, voice_channel.id")
+                        print(voice_client.channel.id, voice_channel.id)
+                        print(type(voice_channel.id), type(voice_channel.id))
+                        if voice_client.channel.id == voice_channel.id:
+                            return await voice_client.disconnect()
+                    print("member.voice:")
+                    await self._kick_from_voice_channel(ctx, member)
+        return await ctx.send("> Pas connecté à un salon vocal.")
 
     @commands.command(name="volume")
     async def _volume(self, ctx: commands.Context, *, volume: int):
@@ -591,6 +633,7 @@ class Music(commands.Cog):
         https://rg3.github.io/youtube-dl/supportedsites.html
         """
         if not ctx.voice_state.voice:
+            await self._leave(ctx)
             await ctx.invoke(self._join)
         async with ctx.typing():
             try:
