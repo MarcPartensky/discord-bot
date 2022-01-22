@@ -80,22 +80,39 @@ class Commandes(commands.Cog):
         self.commands[command] = post
         await ctx.send(f"> La commande **{command}** a été apprise.")
 
-    @command.command(name="cherche", aliases=["search"])
-    async def search(self, ctx: commands.Context, command: str, *args):
+    @command.command(name="cherche", aliases=["search", "find"])
+    async def search(self, ctx: commands.Context, command: str, *args, regex: bool = True, show_cmd: bool = True):
         """Cherche une commande."""
-        if command not in self.commands:
-            return await ctx.send(f"> La commande **{command}** n'existe pas.")
-        post = self.commands[command]
-        post.setdefaults(use=0)
-        post.use += 1
-        post.user = ctx.author.id
-        code = self.bot.get_cog("Code")
-        ctx.authorized = True
-        cmd = tools.parse(post.result, *args)
-        if post.author in masters:
-            await code.code(ctx, cmd=cmd)
+        if regex:
+            cursor = self.commands.find(dict(_id={'$regex': ".*" + command + ".*"}))
         else:
-            await ctx.send(cmd)
+            cursor = self.commands.find(dict(_id=command))
+        n = -1
+        for n, post in enumerate(cursor):
+            post.setdefault("use", 0)
+            post["use"] = post["use"] + 1
+            post["user"] = ctx.author.id
+            code = self.bot.get_cog("Code")
+            if not "result" in post:
+                del post
+                continue
+            ctx.authorized = True
+            cmd = tools.parse(post["result"], *args)
+            if post["author"] in masters:
+                if show_cmd:
+                    await ctx.send(f"> {post['_id']} =>")
+                await code.code(ctx, cmd=cmd)
+                continue
+            if post["result"]:
+                response = post["result"]
+                if show_cmd:
+                    response = f"> {post['_id']}" + " =>\n" + response
+                await ctx.send(response)
+                continue
+            await ctx.send("> Pas de réponse configurée.")
+
+        if n == -1:
+            return await ctx.send(f"> Aucun résultat pour la commande **{command}**")
 
     @command.command(aliases=["info"])
     async def information(self, ctx: commands.Context, *, command: str):
@@ -200,7 +217,7 @@ class Commandes(commands.Cog):
             await self.learn(ctx, req.strip(), resp.strip())
         elif msg.content.startswith(self.search_prefix):
             req = msg.content.replace(self.search_prefix, "", 1)
-            await self.search(ctx, *map(lambda r: r.strip(), req.strip().split("|")))
+            await self.search(ctx, *map(lambda r: r.strip(), req.strip().split("|")), regex=False, show_cmd=False)
 
 
 def setup(bot: commands.Bot):
