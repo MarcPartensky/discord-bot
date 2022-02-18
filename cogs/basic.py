@@ -9,6 +9,7 @@ from translate import Translator
 from discord.utils import get
 from discord import Message, PartialEmoji, Emoji
 from bs4 import BeautifulSoup
+import requests
 import datetime
 import discord
 import random
@@ -366,6 +367,12 @@ class Basic(commands.Cog):
     #     print(reaction, user)
     #     # await msg.channel.send("je vois")
 
+    @commands.command(name="profile-picture", aliases=["pp"])
+    async def set_profile_picture(self, ctx: commands.Context, url: str):
+        """Choisi l'image de profil du bot."""
+        print(url)
+        file = requests.get(url)
+        await self.bot.user.edit(avatar=file.content)
 
 def setup(bot):
     bot.add_cog(Basic(bot))
