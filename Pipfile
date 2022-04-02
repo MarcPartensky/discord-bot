@@ -36,6 +36,7 @@ unidecode = '*'
 future = '*'
 selenium = "*"
 fake-useragent = "*"
+pxssh = "*"
 
 [dev-packages]
 black = "*"
