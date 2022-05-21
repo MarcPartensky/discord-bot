@@ -69,7 +69,7 @@ class VoiceChannel(commands.Cog):
         logging.info(before)
         channel: discord.VoiceChannel = before.channel
         members: List[discord.Member] = channel.members
-        await self.mute_if_single(members)
+        # await self.mute_if_single(members)
         await self.leave_if_alone(members, before.channel)
 
     async def join(
@@ -83,7 +83,7 @@ class VoiceChannel(commands.Cog):
         logging.info(after)
         channel: discord.VoiceChannel = after.channel
         members: List[discord.Member] = channel.members
-        await self.mute_if_single(members)
+        # await self.mute_if_single(members)
         await self.notify_on_join(member)
         await self.join_if_single(members)
 
@@ -102,7 +102,7 @@ class VoiceChannel(commands.Cog):
         before_members: List[discord.Member] = before_channel.members
         after_channel: discord.VoiceChannel = after.channel
         after_members: List[discord.Member] = after_channel.members
-        await self.mute_if_single(before_members)
+        # await self.mute_if_single(before_members)
         await self.join_if_single(after_members)
 
     async def mute_if_single(self, members: List[discord.Member]):
