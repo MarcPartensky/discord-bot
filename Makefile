@@ -19,7 +19,3 @@ setup:
 	pipenv install
 recreate:
 	docker-compose -f docker-compose.yml up --force-recreate dev
-fixwithbrew:
-	brew install python@3.8
-	sudo ln -sf /home/linuxbrew/.linuxbrew/Cellar/python@3.8/3.8.12_1/bin/python3.8 /usr/bin/python3.8
-
