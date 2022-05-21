@@ -36,7 +36,6 @@ unidecode = '*'
 future = '*'
 selenium = "*"
 fake-useragent = "*"
-pxssh = "*"
 
 [dev-packages]
 black = "*"
@@ -44,4 +43,4 @@ pylint = "*"
 jedi = "*"
 
 [requires]
-python_version = "3.8.12"
+python_version = "3.8.13"
