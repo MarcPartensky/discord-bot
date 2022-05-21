@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """Control ssh sessions."""
 
-import os
 import typing
 import discord
 from pexpect import pxssh
@@ -13,33 +12,34 @@ import pexpect
 SSH_ROLE = "Ssh"
 
 
-class Shell(commands.Cog):
-    """Control shells"""
+class Ssh(commands.Cog):
+    """Control ssh sessions."""
 
     def __init__(self, bot: commands.Bot):
         """Initialize the cog with the bot."""
         self.bot = bot
-        self.color: discord.Color = discord.Color.light_purple()
+        self.color: discord.Color = discord.Color.purple()
         self.thumbnail: str = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/GNOME_Terminal_icon_2019.svg/1200px-GNOME_Terminal_icon_2019.svg.png"
         self.timeout = 3600
-        self.shell_path = os.environ.get("SHELL")
         self.shells: typing.Dict[int, pexpect.pty_spawn.spawn] = {}
 
-    @has_role(SHELL_ROLE)
+    @has_role(SSH_ROLE)
     @commands.command()
     async def ssh(self, ctx: commands.Context, hostname: str, port: int=0):
-        """Run a command in a shell"""
+        """Run a command in a ssh session"""
         username=""
         await create_role_if_missing(ctx, SSH_ROLE, self.color)
         embed = discord.Embed(color=self.color)
         embed.set_thumbnail(url=self.thumbnail)
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
         embed.description = self.shell_path
-        embed.title = "Opened shell"
-        await ctx.send(embed=embed)
         shell = pxssh.pxssh()
         shell.login(hostname, username, password)
         self.shells[ctx.author.id] = shell
+        shell.sendline("echo $HOSTNAME")
+        hostname = shell.before.decode("utf-8")
+        embed.title = f"Connected to {hostname}"
+        await ctx.send(embed=embed)
 
     @commands.command(name="shells")
     async def list_shells(self, ctx: commands.Context):
@@ -78,4 +78,4 @@ class Shell(commands.Cog):
 
 def setup(bot):
     """Setup the Shell cog."""
-    bot.add_cog(Shell(bot))
+    bot.add_cog(Ssh(bot))
