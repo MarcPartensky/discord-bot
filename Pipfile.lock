@@ -477,7 +477,7 @@
                 "sha256:feba80698173761cddd814fa22e88b0661e98cb810f9f986c54aa34d281e4937",
                 "sha256:feea820722e69451743a3d56ad74948b68bf456984d63c1a92e8347b7b88452d"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==6.0.2"
         },
         "nightcore": {
@@ -785,7 +785,7 @@
                 "sha256:45c6065746b500cf2ea3d6fb474a3c6298fb2ceca9ca25e5d6dea7fefd0cfa96",
                 "sha256:dbe50d4c9a7715bcb426f1fb8ddcc9602fa4698d0e7667360dc56b2248ee6d8d"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==3.2.3"
         },
         "pyyaml": {
@@ -976,7 +976,7 @@
                 "sha256:670a52d3115d0e879e1ac838a4eb999af32f858163e3a704fe4839de2a676070",
                 "sha256:fb2d48e4eab0dfb786a472cd514aaadc71e3445b203bc300bad93daa75d77c1a"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==0.20.0"
         },
         "trio-websocket": {
@@ -1105,7 +1105,7 @@
                 "sha256:2218cb57952d90b9fca325c0dcfb08c3bda93e8fd8070b0a17f048e2e47a521b",
                 "sha256:a2e56bfd5c7cd83c1369d83b5feccd6d37798b74872866e62616e0ecf111bda8"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==1.1.0"
         },
         "xmltodict": {
@@ -1361,14 +1361,6 @@
             ],
             "index": "pypi",
             "version": "==2.13.9"
-        },
-        "setuptools": {
-            "hashes": [
-                "sha256:68e45d17c9281ba25dc0104eadd2647172b3472d9e01f911efa57965e8d51a36",
-                "sha256:a43bdedf853c670e5fed28e5623403bad2f73cf02f9a2774e91def6bda8265a7"
-            ],
-            "markers": "python_version >= '3.7'",
-            "version": "==62.3.2"
         },
         "tomli": {
             "hashes": [
