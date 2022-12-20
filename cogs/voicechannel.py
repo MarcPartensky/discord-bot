@@ -6,6 +6,7 @@ from typing import List
 
 import discord
 from discord.ext import commands
+from discord.ext.audiorec import NativeVoiceClient
 
 from config.config import masters
 

@@ -37,6 +37,7 @@ future = '*'
 selenium = "*"
 fake-useragent = "*"
 colorama = "*"
+discord-ext-audiorec = "*"
 
 [dev-packages]
 black = "*"
