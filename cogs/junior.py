@@ -7,7 +7,6 @@ import requests
 import discord
 
 from discord.ext import commands, tasks
-from config.config import ialab_bot_url, cluster
 from rich import print
 
 
