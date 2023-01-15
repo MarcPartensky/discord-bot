@@ -8,7 +8,7 @@ import requests
 import discord
 
 from discord.ext import commands, tasks
-from config.config import ialab_bot_url, cluster
+from config.config import cluster
 from rich import print
 
 
@@ -18,7 +18,7 @@ class IALab(commands.Cog):
     def __init__(self, bot: commands.Bot, **kwargs):
         """Initialize the ialab cog."""
         super().__init__(**kwargs)
-        self.url = ialab_bot_url
+        self.url = os.environ["IALAB_URL"]
         self.bot = bot
 
     @commands.command()
