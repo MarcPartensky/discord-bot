@@ -1,0 +1,49 @@
+[tool.poetry]
+name = "discord-bot"
+version = "0.1.0"
+description = "A discord bot multi purpose."
+authors = ["Marc Partensky <marc.partensky@gmail.com>"]
+license = "GPL2"
+readme = "README.md"
+packages = [{include = "discord_bot"}]
+
+[tool.poetry.dependencies]
+python = "3.8.13"
+beautifulsoup4 = "*"
+# "discord.py[voice]" = "*"
+fbchat = "*"
+# fbchat = {git = "git://github.com/carpedm20/fbchat.git"}
+nightcore = "*"
+profanity-check = "*"
+progressbar2 = "*"
+# pyicloud = "*"
+pymongo = "*"
+requests = "*"
+rich = "*"
+translate = "*"
+wikipedia = "*"
+wolframalpha = "*"
+html2text = "*"
+gTTS = "2.2.1"
+Pillow = "*"
+PyGithub = "*"
+PyYAML = "*"
+youtube_dl = "*"
+python-dotenv = "*"
+dpy-http-server = "*"
+pexpect = "*"
+# libs/sherlock
+dnspython = "*"
+requests-futures = "*"
+torrequest = "*"
+# libs/google
+unidecode = '*'
+future = '*'
+selenium = "*"
+fake-useragent = "*"
+colorama = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
