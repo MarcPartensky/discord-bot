@@ -1,5 +1,4 @@
 # from mongocollection import MongoCollection
-import discord
 from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.collection import Collection, ObjectId
@@ -102,7 +101,7 @@ class MongoCluster(MongoClient):
     def __getitem__(self, item):
         """Return a mongo database given its key."""
         item = super().__getitem__(item)
-        if isinstance(item, pymongo.database.Database):
+        if isinstance(item, Database):
             return MongoDatabase.from_database(item)
         else:
             return item
@@ -120,7 +119,7 @@ class MongoDatabase(Database):
     def __getitem__(self, item):
         """Return a mongo collection given a key."""
         item = super().__getitem__(item)
-        if isinstance(item, pymongo.collection.Collection):
+        if isinstance(item, Collection):
             return MongoCollection.from_collection(item)
         else:
             return item
@@ -201,10 +200,10 @@ class MongoCollection(Collection):
         else:
             self.insert_one(arg, **kwargs)
 
-    def insert_many(self, posts, **kwargs):
+    def insert_many(self, posts):
         """Insert many posts."""
         posts = [self.treat(post) for post in posts]
-        super().insert_many(post)
+        super().insert_many(posts)
 
     def __contains__(self, id):
         return self.seek_one(_id=id) != None
@@ -241,10 +240,9 @@ class MongoCollection(Collection):
 
     def __delitem__(self, id):
         """Delete a post."""
-        print(id)
-        print(self.find_one(dict(_id=id)))
+        # print(self.find_one(dict(_id=id)))
         self.delete_one(dict(_id=id))
-        print(self.find_one(dict(_id=id)))
+        # print(self.find_one(dict(_id=id)))
 
     def post(self, post):
         """Replace or insert a post."""
@@ -264,12 +262,14 @@ class MongoCollection(Collection):
         """Set a default post."""
         if id in self:
             post.update(self[id]._dict)
-        print(1, post)
+        # print(1, post)
         self[id] = post
-        print(2, self[id])
+        # print(2, self[id])
 
     def __setattr__(self, att, value):
-        if att in type(self).keys or att in dir(self):
+        """Set attribute to a collection."""
+        # print(att, value)
+        if att in type(self).keys or att in dir(self) or att.startswith("_"):
             super().__setattr__(att, value)
         else:
             self.__setitem__(att, value)
@@ -497,7 +497,14 @@ class User(DictObject):
 # command = db.commands.find(machin=34, bidule=324)
 
 if __name__ == "__main__":
-    mongo_url = "mongodb+srv://esclave:esclave@discord-cluster-5ckni.mongodb.net/test"
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    cluster = os.environ["DISCORD_MONGO_CLUSTER"]
+    username = os.environ["DISCORD_MONGO_USERNAME"]
+    password = os.environ["DISCORD_MONGO_PASSWORD"]
+    mongo_url = f"mongodb+srv://{username}:{password}@{cluster}"
     cl = MongoCluster(mongo_url)
     # print('cluster over')
     esclave = cl.esclave

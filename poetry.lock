@@ -136,13 +136,13 @@ frozenlist = ">=1.1.0"
 
 [[package]]
 name = "async-timeout"
-version = "4.0.2"
+version = "4.0.3"
 description = "Timeout context manager for asyncio programs"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "async-timeout-4.0.2.tar.gz", hash = "sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15"},
-    {file = "async_timeout-4.0.2-py3-none-any.whl", hash = "sha256:8ca1e4fcf50d07413d66d1a5e416e42cfdf5851c981d679a09851a6853383b3c"},
+    {file = "async-timeout-4.0.3.tar.gz", hash = "sha256:4640d96be84d82d02ed59ea2b7105a0f7b33abe8703703cd0ab0bf87c427522f"},
+    {file = "async_timeout-4.0.3-py3-none-any.whl", hash = "sha256:7405140ff1230c310e51dc27b3145b9092d659ce68ff733fb0cefe3ee42be028"},
 ]
 
 [[package]]
@@ -438,13 +438,13 @@ dev = ["PyTest", "PyTest-Cov", "bump2version (<1)", "sphinx (<2)", "tox"]
 
 [[package]]
 name = "discord-py"
-version = "2.3.1"
+version = "2.3.2"
 description = "A Python wrapper for the Discord API"
 optional = false
 python-versions = ">=3.8.0"
 files = [
-    {file = "discord.py-2.3.1-py3-none-any.whl", hash = "sha256:149652f24da299706270bf8c03c2fcf80cf1caf3a480744c61d5b001688b380d"},
-    {file = "discord.py-2.3.1.tar.gz", hash = "sha256:8eb4fe66b5d503da6de3a8425e23012711dc2fbcd7a782107a92beac15ee3459"},
+    {file = "discord.py-2.3.2-py3-none-any.whl", hash = "sha256:9da4679fc3cb10c64b388284700dc998663e0e57328283bbfcfc2525ec5960a6"},
+    {file = "discord.py-2.3.2.tar.gz", hash = "sha256:4560f70f2eddba7e83370ecebd237ac09fbb4980dc66507482b0c0e5b8f76b9c"},
 ]
 
 [package.dependencies]
@@ -458,13 +458,13 @@ voice = ["PyNaCl (>=1.3.0,<1.6)"]
 
 [[package]]
 name = "dnspython"
-version = "2.4.1"
+version = "2.4.2"
 description = "DNS toolkit"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "dnspython-2.4.1-py3-none-any.whl", hash = "sha256:5b7488477388b8c0b70a8ce93b227c5603bc7b77f1565afe8e729c36c51447d7"},
-    {file = "dnspython-2.4.1.tar.gz", hash = "sha256:c33971c79af5be968bb897e95c2448e11a645ee84d93b265ce0b7aabe5dfdca8"},
+    {file = "dnspython-2.4.2-py3-none-any.whl", hash = "sha256:57c6fbaaeaaf39c891292012060beb141791735dbb4004798328fc2c467402d8"},
+    {file = "dnspython-2.4.2.tar.gz", hash = "sha256:8dcfae8c7460a2f84b4072e26f1c9f4101ca20c071649cb7c34e8b6a93d58984"},
 ]
 
 [package.extras]
@@ -710,13 +710,13 @@ testing = ["flake8 (<5)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-chec
 
 [[package]]
 name = "joblib"
-version = "1.3.1"
+version = "1.3.2"
 description = "Lightweight pipelining with Python functions"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "joblib-1.3.1-py3-none-any.whl", hash = "sha256:89cf0529520e01b3de7ac7b74a8102c90d16d54c64b5dd98cafcd14307fdf915"},
-    {file = "joblib-1.3.1.tar.gz", hash = "sha256:1f937906df65329ba98013dc9692fe22a4c5e4a648112de500508b18a21b41e3"},
+    {file = "joblib-1.3.2-py3-none-any.whl", hash = "sha256:ef4331c65f239985f3f2220ecc87db222f08fd22097a3dd5698f693875f8cbb9"},
+    {file = "joblib-1.3.2.tar.gz", hash = "sha256:92f865e621e17784e7955080b6d042489e3b8e294949cc44c6eac304f59772b1"},
 ]
 
 [[package]]
@@ -1170,6 +1170,26 @@ files = [
     {file = "ptyprocess-0.7.0-py2.py3-none-any.whl", hash = "sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35"},
     {file = "ptyprocess-0.7.0.tar.gz", hash = "sha256:5c5d0a3b48ceee0b48485e0c26037c0acd7d29765ca3fbb5cb3831d347423220"},
 ]
+
+[[package]]
+name = "py-cord"
+version = "2.4.1"
+description = "A Python wrapper for the Discord API"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "py-cord-2.4.1.tar.gz", hash = "sha256:0266c9d9a9d2397622a0e5ead09826690e688ba3cf14c470167b81e6cd2d8a56"},
+    {file = "py_cord-2.4.1-py3-none-any.whl", hash = "sha256:862a372c364cd263e2c8e696c64887f969c02cbdf0fdd6b09f0283e9dd67a290"},
+]
+
+[package.dependencies]
+aiohttp = ">=3.6.0,<3.9.0"
+typing-extensions = {version = ">=4,<5", markers = "python_version < \"3.11\""}
+
+[package.extras]
+docs = ["furo", "myst-parser (==0.18.1)", "sphinx (==5.3.0)", "sphinx-autodoc-typehints (==1.22)", "sphinx-copybutton (==0.5.1)", "sphinxcontrib-trio (==1.1.2)", "sphinxcontrib-websupport (==1.2.4)", "sphinxext-opengraph (==0.8.1)"]
+speed = ["aiohttp[speedups]", "orjson (>=3.5.4)"]
+voice = ["PyNaCl (>=1.3.0,<1.6)"]
 
 [[package]]
 name = "pycparser"
@@ -2046,4 +2066,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "3.8.13"
-content-hash = "d36822f842d69d0c195a40261427633022d4375f7414a9352739a06a03144dd2"
+content-hash = "4ce98b6bf929289db361ceb8adaee7e62c42ffacb37ee523fb715eab53a959b4"

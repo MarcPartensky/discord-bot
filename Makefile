@@ -1,5 +1,5 @@
 start:
-	pipenv run python .
+	poetry run python .
 update:
 	pipenv update
 	pipenv run pip freeze > requirements.txt

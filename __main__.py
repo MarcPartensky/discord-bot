@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from config.config import prefix, masters, delete_after_time, status, access
+from config.config import prefix, masters, access
 from config.credentials import token, client_id
 from discord.ext import commands, tasks
 
@@ -39,7 +39,11 @@ from discord.ext import commands, tasks
 #     # If we are in a guild, we allow for the user to mention us or use any of the prefixes in our list.
 #     return commands.when_mentioned_or(*prefixes)(bot, message)
 
-client = commands.Bot(command_prefix=prefix, case_insensitive=True)
+intents = discord.Intents.default()
+intents.message_content = True
+
+# client = commands.Bot(command_prefix=prefix, case_insensitive=True)
+client = commands.Bot(command_prefix=prefix, intents=intents)
 client.id = client_id
 
 
@@ -56,7 +60,7 @@ class Main(commands.Cog):
         self.load_cogs()
         self.load_status()
         self.load_icloud()
-        self.api: PycloudService = None
+        # self.api: PycloudService = None
 
     def load_icloud(self):
         """Charge l'api d'icloud."""
@@ -79,6 +83,7 @@ class Main(commands.Cog):
     @commands.command()
     async def environment(self, ctx: commands.Context):
         """Affiche l'environnement dans lequel le bot tourne."""
+        print("environment")
         host = os.environ.get("HOST")
         await ctx.send(f"> Environment: **{host}**")
 

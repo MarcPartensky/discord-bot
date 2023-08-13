@@ -42,6 +42,7 @@ future = '*'
 selenium = "*"
 fake-useragent = "*"
 colorama = "*"
+py-cord = "^2.4.1"
 
 
 [build-system]
