@@ -32,14 +32,14 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Build and push
-      id: docker_build
+    - name: Build and push with tag
+      id: tag
       uses: docker/build-push-action@v2
       with:
         push: true
         tags: marcpartensky/discord-bot:v${{ github.run_number }}.${{ steps.tag.outputs.tag }}
-    - name: Build and push
-      id: docker_build
+    - name: Build and push latest
+      id: latest
       uses: docker/build-push-action@v2
       with:
         push: true
