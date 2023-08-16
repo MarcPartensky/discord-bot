@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+      target: ubuntu
     ports:
       - "8000:8000"
     env_file:
@@ -21,5 +22,6 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+      target: alpine
     env_file:
       - .env
