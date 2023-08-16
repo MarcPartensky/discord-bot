@@ -3,26 +3,17 @@ name: Docker
 on:
   push:
     branches:
-      - master
-    # Publish `v1.2.3` tags as releases.
-    tags:
-      - v*
-
-  pull_request:
-    branches:
-      - master
+      - !master
+      - *
 
 env:
-  IMAGE_NAME: website
+  IMAGE_NAME: discord-bot
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Build the tag
-      id: tag
-      run: echo "::set-output name=tag::$(git rev-parse --short HEAD).$(date +'%Y-%m-%d')"
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
     - name: Set up Docker Buildx
@@ -32,17 +23,11 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Build and push with tag
-      id: tag-build
-      uses: docker/build-push-action@v2
-      with:
-        push: true
-        tags: marcpartensky/discord-bot:v${{ github.run_number }}.${{ steps.tag.outputs.tag }}
     - name: Build and push latest
       id: latest-build
       uses: docker/build-push-action@v2
       with:
-        push: true
+        push: false
         tags: marcpartensky/discord-bot:latest
 
   test-python-versions:
