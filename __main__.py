@@ -31,6 +31,9 @@ from discord.ext import commands, tasks
 #     # Notice how you can use spaces in prefixes. Try to keep them simple though.
 #     prefixes = ['>?', 'lol ', '!?']
 
+    
+
+
 #     # Check to see if we are outside of a guild. e.g DM's etc.
 #     if not message.guild:
 #         # Only allow ? to be used in DMs
@@ -39,12 +42,6 @@ from discord.ext import commands, tasks
 #     # If we are in a guild, we allow for the user to mention us or use any of the prefixes in our list.
 #     return commands.when_mentioned_or(*prefixes)(bot, message)
 
-intents = discord.Intents.default()
-intents.message_content = True
-
-# client = commands.Bot(command_prefix=prefix, case_insensitive=True)
-client = commands.Bot(command_prefix=prefix, intents=intents)
-client.id = client_id
 
 
 class Main(commands.Cog):
@@ -101,6 +98,7 @@ class Main(commands.Cog):
             for i, filename in enumerate(cogs):
                 bar.update(i)
                 if filename.endswith(".py"):
+                    print(filename)
                     self.bot.load_extension(f"cogs.{filename[:-3]}")
 
     @commands.command()
@@ -285,5 +283,12 @@ def setup(bot: commands.Bot):
 
 if __name__ == "__main__":
     os.system("clear")
+    print("prefix:", prefix)
+    intents = discord.Intents.default()
+    intents.message_content = True
+
+    # client = commands.Bot(command_prefix=prefix, case_insensitive=True)
+    client = commands.Bot(command_prefix=prefix, intents=intents)
+    client.id = client_id
     setup(client)
     client.run(token)

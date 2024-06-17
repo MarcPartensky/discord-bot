@@ -1,14 +1,11 @@
-from config.config import access, status, delete_after_time, masters, link
-from config import emoji
+from config.config import access, delete_after_time, link
 
 from utils.date import days, months
 from utils import tools
 
-from discord.ext import commands, tasks
+from discord.ext import commands
 from translate import Translator
-from discord.utils import get
-from discord import Message, PartialEmoji, Emoji
-from bs4 import BeautifulSoup
+from discord import Message, PartialEmoji
 import requests
 import datetime
 import discord

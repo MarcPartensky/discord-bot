@@ -9,6 +9,7 @@ packages = [{include = "discord_bot"}]
 
 [tool.poetry.dependencies]
 python = "3.8.13"
+# python = "3.8-dev"
 beautifulsoup4 = "*"
 # "discord.py[voice]" = "*"
 fbchat = "*"
@@ -42,7 +43,9 @@ future = '*'
 selenium = "*"
 fake-useragent = "*"
 colorama = "*"
-py-cord = "^2.4.1"
+# py-cord = "^2.4.1"
+psycopg2 = "*"
+py-cord = {extras = ["voice"], version = "^2.5.0"}
 
 
 [build-system]
