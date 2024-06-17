@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """Use groq"""
 
-import os
-import sys
 import typing
 import discord
 from discord.ext import commands
@@ -29,26 +27,6 @@ class Groq(commands.Cog):
         self.thumbnail: str = "https://wow.groq.com/wp-content/uploads/2021/04/groq-logo.svg"
         self.shells: typing.Dict[int, dict] = {}
     #     self.timeout = 3600
-
-    # @has_role(GROQ_ROLE)
-    # @commands.command()
-    # async def groq(self, ctx: commands.Context):
-    #     """Run a command in a shell"""
-    #     await create_role_if_missing(ctx, GROQ_ROLE, self.color)
-    #     embed = discord.Embed(color=self.color)
-    #     embed.set_thumbnail(url=self.thumbnail)
-    #     embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar)
-    #     # embed.description = self.shell_path
-
-    #     if ctx.author.id in self.shells:
-    #         shell = self.shells[ctx.author.id]
-    #         del self.shells[ctx.author.id]
-    #         embed.title = "Closed shell"
-    #         await ctx.send(embed=embed)
-    #     else:
-    #         embed.title = "Opened shell"
-    #         await ctx.send(embed=embed)
-    #         self.shells[ctx.author.id] = {}
 
     # @commands.command(name="groq-shells")
     # async def groq_shells(self, ctx: commands.Context):
@@ -129,11 +107,6 @@ class Groq(commands.Cog):
             print(f"{prompt} => {answer}")
         self.shells[key]["messages"].append((message, answer))
         return answer
-
-    # @commands.command()
-    # async def groq(self, ctx: commands.Context, *message: str):
-    #     print(message)
-        # await ctx.send(embed=embed)
 
 
 def setup(bot):
