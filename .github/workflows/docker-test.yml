@@ -2,9 +2,8 @@ name: Docker
 
 on:
   push:
-    branches:
-      - !master
-      - *
+    branches-ignore:
+      - master
 
 env:
   IMAGE_NAME: discord-bot
