@@ -9,7 +9,6 @@ dependencies = [
     "beautifulsoup4",
     "fbchat",
     "nightcore",
-    "profanity-check",
     "progressbar2",
     "pymongo",
     "requests",
@@ -38,7 +37,6 @@ dependencies = [
     "websockets==12.0",
     "py-cord[voice]==2.5.0",
     "psycopg2-binary",
-    "numpy",
 ]
 
 [build-system]

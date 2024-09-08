@@ -51,7 +51,8 @@ RUN apk add ffmpeg \
 
 COPY README.md LICENSE pyproject.toml uv.lock requirements.txt ./
 RUN uv venv
-RUN uv pip sync requirements.txt
+# RUN uv pip sync requirements.txt
+RUN uv sync
 
 WORKDIR /app
 COPY ./discord_bot discord_bot
