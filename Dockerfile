@@ -34,20 +34,17 @@ LABEL source="https://github.com/marcpartensky/discord-bot"
 RUN pip install -U uv
 
 RUN apk update
-RUN apk add ffmpeg \
-            git \
-            gcc \
-            g++ \
-            gfortran \
-            musl \
-            musl-dev \
-            build-base \
-            cmake \
-            openblas \
-            libffi-dev \
-            libc-dev \
-            linux-headers g++ \
-            pkgconfig
+# RUN apk add ffmpeg \
+#             git \
+#             gcc \
+#             g++ \
+#             gfortran \
+#             musl \
+#             musl-dev \
+#             build-base \
+#             cmake \
+#             openblas \
+#             pkgconfig
 
 COPY README.md LICENSE pyproject.toml uv.lock requirements.txt ./
 RUN uv venv
@@ -68,4 +65,4 @@ ENV DISCORD_BOT_HOST 0.0.0.0
 ENV DISCORD_BOT_PORT 8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl -f http://localhost:8000/live || exit 1
 
-ENTRYPOINT ["python", "discord_bot"]
+ENTRYPOINT ["uv", "run", "python", "discord_bot"]
