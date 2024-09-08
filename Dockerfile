@@ -34,17 +34,7 @@ LABEL source="https://github.com/marcpartensky/discord-bot"
 RUN pip install -U uv
 
 RUN apk update
-# RUN apk add ffmpeg \
-#             git \
-#             gcc \
-#             g++ \
-#             gfortran \
-#             musl \
-#             musl-dev \
-#             build-base \
-#             cmake \
-#             openblas \
-#             pkgconfig
+RUN apk add ffmpeg build-base libffi-dev
 
 COPY README.md LICENSE pyproject.toml uv.lock requirements.txt ./
 RUN uv venv
