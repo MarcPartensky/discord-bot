@@ -68,4 +68,4 @@ ENV DISCORD_BOT_HOST 0.0.0.0
 ENV DISCORD_BOT_PORT 8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl -f http://localhost:8000/live || exit 1
 
-ENTRYPOINT ["python", "__main__.py"]
+ENTRYPOINT ["python", "discord_bot"]
