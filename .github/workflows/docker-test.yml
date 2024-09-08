@@ -3,8 +3,7 @@ name: Docker
 on:
   push:
     branches:
-      - !master
-      - *
+      - '*'
 
 env:
   IMAGE_NAME: discord-bot

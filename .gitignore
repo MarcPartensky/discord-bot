@@ -9,3 +9,5 @@ venv/
 .env.dev
 ./config/marc_store.yml
 .python-version
+.ash_history
+.cache
