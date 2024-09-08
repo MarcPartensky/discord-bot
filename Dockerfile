@@ -44,12 +44,13 @@ RUN uv sync -v
 WORKDIR /app
 COPY ./discord_bot discord_bot
 COPY ./tts tts
-COPY ./libs libs
+# COPY ./libs libs
 COPY ./assets assets
-COPY ./utils utils
-COPY ./config config
-COPY ./models models
-COPY ./cogs cogs
+# COPY ./utils utils
+# COPY ./config config
+# COPY ./models models
+# COPY ./cogs cogs
+RUN ln -sf ./discord_bot/cogs ./cogs
 
 ENV DISCORD_BOT_HOST 0.0.0.0
 ENV DISCORD_BOT_PORT 8000
