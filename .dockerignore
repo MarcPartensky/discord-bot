@@ -4,11 +4,6 @@
 Makefile
 Dockerfile
 docker-compose.yml
-README.md
 Procfile
 run.sh
 runtime.txt
-Pipfile
-Pipfile.lock
-pyproject.toml
-poetry.lock

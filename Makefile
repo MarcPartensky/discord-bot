@@ -1,7 +1,7 @@
 start:
 	uv run python .
 update:
-	uv update
+	uv lock
 	uv export --output requirements.txt
 dev:
 	docker-compose -f docker-compose.yml up -d --build --force-recreate --remove-orphans dev
