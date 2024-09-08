@@ -44,10 +44,12 @@ RUN uv sync -v
 WORKDIR /app
 COPY ./discord_bot discord_bot
 
-RUN ln -sf ./discord_bot/cogs ./cogs
+WORKDIR /app/discord_bot
+# RUN ln -sf ./discord_bot/cogs ./cogs
+# RUN ln -sf ./discord_bot/assets ./assets
 
 ENV DISCORD_BOT_HOST=0.0.0.0
 ENV DISCORD_BOT_PORT=8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl -f http://localhost:8000/live || exit 1
 
-ENTRYPOINT ["uv", "run", "python", "discord_bot"]
+ENTRYPOINT ["uv", "run", "python", "."]
