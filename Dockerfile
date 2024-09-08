@@ -19,8 +19,8 @@ COPY ./models models
 COPY ./cogs cogs
 COPY  __main__.py LICENSE ./
 
-ENV DISCORD_BOT_HOST 0.0.0.0
-ENV DISCORD_BOT_PORT 8000
+ENV DISCORD_BOT_HOST=0.0.0.0
+ENV DISCORD_BOT_PORT=8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl -f http://localhost:8000/live || exit 1
 
 ENTRYPOINT ["python", "__main__.py"]
@@ -46,8 +46,8 @@ COPY ./discord_bot discord_bot
 
 RUN ln -sf ./discord_bot/cogs ./cogs
 
-ENV DISCORD_BOT_HOST 0.0.0.0
-ENV DISCORD_BOT_PORT 8000
+ENV DISCORD_BOT_HOST=0.0.0.0
+ENV DISCORD_BOT_PORT=8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl -f http://localhost:8000/live || exit 1
 
 ENTRYPOINT ["uv", "run", "python", "discord_bot"]
