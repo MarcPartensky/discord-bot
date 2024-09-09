@@ -540,7 +540,7 @@ requires-dist = [
     { name = "groq", specifier = "==0.9.0" },
     { name = "gtts", specifier = "==2.2.1" },
     { name = "html2text" },
-    { name = "jurigged" },
+    { name = "jurigged", specifier = ">=0.5.8" },
     { name = "nightcore" },
     { name = "pexpect" },
     { name = "pillow" },
