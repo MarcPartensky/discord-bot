@@ -1,8 +1,10 @@
-start:
-	uv run python .
+run:
+	uv run python discord_bot
 update:
 	uv lock
-	uv export --output requirements.txt
+	uv pip compile requirements.txt \
+	   --universal \
+	   --output-file requirements.txt
 dev:
 	docker-compose -f docker-compose.yml up -d --build --force-recreate --remove-orphans dev
 prod:
