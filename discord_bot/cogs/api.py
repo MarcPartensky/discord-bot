@@ -11,6 +11,7 @@ import typing
 import uuid
 import traceback
 import discord
+import aiofiles
 from discord.ext import commands
 
 import server
@@ -67,6 +68,43 @@ class API(commands.Cog):
         return web.json_response(
             data={"text": "Successfully sent message."}, status=200
         )
+
+    @server.add_route(path="/send/file", method="POST", cog="API")
+    async def send_file_to_channel(self, request: web.Request):
+        """Endpoint to send a file to a specific channel by ID."""
+        reader = await request.multipart()
+        field = await reader.next()
+        if field.name == "channel_id":
+            channel_id = await field.text()
+        else:
+            return web.json_response({"error": "Channel ID missing"}, status=400)
+
+
+        field = await reader.next()
+        if field.name == "file":
+            filename = field.filename
+            file_path = f"/tmp/{filename}"
+
+            # Save the file temporarily
+            async with aiofiles.open(file_path, 'wb') as f:
+                while True:
+                    chunk = await field.read_chunk()  # 8192 bytes by default
+                    if not chunk:
+                        break
+                    await f.write(chunk)
+        else:
+            return web.json_response({"error": "File missing"}, status=400)
+
+        channel: discord.TextChannel = await self.bot.fetch_channel(channel_id)
+        if not channel:
+            return web.json_response({"error": "Channel not found"}, status=404)
+
+        await channel.send(file=discord.File(file_path))
+        print(f"uploaded {filename} channel: {channel_id}")
+
+        # Optionally, delete the temp file after sending it
+        os.remove(file_path)
+        return web.json_response({"message": f"File sent to channel {channel_id}."}, status=200)
 
     # def build_context(self, channel: discord.TextChannel, args: list) -> commands.Context:
     #     """Build a fake context to run bot commands."""
