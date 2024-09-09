@@ -37,6 +37,8 @@ dependencies = [
     "websockets==12.0",
     "py-cord[voice]==2.5.0",
     "psycopg2-binary",
+    "aiofiles>=24.1.0",
+    "jurigged>=0.5.8",
 ]
 
 [build-system]
