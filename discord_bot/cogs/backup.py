@@ -49,16 +49,11 @@ class Backup(commands.Cog):
         Backup specified PostgreSQL databases or all databases if no arguments are provided.
         Concatenate the backups into a single file if multiple databases are specified.
         """
-        pg_user = os.getenv("POSTGRES_USER")
-        pg_password = os.getenv("POSTGRES_PASSWORD")
-        pg_host = os.getenv("POSTGRES_HOST", "localhost")
-        pg_port = os.getenv("POSTGRES_PORT", "5432")
-
-        if not pg_user or not pg_password:
+        if not self.user or not self.password:
             raise RuntimeError("PostgreSQL credentials are missing")
 
         env = os.environ.copy()
-        env["PGPASSWORD"] = pg_password
+        env["PGPASSWORD"] = self.password
 
         filename = "backup.sql"
 
@@ -71,10 +66,10 @@ class Backup(commands.Cog):
                 for db_name in db_names:
                     pg_dump_command = [
                         "pg_dump",
-                        "--username", pg_user,
-                        "--host", pg_host,
-                        "--port", pg_port,
-                        "--dbname", f"postgresql://{pg_user}@{pg_host}:{pg_port}/{db_name}"
+                        "--username", self.user,
+                        "--host", self.host,
+                        "--port", self.port,
+                        "--dbname", f"postgresql://{self.user}@{self.host}:{self.port}/{self.database}"
                     ]
                     
                     try:
@@ -89,9 +84,9 @@ class Backup(commands.Cog):
             dump_file_path = f"/tmp/{filename}"
             pg_dumpall_command = [
                 "pg_dumpall",
-                "--username", pg_user,
-                "--host", pg_host,
-                "--port", pg_port
+                "--username", self.user,
+                "--host", self.host,
+                "--port", self.port
             ]
             
             try:
@@ -156,11 +151,11 @@ class Backup(commands.Cog):
         embed = discord.Embed(
             title="PostgreSQL Logins", color=discord.Color(self.color)
         )
-        embed.add_field(name="user", value=self.user)
-        embed.add_field(name="password", value=self.password)
-        embed.add_field(name="database", value=self.database)
-        embed.add_field(name="host", value=self.host)
-        embed.add_field(name="port", value=self.port)
+        embed.add_field(name="user", value=str(self.user))
+        embed.add_field(name="password", value=str(self.password))
+        embed.add_field(name="database", value=str(self.database))
+        embed.add_field(name="host", value=str(self.host))
+        embed.add_field(name="port", value=str(self.port))
 
         await ctx.send(embed=embed)
 
