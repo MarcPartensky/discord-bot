@@ -12,15 +12,12 @@ import uuid
 import traceback
 import discord
 import aiofiles
-import subprocess
-import logging
-from discord.ext import commands, tasks
+from discord.ext import commands
 
 import server
 from aiohttp import web
 
 MAX_CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB
-SECONDS = 3600
 
 class API(commands.Cog):
     """HTTP web service to interact with the bot."""
@@ -38,12 +35,11 @@ class API(commands.Cog):
         self.bot.loop.create_task(self._start_server())
         self.contexts: typing.Dict[str, commands.Context] = {}
         self.channel_id = int(os.environ["CHANNEL_ID_NOTIF"])
-        self.backup_job.start()
         # self.scheduler = AsyncIOScheduler()  # Le scheduler APScheduler
         # self.scheduler.start()  # Démarrer le scheduler
         # self.setup_jobs()  # Configurer les jobs récurrents
 
-    def _get_timestamp(self):
+    def get_timestamp(self):
         current_time = time.localtime()
         milliseconds = int((time.time() % 1) * 1000)
         timestamp = time.strftime(f"%Y-%m-%d_%H-%M-%S_{milliseconds:03d}", current_time)
@@ -54,7 +50,7 @@ class API(commands.Cog):
         await self.bot.wait_until_ready()
         await self.server.start()
 
-    async def _split_file(self, file_path: str, chunk_size: int = MAX_CHUNK_SIZE):
+    async def split_file(self, file_path: str, chunk_size: int = MAX_CHUNK_SIZE):
         """
         Split a file into chunks of specified size.
         """
@@ -65,7 +61,7 @@ class API(commands.Cog):
                 chunk = file.read(chunk_size)
                 if not chunk:
                     break
-                tmp = self._get_timestamp()
+                tmp = self.get_timestamp()
                 chunk_path = f"/tmp/{os.path.basename(file_path)}.{tmp}.{part_number}"
                 async with aiofiles.open(chunk_path, 'wb') as chunk_file:
                     await chunk_file.write(chunk)
@@ -73,18 +69,18 @@ class API(commands.Cog):
                 part_number += 1
         return chunk_paths
 
-    async def _send_file_in_chunks(self, file_path: str, file_name: str, channel_id: int = 0):
+    async def send_file_in_chunks(self, file_path: str, file_name: str, channel_id: int = 0):
         """
         Send a file to Discord in chunks.
         """
         channel_id = channel_id or self.channel_id
-        chunk_paths = await self._split_file(file_path)
+        chunk_paths = await self.split_file(file_path)
 
         channel = self.bot.get_channel(int(channel_id))
         if not channel:
             raise ValueError("Discord channel not found")
 
-        tmp = self._get_timestamp()
+        tmp = self.get_timestamp()
         
         for i, chunk_path in enumerate(chunk_paths, start=1):
             chunk_file_name = f"{file_name}.{tmp}.{i}"
@@ -93,80 +89,11 @@ class API(commands.Cog):
         
         return chunk_paths
 
-    async def _clean_files(self, file_paths: list):
+    async def clean_files(self, file_paths: list):
         """Remove the specified files."""
         for file_path in file_paths:
             os.remove(file_path)
 
-    async def _execute_pg_command(self, command: list, dump_file_path: str, env: dict):
-        """
-        Execute a PostgreSQL dump command.
-        """
-        try:
-            _ = subprocess.run(command + ["--file", dump_file_path], env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        except subprocess.CalledProcessError as e:
-            raise RuntimeError(f"Backup failed: {e.stderr.decode()}")
-
-    async def _backup_postgres(self, *db_names: str) -> str:
-        """
-        Backup specified PostgreSQL databases or all databases if no arguments are provided.
-        Concatenate the backups into a single file if multiple databases are specified.
-        """
-        pg_user = os.getenv("POSTGRES_USER")
-        pg_password = os.getenv("POSTGRES_PASSWORD")
-        pg_host = os.getenv("POSTGRES_HOST", "localhost")
-        pg_port = os.getenv("POSTGRES_PORT", "5432")
-
-        if not pg_user or not pg_password:
-            raise RuntimeError("PostgreSQL credentials are missing")
-
-        env = os.environ.copy()
-        env["PGPASSWORD"] = pg_password
-
-        filename = "backup.sql"
-
-        if db_names:
-            # Création d'un fichier de dump unique pour plusieurs bases
-            dump_file_path = f"/tmp/{filename}"
-            
-            # Ouvre le fichier pour concaténer les résultats des dumps
-            async with aiofiles.open(dump_file_path, 'w') as dump_file:
-                for db_name in db_names:
-                    pg_dump_command = [
-                        "pg_dump",
-                        "--username", pg_user,
-                        "--host", pg_host,
-                        "--port", pg_port,
-                        "--dbname", f"postgresql://{pg_user}@{pg_host}:{pg_port}/{db_name}"
-                    ]
-                    
-                    try:
-                        # Exécute pg_dump et capture la sortie
-                        result = subprocess.run(pg_dump_command, env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                        await dump_file.write(result.stdout.decode())  # Ajoute le dump au fichier
-                    except subprocess.CalledProcessError as e:
-                        raise RuntimeError(f"Backup failed for {db_name}: {e.stderr.decode()}")
-            
-        else:
-            # Si aucune base de données spécifiée, on sauvegarde toutes les bases
-            dump_file_path = f"/tmp/{filename}"
-            pg_dumpall_command = [
-                "pg_dumpall",
-                "--username", pg_user,
-                "--host", pg_host,
-                "--port", pg_port
-            ]
-            
-            try:
-                await self._execute_pg_command(pg_dumpall_command, dump_file_path, env)
-            except Exception as e:
-                raise RuntimeError(f"Backup all databases failed: {str(e)}")
-
-        chunks = await self._send_file_in_chunks(dump_file_path, filename)
-        await self._clean_files(chunks)
-        os.remove(dump_file_path)
-            
-        return dump_file_path
 
     # def setup_jobs(self):
     #     """Configurer les jobs récurrents avec APScheduler."""
@@ -179,15 +106,6 @@ class API(commands.Cog):
     #     )
     #     logging.info("Job de backup quotidien à 5h du matin configuré.")
 
-    @tasks.loop(seconds=SECONDS)
-    async def backup_job(self):
-        """La tâche qui sera exécutée tous les jours à 5h."""
-        try:
-            # Effectuer un backup de toutes les bases
-            dump_file_paths = await self._backup_postgres()
-            logging.info(f"Backup quotidien réussi : {dump_file_paths}")
-        except Exception as e:
-            logging.error(f"Erreur lors du backup quotidien : {e}")
 
 
     @server.add_route(path="/send/user", method="POST", cog="API")
@@ -375,41 +293,6 @@ class API(commands.Cog):
     #     return commands.Context(message, self.bot, view, args=args))
 
 
-    @server.add_route(path="/backup", method="POST", cog="API")
-    async def backup_postgres(self, request: web.Request):
-        """
-        Endpoint to create a backup (dump) of a specified PostgreSQL database
-        or all databases if no database name is provided, and return the backup file
-        as a downloadable response.
-        """
-        body = await request.json()
-        db_name = body.get("db_name")
-        dump_file_paths : list
-
-        if db_name and not isinstance(db_name, str):
-            return web.json_response({"error": "db_name must be a string"}, status=400)
-
-        try:
-            if db_name:
-                dump_file_path = await self._backup_postgres(db_name)
-            else:
-                dump_file_path = await self._backup_postgres()
-        except Exception as e:
-            return web.json_response({"error": str(e)}, status=500)
-
-        headers = {'Content-Disposition': f'attachment; filename="{os.path.basename(dump_file_path)}"'}
-        return web.FileResponse(dump_file_path, headers=headers)
-
-    @commands.command(name="backup")
-    async def backup_postgres_command(self, ctx: commands.Context, *db_names: str):
-        """
-        Commande Discord pour créer une sauvegarde (dump) de bases de données PostgreSQL spécifiques
-        ou de toutes les bases de données si aucun nom n'est fourni.
-        """
-        try:
-            await self._backup_postgres(*db_names)
-        except Exception as e:
-            await ctx.send(f"Erreur: {str(e)}")
 
     @server.add_route(path="/command/channel", method="POST", cog="API")
     async def command_channel(self, request: web.Request):
