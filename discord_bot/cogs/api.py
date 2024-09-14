@@ -32,9 +32,10 @@ class API(commands.Cog):
         self.guild_id = int(
             os.environ.get("DISCORD_BOT_GUILD_ID") or "550332212340326428"
         )
-        self.bot.loop.create_task(self._start_server())
+        # self.bot.loop.create_task(self._start_server())
         self.contexts: typing.Dict[str, commands.Context] = {}
         self.channel_id = int(os.environ["CHANNEL_ID_NOTIF"])
+        self.bot.loop.create_task(self._start_server())
         # self.scheduler = AsyncIOScheduler()  # Le scheduler APScheduler
         # self.scheduler.start()  # Démarrer le scheduler
         # self.setup_jobs()  # Configurer les jobs récurrents
@@ -48,6 +49,7 @@ class API(commands.Cog):
     async def _start_server(self):
         """Task to run the HTTP server."""
         await self.bot.wait_until_ready()
+        print(f"listening on http://{self.server.host}:{self.server.port}")
         await self.server.start()
 
     async def split_file(self, file_path: str, chunk_size: int = MAX_CHUNK_SIZE):
@@ -163,7 +165,7 @@ class API(commands.Cog):
             return web.json_response({"error": "Channel not found"}, status=404)
 
         # await channel.send(file=discord.File(file_path))
-        await self._send_file_in_chunks(file_path, filename, channel_id)
+        await self.send_file_in_chunks(file_path, filename, channel_id)
 
         # Optionally, delete the temp file after sending it
         os.remove(file_path)
@@ -370,5 +372,6 @@ class API(commands.Cog):
             return
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(API(bot))
+async def setup(bot: commands.Bot):
+    print("setup api")
+    await bot.add_cog(API(bot))

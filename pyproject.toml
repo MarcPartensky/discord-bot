@@ -38,7 +38,6 @@ dependencies = [
     "py-cord[voice]==2.5.0",
     "psycopg2-binary",
     "aiofiles>=24.1.0",
-    "jurigged>=0.5.8",
 ]
 
 [build-system]
@@ -48,3 +47,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["discord_bot"]
+
+[tool.uv]
+dev-dependencies = [
+    "pyright>=1.1.380",
+]
