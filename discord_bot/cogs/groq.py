@@ -109,6 +109,6 @@ class Groq(commands.Cog):
         return answer
 
 
-def setup(bot):
+async def setup(bot):
     """Setup the Shell cog."""
-    bot.add_cog(Groq(bot))
+    await bot.add_cog(Groq(bot))

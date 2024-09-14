@@ -1,5 +1,5 @@
 run:
-	uv run python discord_bot
+	uv --directory discord_bot run python .
 update:
 	uv lock
 	uv pip compile requirements.txt \

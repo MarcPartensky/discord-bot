@@ -101,5 +101,5 @@ class TextToSpeech(commands.Cog):
         ctx.voice_client.play(source, after=after)
 
 
-def setup(bot):
-    bot.add_cog(TextToSpeech(bot))
+async def setup(bot):
+    await bot.add_cog(TextToSpeech(bot))

@@ -185,5 +185,5 @@ class Messenger(commands.Cog):
         return embed
 
 
-def setup(bot):
-    bot.add_cog(Messenger(bot))
+async def setup(bot):
+    await bot.add_cog(Messenger(bot))

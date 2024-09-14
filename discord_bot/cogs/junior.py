@@ -20,6 +20,6 @@ class Junior(commands.Cog):
         self.bot = bot
 
 
-def setup(bot):
+async def setup(bot):
     """Setup the ialab cog."""
-    bot.add_cog(Junior(bot))
+    await bot.add_cog(Junior(bot))

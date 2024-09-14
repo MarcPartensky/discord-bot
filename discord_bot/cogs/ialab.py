@@ -81,6 +81,6 @@ class IALab(commands.Cog):
             await self.say(ctx, d["answer"], "en")
 
 
-def setup(bot):
+async def setup(bot):
     """Setup the ialab cog."""
-    bot.add_cog(IALab(bot))
+    await bot.add_cog(IALab(bot))

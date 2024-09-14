@@ -487,5 +487,5 @@ class API(commands.Cog):
             return
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(API(bot))
+async def setup(bot: commands.Bot):
+    await bot.add_cog(API(bot))
