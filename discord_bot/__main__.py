@@ -8,18 +8,18 @@ import asyncio
 import warnings
 from rich import print
 
-
-import progressbar
-import discord
 import html
+import progressbar
+
+import discord
+from discord.ext import commands, tasks
 
 from dotenv import load_dotenv
-
 load_dotenv()
 
 from config.config import prefix, masters, access
 from config.credentials import token, client_id
-from discord.ext import commands, tasks
+
 
 
 # TODO
@@ -31,9 +31,6 @@ from discord.ext import commands, tasks
 #     # Notice how you can use spaces in prefixes. Try to keep them simple though.
 #     prefixes = ['>?', 'lol ', '!?']
 
-    
-
-
 #     # Check to see if we are outside of a guild. e.g DM's etc.
 #     if not message.guild:
 #         # Only allow ? to be used in DMs
@@ -41,7 +38,6 @@ from discord.ext import commands, tasks
 
 #     # If we are in a guild, we allow for the user to mention us or use any of the prefixes in our list.
 #     return commands.when_mentioned_or(*prefixes)(bot, message)
-
 
 
 class Main(commands.Bot):
@@ -75,20 +71,6 @@ class Main(commands.Bot):
             i += self.help_every
         self._status = itertools.cycle(self._status)
 
-    @commands.command()
-    async def environment(self, ctx: commands.Context):
-        """Affiche l'environnement dans lequel le bot tourne."""
-        print("environment")
-        host = os.environ.get("HOST")
-        await ctx.send(f"> Environment: **{host}**")
-
-    @commands.command(name="charge-tous")
-    @access.admin
-    async def load_all(self, ctx: commands.Context):
-        """Charge tous les cogs."""
-        await self.load_cogs()
-        await ctx.send("Tous les cogs sont chargés.")
-
     async def load_cogs(self):
         """Charge tous les cogs."""
         cogs = os.listdir("./cogs")
@@ -100,7 +82,22 @@ class Main(commands.Bot):
                     await self.load_extension(f"cogs.{filename[:-3]}")
 
     @commands.command()
-    async def cogs(self, ctx: commands.Context):
+    async def environment(self, ctx: commands.Context):
+        """Affiche l'environnement dans lequel le bot tourne."""
+        host = os.environ.get("HOST")
+        print(f"environment: {host}")
+        await ctx.send(f"> Environment: **{host}**")
+
+    @commands.command(name="charge-tous")
+    @access.admin
+    async def load_all(self, ctx: commands.Context):
+        """Charge tous les cogs."""
+        await self.load_cogs()
+        await ctx.send("Tous les cogs sont chargés.")
+
+
+    @commands.command()
+    async def list_cogs(self, ctx: commands.Context):
         """Liste tous les cogs."""
         cog_list = []
         for file in os.listdir("./cogs"):
@@ -295,5 +292,4 @@ async def main():
 
 
 if __name__ == "__main__":
-
     asyncio.run(main())
