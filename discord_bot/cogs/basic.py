@@ -371,5 +371,5 @@ class Basic(commands.Cog):
         file = requests.get(url)
         await self.bot.user.edit(avatar=file.content)
 
-def setup(bot):
-    bot.add_cog(Basic(bot))
+async def setup(bot):
+    await bot.add_cog(Basic(bot))
