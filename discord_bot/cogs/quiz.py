@@ -35,5 +35,5 @@ class Quiz(commands.Cog):
         await self.quiz.next(ctx).embed
 
 
-def setup(bot):
-    bot.add_cog(Quiz(bot))
+async def setup(bot):
+    await bot.add_cog(Quiz(bot))

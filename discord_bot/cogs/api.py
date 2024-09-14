@@ -373,5 +373,4 @@ class API(commands.Cog):
 
 
 async def setup(bot: commands.Bot):
-    print("setup api")
     await bot.add_cog(API(bot))

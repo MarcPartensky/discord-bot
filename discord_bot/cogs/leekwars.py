@@ -153,6 +153,6 @@ class Leekwars(commands.Cog):
         await ctx.send(msg)
 
 
-def setup(bot):
+async def setup(bot):
     """Setup the leekwars cog."""
-    bot.add_cog(Leekwars(bot))
+    await bot.add_cog(Leekwars(bot))

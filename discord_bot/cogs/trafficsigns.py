@@ -337,5 +337,5 @@ class TrafficSign(commands.Cog):
         """Compétition sous forme de quiz."""
 
 
-def setup(bot):
-    bot.add_cog(TrafficSign(bot))
+async def setup(bot):
+    await bot.add_cog(TrafficSign(bot))

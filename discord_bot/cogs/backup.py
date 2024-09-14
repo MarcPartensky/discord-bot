@@ -159,30 +159,6 @@ class Backup(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @server.add_route(path="/backup", method="POST", cog="API")
-    async def backup_postgres(self, request: web.Request):
-        """
-        Endpoint to create a backup (dump) of a specified PostgreSQL database
-        or all databases if no database name is provided, and return the backup file
-        as a downloadable response.
-        """
-        body = await request.json()
-        db_name = body.get("db_name")
-        dump_file_paths : list
-
-        if db_name and not isinstance(db_name, str):
-            return web.json_response({"error": "db_name must be a string"}, status=400)
-
-        try:
-            if db_name:
-                dump_file_path = await self._backup_postgres(db_name)
-            else:
-                dump_file_path = await self._backup_postgres()
-        except Exception as e:
-            return web.json_response({"error": str(e)}, status=500)
-
-        headers = {'Content-Disposition': f'attachment; filename="{os.path.basename(dump_file_path)}"'}
-        return web.FileResponse(dump_file_path, headers=headers)
 
     @commands.command(name="backup")
     async def backup_postgres_command(self, ctx: commands.Context, *db_names: str):
@@ -195,5 +171,5 @@ class Backup(commands.Cog):
         except Exception as e:
             await ctx.send(f"Erreur: {str(e)}")
 
-def setup(bot):
-    bot.add_cog(Backup(bot))
+async def setup(bot):
+    await bot.add_cog(Backup(bot))

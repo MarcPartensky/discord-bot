@@ -102,5 +102,5 @@ class Git(commands.Cog):
         await ctx.send("\n".join([cmd] + out))
 
 
-def setup(bot):
-    bot.add_cog(Git(bot))
+async def setup(bot):
+    await bot.add_cog(Git(bot))

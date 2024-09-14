@@ -269,6 +269,6 @@ class User(commands.Cog, name="Utilisateur"):
         )
 
 
-def setup(bot):
+async def setup(bot):
     """Setup the user cog."""
-    bot.add_cog(User(bot))
+    await bot.add_cog(User(bot))

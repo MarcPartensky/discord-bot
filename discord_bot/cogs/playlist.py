@@ -253,5 +253,5 @@ class PlayList(commands.Cog):
     # @playlist.command(name)
 
 
-def setup(bot):
-    bot.add_cog(PlayList(bot))
+async def setup(bot):
+    await bot.add_cog(PlayList(bot))

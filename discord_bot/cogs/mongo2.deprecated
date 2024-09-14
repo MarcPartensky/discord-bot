@@ -172,6 +172,6 @@ class Mongo2(commands.Cog):
         return await ctx.send("> Rien n'est sélectionné pour l'instant.")
 
 
-def setup(bot):
+async def setup(bot):
     mongo = Mongo(bot)
-    bot.add_cog(mongo)
+    await bot.add_cog(mongo)

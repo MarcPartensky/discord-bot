@@ -1,5 +1,4 @@
 run:
-	uv clean
 	uv --directory discord_bot run python .
 update:
 	uv lock

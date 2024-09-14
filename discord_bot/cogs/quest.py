@@ -42,5 +42,5 @@ class Quest(commands.Cog, name="Quête"):
         """Retire une quête."""
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Quest(bot))
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Quest(bot))

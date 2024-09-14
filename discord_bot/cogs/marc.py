@@ -181,6 +181,6 @@ class Marc(commands.Cog):
             return await ctx.send(f"> Stored in **{args[0]}** : **{value}**")
 
 
-def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot):
     """Setup le marc cog."""
-    bot.add_cog(Marc(bot))
+    await bot.add_cog(Marc(bot))

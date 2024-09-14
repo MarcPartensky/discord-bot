@@ -88,7 +88,7 @@ class BlackJack(commands.Cog):
                 room.embed_message = await ctx.send(embed=embed)
         else:
             if room.message:
-                room.message.edit(content=content)
+                await room.message.edit(content=content)
             else:
                 room.message = await ctx.send(content)
 
@@ -103,7 +103,7 @@ class BlackJack(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error):
         """Envoie l'erreur aux utilisateurs."""
-        self.send(ctx, error)
+        await self.send(ctx, error)
         print("erreur capturée")
 
     @blackjack.command(name="créer", aliases=["create", "c"])
@@ -235,7 +235,7 @@ class BlackJack(commands.Cog):
         room = self.getRoom(ctx)
         player = room.find(member)
         player.drawing = False
-        self.send(ctx, f"> {member.name} se couche.")
+        await self.send(ctx, f"> {member.name} se couche.")
 
     @blackjack.command(name="retirer", aliases=["draw", "r", "d"])
     async def draw(self, ctx: commands.Context):
@@ -329,5 +329,5 @@ class BlackJack(commands.Cog):
             await self.stop(ctx)
 
 
-def setup(bot):
-    bot.add_cog(BlackJack(bot))
+async def setup(bot):
+    await bot.add_cog(BlackJack(bot))

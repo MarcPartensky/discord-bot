@@ -24,7 +24,7 @@ class Docker(commands.Cog):
         super().__init__(**kwargs)
         self.bot: commands.Bot = bot
         self.url: str = os.environ["DOCKER_API_URL"]
-        self.color = discord.Colour(0x4EB3F2)
+        self.color = discord.Color(0x4EB3F2)
         self.states = dict(
             exited=discord.Color.red(),
             running=discord.Color.green(),
@@ -324,6 +324,6 @@ class Docker(commands.Cog):
         return await ctx.send(f"```md\n{text}\n```")
 
 
-def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot):
     """Setup the ialab cog."""
-    bot.add_cog(Docker(bot))
+    await bot.add_cog(Docker(bot))
