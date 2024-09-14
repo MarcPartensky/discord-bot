@@ -329,5 +329,5 @@ class BlackJack(commands.Cog):
             await self.stop(ctx)
 
 
-def setup(bot):
-    bot.add_cog(BlackJack(bot))
+async def setup(bot):
+    await bot.add_cog(BlackJack(bot))

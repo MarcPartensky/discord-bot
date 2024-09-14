@@ -110,5 +110,5 @@ class Role(commands.Cog):
     # async def role_old(self, ctx:)
 
 
-def setup(bot):
-    bot.add_cog(Role(bot))
+async def setup(bot):
+    await bot.add_cog(Role(bot))

@@ -170,5 +170,5 @@ class Music2(commands.Cog):
                 await ctx.send(result['webpage_url'])
             print("this ends now")
 
-def setup(bot):
-    bot.add_cog(Music2(bot))
+async def setup(bot):
+    await bot.add_cog(Music2(bot))

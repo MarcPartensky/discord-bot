@@ -369,5 +369,5 @@ class marcMusic(commands.Cog):
             await self.join(ctx)
 
 
-def setup(bot):
-    bot.add_cog(marcMusic(bot))
+async def setup(bot):
+    await bot.add_cog(marcMusic(bot))

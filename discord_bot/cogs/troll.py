@@ -28,5 +28,5 @@ class Troll(commands.Cog):
         await ctx.send("En développement")
 
 
-def setup(bot):
-    bot.add_cog(Troll(bot))
+async def setup(bot):
+    await bot.add_cog(Troll(bot))

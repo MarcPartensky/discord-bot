@@ -220,8 +220,8 @@ class Commandes(commands.Cog):
             await self.search(ctx, *map(lambda r: r.strip(), req.strip().split("|")), regex=False, show_cmd=False)
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Commandes(bot))
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Commandes(bot))
 
 
 # TODO: Test the cog

@@ -4,10 +4,10 @@
 import os
 import random
 import itertools
+import asyncio
 import warnings
 from rich import print
 
-warnings.filterwarnings("ignore")
 
 import progressbar
 import discord
@@ -44,20 +44,27 @@ from discord.ext import commands, tasks
 
 
 
-class Main(commands.Cog):
+class Main(commands.Bot):
     """Main cog for commands."""
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, *args, **kwargs):
         """Create the main cog using the bot as argument."""
-        self.bot = bot
+        super().__init__(*args, **kwargs)
+        # self.bot = bot
         self.invited = "invité"
         self.good_invited = "bon invité"
         self.bad_invited = "mauvais invité"
         self.help_every = 5
-        self.load_cogs()
-        self.load_status()
+
+        # self.load_status()
         self.load_icloud()
+        print("init done")
         # self.api: PycloudService = None
+
+    async def setup_hook(self) -> None:
+        """Automatically run by discord.py."""
+        print("setup hook")
+        await self.load_cogs()
 
     def load_icloud(self):
         """Charge l'api d'icloud."""
@@ -88,10 +95,10 @@ class Main(commands.Cog):
     @access.admin
     async def load_all(self, ctx: commands.Context):
         """Charge tous les cogs."""
-        self.load_cogs()
+        await self.load_cogs()
         await ctx.send("Tous les cogs sont chargés.")
 
-    def load_cogs(self):
+    async def load_cogs(self):
         """Charge tous les cogs."""
         cogs = os.listdir("./cogs")
         with progressbar.ProgressBar(max_value=len(cogs)) as bar:
@@ -99,7 +106,7 @@ class Main(commands.Cog):
                 bar.update(i)
                 if filename.endswith(".py"):
                     print(filename)
-                    self.bot.load_extension(f"cogs.{filename[:-3]}")
+                    await self.load_extension(f"cogs.{filename[:-3]}")
 
     @commands.command()
     async def cogs(self, ctx: commands.Context):
@@ -118,35 +125,39 @@ class Main(commands.Cog):
     async def loaded_cogs(self, ctx: commands.Context):
         """Liste tous les cogs."""
         loaded_cog_list = [f"- {s[5:]}" for s in self.bot.extensions.keys()]
-        list_text = "\n".join(loaded_cog_list)
-        text = "```md\n" + list_text + "\n```"
-        await ctx.send(text)
+        if len(loaded_cog_list) == 0:
+            await ctx.send("> Aucun cog chargé")
+        else:
+            list_text = "\n".join(loaded_cog_list)
+            text = "```md\n" + list_text + "\n```"
+            print(text)
+            await ctx.send(text)
 
     @commands.command(name="décharge-tous")
     @access.admin
     async def unload_all(self, ctx: commands.Context):
         """Décharge tous les cogs."""
-        self.unload_cogs()
+        await self.unload_cogs()
         await ctx.send("Tous les cogs sont déchargés.")
 
-    def unload_cogs(self):
+    async def unload_cogs(self):
         """Décharge tous les cogs."""
         for filename in os.listdir("./cogs"):
             if filename.endswith(".py"):
-                self.bot.unload_extension(f"cogs.{filename[:-3]}")
+                await self.bot.unload_extension(f"cogs.{filename[:-3]}")
 
     @commands.command(name="charge", aliases=["load"])
     @access.admin
     async def load(self, ctx, extension):
         """Charge les extensions."""
-        self.bot.load_extension(f"cogs.{extension}")
+        await self.bot.load_extension(f"cogs.{extension}")
         await ctx.send(f"Le cog {extension} a été chargée.")
 
     @commands.command(name="décharge", aliases=["unload"])
     @access.admin
     async def unload(self, ctx, extension):
         """Décharge les extensions."""
-        self.bot.unload_extension(f"cogs.{extension}")
+        await self.bot.unload_extension(f"cogs.{extension}")
         await ctx.send(f"Le cog {extension} a été déchargée.")
 
     @tasks.loop(seconds=10)
@@ -276,19 +287,26 @@ class Main(commands.Cog):
 #         break
 
 
-def setup(bot: commands.Bot):
+async def main():
     """Setup the bot for the main cog."""
-    bot.add_cog(Main(bot))
-
-
-if __name__ == "__main__":
     os.system("clear")
-    print("prefix:", prefix)
+    print(f"prefix: {prefix}\nversion: {discord.__version__}")
+
+    # warnings.filterwarnings("ignore")
+
     intents = discord.Intents.default()
     intents.message_content = True
 
     # client = commands.Bot(command_prefix=prefix, case_insensitive=True)
-    client = commands.Bot(command_prefix=prefix, intents=intents)
-    client.id = client_id
-    setup(client)
-    client.run(token)
+    # bot = commands.Bot(command_prefix=prefix, intents=intents)
+    bot = Main(intents=intents, command_prefix=prefix)
+    # bot.id = client_id
+
+    async with bot:
+        print("bot start token")
+        await bot.start(token)
+
+
+if __name__ == "__main__":
+
+    asyncio.run(main())
