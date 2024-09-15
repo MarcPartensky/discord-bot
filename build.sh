@@ -8,6 +8,7 @@ wait
 
 uv sync -v
 rm -rf .venv
+uv cache prune
 uv sync -v
 
 # apk del .build
