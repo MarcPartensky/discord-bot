@@ -36,14 +36,14 @@ RUN pip install -U uv
 RUN apk update
 RUN apk add ffmpeg build-base libffi-dev
 
-COPY README.md LICENSE pyproject.toml uv.lock requirements.txt ./
+
+WORKDIR /app
+COPY README.md LICENSE pyproject.toml uv.lock ./
 RUN uv venv
 # RUN uv pip sync requirements.txt
 RUN uv sync -v
 
-WORKDIR /app
 COPY ./discord_bot discord_bot
-
 WORKDIR /app/discord_bot
 # RUN ln -sf ./discord_bot/cogs ./cogs
 # RUN ln -sf ./discord_bot/assets ./assets
