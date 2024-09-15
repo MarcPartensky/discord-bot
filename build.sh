@@ -7,8 +7,9 @@ apk add --no-cache build-base libffi-dev ffmpeg postgresql p7zip &
 wait
 
 uv sync -v
-# rm -rf .venv
-# uv sync -v
+rm -rf .venv
+uv cache prune
+uv sync -v
 
 # apk del .build
 # rm -rf /tmp/* /var/apk/cache/*
