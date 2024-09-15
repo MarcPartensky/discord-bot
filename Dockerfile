@@ -4,7 +4,7 @@ LABEL image="https://hub.docker.com/r/marcpartensky/discord-bot"
 LABEL source="https://github.com/marcpartensky/discord-bot"
 
 WORKDIR /app
-COPY README.md LICENSE pyproject.toml uv.lock build.sh entrypoint.sh ./
+COPY README.md LICENSE pyproject.toml uv.lock build.sh ./
 COPY ./discord_bot discord_bot
 RUN ./build.sh
 
