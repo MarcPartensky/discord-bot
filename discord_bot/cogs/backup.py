@@ -12,8 +12,7 @@ import os
 import logging
 
 import psycopg2, subprocess
-import aiofiles, server
-from aiohttp import web
+import aiofiles
 
 SECONDS = 3600
 
@@ -27,13 +26,28 @@ class Backup(commands.Cog):
         self.user = os.environ.get("POSTGRES_USER")
         self.password = os.environ.get("POSTGRES_PASSWORD")
         self.color = 0x0064a5
+        self.backup_filename = 'backup.sql'
         self.connection: psycopg2.connection
         self.cursor: psycopg2.cursor
         self.backup_job.start()
+        # self.scheduler = AsyncIOScheduler()  # Le scheduler APScheduler
+        # self.scheduler.start()  # Démarrer le scheduler
+        # self.setup_jobs()  # Configurer les jobs récurrents
 
     @property
-    def api(self):
-        return self.bot.get_cog("API")
+    def storage(self):
+        return self.bot.get_cog("Storage")
+
+    # def setup_jobs(self):
+    #     """Configurer les jobs récurrents avec APScheduler."""
+    #     # Planifier le job quotidien à 5h du matin
+    #     self.scheduler.add_job(
+    #         self.daily_backup,  # La fonction à exécuter
+    #         CronTrigger(hour=5, minute=0),  # CronTrigger à 5h00 chaque jour
+    #         name="daily_backup_job",  # Nom du job
+    #         replace_existing=True  # Remplacer si le job existe déjà
+    #     )
+    #     logging.info("Job de backup quotidien à 5h du matin configuré.")
         
     async def _execute_pg_command(self, command: list, dump_file_path: str, env: dict):
         """
@@ -55,7 +69,7 @@ class Backup(commands.Cog):
         env = os.environ.copy()
         env["PGPASSWORD"] = self.password
 
-        filename = "backup.sql"
+        filename = self.backup_filename
 
         if db_names:
             # Création d'un fichier de dump unique pour plusieurs bases
@@ -94,8 +108,8 @@ class Backup(commands.Cog):
             except Exception as e:
                 raise RuntimeError(f"Backup all databases failed: {str(e)}")
 
-        chunks = await self.api.send_file_in_chunks(dump_file_path, filename)
-        await self.api.clean_files(chunks)
+        chunks = await self.storage.send_file_in_chunks(dump_file_path, filename)
+        await self.storage.clean_files(chunks)
         os.remove(dump_file_path)
             
         return dump_file_path
