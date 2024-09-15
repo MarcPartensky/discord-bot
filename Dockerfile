@@ -5,9 +5,8 @@ LABEL source="https://github.com/marcpartensky/discord-bot"
 
 WORKDIR /app
 COPY README.md LICENSE pyproject.toml uv.lock build.sh ./
-RUN ./build.sh
 COPY ./discord_bot discord_bot
-RUN uv venv
+RUN ./build.sh
 
 ENV DISCORD_BOT_HOST=0.0.0.0
 ENV DISCORD_BOT_PORT=8000
