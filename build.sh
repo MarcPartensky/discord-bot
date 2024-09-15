@@ -3,7 +3,7 @@
 apk update
 
 pip install -U uv &
-add --no-cache --virtual .build build-base libffi-dev &
+apk add --no-cache --virtual .build build-base libffi-dev &
 wait
 
 apk add ffmpeg postgresql p7zip &
