@@ -32,16 +32,19 @@ LABEL image="https://hub.docker.com/r/marcpartensky/discord-bot"
 LABEL source="https://github.com/marcpartensky/discord-bot"
 
 RUN pip install -U uv
-
 RUN apk update
-RUN apk add ffmpeg build-base libffi-dev postgresql p7zip
 
 WORKDIR /app
 COPY README.md LICENSE pyproject.toml uv.lock ./
-# RUN uv venv
-# RUN uv pip sync requirements.txt
-RUN uv sync -v
+
+RUN apk add --no-cache --virtual .build build-base libffi-dev
+RUN apk add ffmpeg postgresql p7zip &\
+    uv sync -v
+RUN apk del .build &&\
+    rm -rf /var/cache/apk/* /tmp/*
+
 COPY ./discord_bot discord_bot
+RUN uv venv
 
 ENV DISCORD_BOT_HOST=0.0.0.0
 ENV DISCORD_BOT_PORT=8000
