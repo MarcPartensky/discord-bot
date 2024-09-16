@@ -77,7 +77,7 @@ class Storage(commands.Cog):
 
     async def send_file_in_chunks(self, filepath: str, file_name: str, channel_id: int = 0):
         """
-        Send a file to Discord in chunks.
+        Send a file to Discord in chunks using filepath, file_name and optional channel_id.
         """
         channel_id = channel_id or self.channel_id
         chunk_paths = await self.split_file(filepath)

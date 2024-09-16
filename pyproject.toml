@@ -38,6 +38,7 @@ dependencies = [
     "py-cord[voice]==2.5.0",
     "psycopg2-binary",
     "aiofiles>=24.1.0",
+    "apscheduler>=3.10.4",
 ]
 
 [build-system]
