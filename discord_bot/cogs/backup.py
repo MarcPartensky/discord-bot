@@ -254,6 +254,10 @@ class Backup(commands.Cog):
         else:
             await ctx.send("> Job non trouvé.")
 
+    def get_cron_expression(self, trigger: CronTrigger) -> str:
+        """Retourne une représentation de l'expression Cron sous forme de chaîne de caractères."""
+        return f"{trigger.minute} {trigger.hour} {trigger.day} {trigger.month} {trigger.day_of_week}"
+
     async def build_job_embed(self) -> discord.Embed:
         """Affiche les jobs configurés."""
         embed = discord.Embed(
@@ -264,7 +268,7 @@ class Backup(commands.Cog):
         for job_name, job in self.jobs.items():
             embed.add_field(
                 name=job_name,
-                value=job.trigger.cron.expression,
+                value=self.get_cron_expression(job.trigger),
                 inline=True
             )
         return embed
