@@ -9,7 +9,7 @@ wait
 
 uv sync -v &
 apk add ffmpeg postgresql p7zip &
-fg
+wait
 
 # pip install -r requirements.txt 
 # apk del .build &
