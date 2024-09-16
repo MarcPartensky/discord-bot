@@ -2,13 +2,12 @@
 
 apk update
 
-pip install -U uv &
-apk add --no-cache build-base libffi-dev ffmpeg postgresql p7zip &
+apk add --no-cache --virtual .build build-base libffi-dev &
+
+apk add ffmpeg postgresql p7zip &
+pip install -r requirements.txt &
 wait
 
-uv sync -v
-rm -rf .venv
-uv sync -v
-
-# apk del .build
-# rm -rf /tmp/* /var/apk/cache/*
+# apk del .build &
+# rm -rf /var/cache/apk/* /tmp/* &
+# wait
