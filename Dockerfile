@@ -12,6 +12,7 @@ LABEL source="https://github.com/marcpartensky/discord-bot"
 
 WORKDIR /app
 COPY README.md LICENSE build.sh ./
+COPY pyproject.toml uv.lock ./
 RUN ./build.sh
 COPY ./discord_bot discord_bot
 WORKDIR /app/discord_bot
