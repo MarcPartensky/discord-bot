@@ -1,9 +1,11 @@
 #!/bin/sh
 
 apk update
+apk add curl
 
-curl -LsSf https://astral.sh/uv/install.sh | sh
-apk add --no-cache --virtual .build build-base libffi-dev
+curl -LsSf https://astral.sh/uv/install.sh | sh &
+apk add --no-cache --virtual .build build-base libffi-dev &
+wait
 
 apk add ffmpeg postgresql p7zip &
 # pip install -r requirements.txt 
