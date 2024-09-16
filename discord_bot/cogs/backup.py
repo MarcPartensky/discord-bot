@@ -29,32 +29,46 @@ class Backup(commands.Cog):
         self.database = os.environ.get("POSTGRES_DATABASE")
         self.user = os.environ.get("POSTGRES_USER")
         self.password = os.environ.get("POSTGRES_PASSWORD")
-        self.backup_filename = os.environ.get("POSTGRES_DUMP_FILENAME") or 'backup.sql'
+        self.backup_filename = os.environ.get("POSTGRES_DUMP_FILENAME") or "backup.sql"
         self.channel_id = int(os.environ.get("BACKUP_CHANNEL_ID") or 0)
+        self.default_cron_expression = os.environ.get("BACKUP_DEFAULT_CRON_EXPRESSION") or "0 5 * * *"
+        self.default_jobname = os.environ.get("BACKUP_DEFAULT_JOBNAME") or "daily"
+        self.jobs = {}
         self.tmp_directory = "/tmp"
         self.color = 0x0064a5
+
+        self.scheduler = AsyncIOScheduler()  # Le scheduler APScheduler
+        self.scheduler.start()  # Démarrer le scheduler
+        self.setup_default_backup()
+
         # self.connection: psycopg2.connection
         # self.cursor: psycopg2.cursor
         # self.backup_job.start()
 
-        self.scheduler = AsyncIOScheduler()  # Le scheduler APScheduler
-        self.scheduler.start()  # Démarrer le scheduler
-        self.setup_jobs()  # Configurer les jobs récurrents
+    def setup_default_backup(self):
+        """Ajoute un job par défaut tous les jours à 5h du matin.""" 
+        job_name = self.default_jobname
+        cron_expression = self.default_cron_expression
+        trigger = CronTrigger.from_crontab(cron_expression)
+        job = self.scheduler.add_job(self._backup_postgres, trigger, name=job_name)
+        self.jobs[job_name] = job
+        logging.info("Job de backup quotidien à 5h du matin ajouté.")
 
     @property
     def storage(self):
         return self.bot.get_cog("Storage")
 
-    def setup_jobs(self):
-        """Configurer les jobs récurrents avec APScheduler."""
-        # Planifier le job quotidien à 5h du matin
-        self.scheduler.add_job(
-            self._backup_postgres,  # La fonction à exécuter
-            CronTrigger(hour=5, minute=0),  # CronTrigger à 5h00 chaque jour
-            name="backup",  # Nom du job
-            replace_existing=True  # Remplacer si le job existe déjà
-        )
-        logging.info("Job de backup quotidien à 5h du matin configuré.")
+    # def setup_jobs(self):
+    #     """Configurer les jobs récurrents avec APScheduler."""
+    #     # Planifier le job quotidien à 5h du matin
+    #     self.scheduler.add_job(
+    #         self._backup_postgres,  # La fonction à exécuter
+    #         CronTrigger(hour=5, minute=0),  # CronTrigger à 5h00 chaque jour
+    #         name="backup",  # Nom du job
+    #         replace_existing=True  # Remplacer si le job existe déjà
+    #     )
+    #     logging.info("Job de backup quotidien à 5h du matin configuré.")
+
         
     async def _execute_pg_command(self, command: list, dump_file_path: str, env: dict):
         """
@@ -157,7 +171,7 @@ class Backup(commands.Cog):
     async def role(self, ctx: commands.Context):
         """Groupe de commandes pour controller le role 'Backup'."""
         if not ctx.invoked_subcommand:
-            await ctx.send("> No command invoked")
+            await ctx.send("> Aucune sous-commande invoquée.")
 
     @role.command(name="create")
     async def create_backup_role(self, ctx: commands.Context):
@@ -168,13 +182,13 @@ class Backup(commands.Cog):
         # Vérifier si le rôle existe déjà
         existing_role = discord.utils.get(guild.roles, name=role_name)
         if existing_role:
-            await ctx.send(f"> Le rôle '{role_name}' existe déjà.")
+            await ctx.send(f"> Le rôle `{role_name}` existe déjà.")
             return
         try:
             # Créer le nouveau rôle
             existing_role = await guild.create_role(name=role_name, color=self.color)
             await ctx.author.add_roles(existing_role)
-            await ctx.send(f"> Le rôle '{role_name}' a été créé et ajouté à **{ctx.author}** avec succès.")
+            await ctx.send(f"> Le rôle `{role_name}` a été créé et ajouté à **{ctx.author}** avec succès.")
         except discord.Forbidden:
             await ctx.send("> Je n'ai pas la permission de créer des rôles.")
         except discord.HTTPException as e:
@@ -188,17 +202,76 @@ class Backup(commands.Cog):
         # Vérifier si le rôle existe
         existing_role = discord.utils.get(ctx.guild.roles, name=role_name)
         if not existing_role:
-            await ctx.send(f"> Le rôle '{role_name}' n'existe pas.")
+            await ctx.send(f"> Le rôle `{role_name}` n'existe pas.")
             return
         
         try:
             # Supprimer le rôle
             await existing_role.delete()
-            await ctx.send(f"> Le rôle '{role_name}' a été supprimé avec succès.")
+            await ctx.send(f"> Le rôle `{role_name}` a été supprimé avec succès.")
         except discord.Forbidden:
             await ctx.send("> Je n'ai pas la permission de supprimer des rôles.")
         except discord.HTTPException as e:
             await ctx.send(f"> Une erreur est survenue : {e}")
+
+    @backup.group(name="job")
+    @commands.has_role(ROLE)
+    async def job(self, ctx: commands.Context):
+        """Groupe de commandes pour gérer les jobs de backup."""
+        if not ctx.invoked_subcommand:
+            await ctx.send("> Aucune sous-commande invoquée.")
+
+    @job.command(name="add")
+    async def add_job(self, ctx: commands.Context, job_name: str, cron_expression: str):
+        """Ajoute un job de backup avec un nom et une expression cron."""
+        try:
+            trigger = CronTrigger.from_crontab(cron_expression)
+            job = self.scheduler.add_job(self._backup_postgres, trigger, name=job_name)
+            self.jobs[job_name] = job
+            await ctx.send(f"> Job `{job_name}` ajouté avec succès.")
+            await ctx.send(embed=await self.build_job_embed())
+        except Exception as e:
+            await ctx.send(f"> Erreur lors de l'ajout du job : {e}")
+
+    @job.command(name="list")
+    async def list_jobs(self, ctx: commands.Context):
+        """Liste tous les jobs de backup configurés."""
+        if not self.jobs:
+            await ctx.send("> Aucun job de backup configuré.")
+            return
+
+        # await ctx.send(f"> Jobs configurés :\n{job_list}")
+        await ctx.send(embed=await self.build_job_embed())
+
+    @job.command(name="delete")
+    async def delete_job(self, ctx: commands.Context, job_name: str):
+        """Supprime un job de backup par son nom."""
+        job = self.jobs.pop(job_name, None)
+        if job:
+            job.remove()
+            await ctx.send(f"> Job `{job_name}` supprimé avec succès.")
+            await ctx.send(embed=await self.build_job_embed())
+        else:
+            await ctx.send("> Job non trouvé.")
+
+    def get_cron_expression(self, trigger: CronTrigger) -> str:
+        """Retourne une représentation de l'expression Cron sous forme de chaîne de caractères."""
+        return f"{trigger.minute} {trigger.hour} {trigger.day} {trigger.month} {trigger.day_of_week}"
+
+    async def build_job_embed(self) -> discord.Embed:
+        """Affiche les jobs configurés."""
+        embed = discord.Embed(
+            title="Jobs de Backup Configurés",
+            description="Liste de tous les jobs de sauvegarde actuellement configurés.",
+            color=self.color
+        )
+        for job_name, job in self.jobs.items():
+            embed.add_field(
+                name=job_name,
+                value=self.get_cron_expression(job.trigger),
+                inline=True
+            )
+        return embed
 
     @backup.command(name="connect")
     @commands.has_role(ROLE)
