@@ -256,7 +256,7 @@ class Backup(commands.Cog):
 
     def get_cron_expression(self, trigger: CronTrigger) -> str:
         """Retourne une représentation de l'expression Cron sous forme de chaîne de caractères."""
-        return f"{trigger.minute} {trigger.hour} {trigger.day} {trigger.month} {trigger.day_of_week}"
+        return str(trigger)
 
     async def build_job_embed(self) -> discord.Embed:
         """Affiche les jobs configurés."""
