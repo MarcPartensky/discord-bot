@@ -2,7 +2,7 @@ FROM python:3.8.13-alpine AS uv-export
 WORKDIR /app
 RUN pip install uv
 COPY README.md pyproject.toml uv.lock ./
-RUN uv lock --no-dev
+RUN uv lock
 RUN uv pip freeze > requirements.txt
 
 FROM python:3.8.13-alpine AS alpine
