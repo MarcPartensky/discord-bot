@@ -1,12 +1,9 @@
-FROM python:3.8.13-alpine AS uv-export
-WORKDIR /app
-RUN pip install uv
-COPY README.md pyproject.toml uv.lock ./
+# FROM python:3.8.13-alpine AS uv-export
+# WORKDIR /app
+# RUN pip install uv
+# COPY README.md pyproject.toml uv.lock ./
 # RUN uv lock
 # RUN uv pip freeze > requirements.txt
-RUN uv pip compile requirements.in \
-   --universal \
-   --output-file requirements.txt
 
 FROM python:3.8.13-alpine AS alpine
 LABEL maintainer="marc.partensky@proton.me"
@@ -15,14 +12,12 @@ LABEL source="https://github.com/marcpartensky/discord-bot"
 
 WORKDIR /app
 COPY README.md LICENSE build.sh ./
-COPY --from=uv-export /app/requirements.txt /app/requirements.txt
 RUN ./build.sh
 COPY ./discord_bot discord_bot
 WORKDIR /app/discord_bot
-# RUN uv venv
 
 ENV DISCORD_BOT_HOST=0.0.0.0
 ENV DISCORD_BOT_PORT=8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD curl -f http://localhost:8000/live || exit 1
-# ENTRYPOINT ["uv", "run", "--directory", "discord_bot", "python", "."]
-ENTRYPOINT ["python", "."]
+ENTRYPOINT ["uv", "run", "--directory", "discord_bot", "python", "."]
+# ENTRYPOINT ["python", "."]
