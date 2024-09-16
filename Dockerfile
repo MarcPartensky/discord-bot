@@ -2,8 +2,11 @@ FROM python:3.8.13-alpine AS uv-export
 WORKDIR /app
 RUN pip install uv
 COPY README.md pyproject.toml uv.lock ./
-RUN uv lock
-RUN uv pip freeze > requirements.txt
+# RUN uv lock
+# RUN uv pip freeze > requirements.txt
+RUN uv pip compile requirements.in \
+   --universal \
+   --output-file requirements.txt
 
 FROM python:3.8.13-alpine AS alpine
 LABEL maintainer="marc.partensky@proton.me"
