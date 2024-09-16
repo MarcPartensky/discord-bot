@@ -1,7 +1,7 @@
 FROM python:3.8.13-alpine AS uv-export
 WORKDIR /app
 RUN pip install uv
-COPY pyproject.toml uv.lock ./
+COPY README.md pyproject.toml uv.lock ./
 RUN uv sync --no-dev
 RUN uv pip freeze > requirements.txt
 
