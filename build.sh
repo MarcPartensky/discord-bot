@@ -6,6 +6,7 @@ apk add curl
 curl -LsSf https://astral.sh/uv/install.sh | sh &
 apk add --no-cache --virtual .build build-base libffi-dev &
 wait
+export PATH="$PATH:$HOME/.cargo/bin"
 
 uv sync -v &
 apk add ffmpeg postgresql p7zip &
