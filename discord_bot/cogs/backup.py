@@ -264,7 +264,7 @@ class Backup(commands.Cog):
         for job_name, job in self.jobs.items():
             embed.add_field(
                 name=job_name,
-                value=str(job.trigger),
+                value=job.trigger.cron.expression,
                 inline=True
             )
         return embed
