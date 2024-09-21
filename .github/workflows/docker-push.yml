@@ -82,4 +82,5 @@ jobs:
         port: ${{ secrets.PORT }}
         script: |
           cd ~/git/docker/services
-          podman-compose -f discord.yml up -d --force-recreate --pull bot
+          podman-compose -f discord.yml pull
+          podman-compose -f discord.yml up -d --force-recreate bot

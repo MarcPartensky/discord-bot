@@ -1,20 +1,19 @@
-version: "3.9"
 services:
   dev:
     image: marcpartensky/discord-bot:dev
     build:
       context: .
       dockerfile: ./Dockerfile
-      target: ubuntu
+      target: alpine
     ports:
       - "8000:8000"
     env_file:
       - .env
     volumes:
-      - ./cogs:/app/cogs
-      - ./config:/app/config
-      - ./models:/app/models
-      - ./__main__.py:/app/__main__.py
+      - ./discord_bot/cogs:/app/cogs
+      - ./discord_bot/config:/app/config
+      - ./discord_bot/models:/app/models
+      - ./discord_bot/__main__.py:/app/__main__.py
 
   prod:
     image: marcpartensky/discord-bot:latest
