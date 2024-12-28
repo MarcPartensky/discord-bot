@@ -371,5 +371,10 @@ class Basic(commands.Cog):
         file = requests.get(url)
         await self.bot.user.edit(avatar=file.content)
 
+    @commands.command(name="channel")
+    async def channel(self, ctx: commands.Context):
+        """Affiche l'id du channel."""
+        await ctx.send("> "+str(ctx.channel.id))
+
 async def setup(bot):
     await bot.add_cog(Basic(bot))
