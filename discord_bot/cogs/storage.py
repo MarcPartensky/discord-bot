@@ -9,6 +9,8 @@ __author__ = "Marc Partensky"
 import os, time, subprocess
 import discord
 import aiofiles
+# from discord.errors import NotFound
+from discord.ext.commands import MessageNotFound
 from discord.ext import commands
 
 import server
@@ -18,12 +20,13 @@ MAX_CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB
 
 class Storage(commands.Cog):
     """Store files on discord using HTTP web service to interact with the bot."""
+    tmp_directory = os.environ.get("TMP_DIRECTORY") or "/tmp"
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.channel_id = int(os.environ["CHANNEL_ID_NOTIF"])
         self.password = "password"
-        self.tmp_directory = "/tmp"
+        # self.tmp_directory = "/tmp"
 
     def get_timestamp(self):
         """Return a human readable timestamp."""
@@ -68,14 +71,14 @@ class Storage(commands.Cog):
                 if not chunk:
                     break
                 tmp = self.get_timestamp()
-                chunk_path = f"{self.tmp_directory}/{os.path.basename(filepath)}.{tmp}.{part_number}"
+                chunk_path = f"{Storage.tmp_directory}/{os.path.basename(filepath)}.{tmp}.{part_number}"
                 async with aiofiles.open(chunk_path, 'wb') as chunk_file:
                     await chunk_file.write(chunk)
                 chunk_paths.append(chunk_path)
                 part_number += 1
         return chunk_paths
 
-    async def send_file_in_chunks(self, filepath: str, file_name: str, channel_id: int = 0):
+    async def send_file_in_chunks(self, filepath: str, file_name: str, channel_id: int = 0, timestamp: str=""):
         """
         Send a file to Discord in chunks using filepath, file_name and optional channel_id.
         """
@@ -86,10 +89,11 @@ class Storage(commands.Cog):
         if not channel:
             raise ValueError("Discord channel not found")
 
-        tmp = self.get_timestamp()
+        if not timestamp:
+            timestamp = self.get_timestamp()
         
         for i, chunk_path in enumerate(chunk_paths, start=1):
-            chunk_file_name = f"{file_name}.{tmp}.{i}"
+            chunk_file_name = f"{file_name}.{timestamp}.{i}"
             with open(chunk_path, 'rb') as f:
                 await channel.send(file=discord.File(f, filename=chunk_file_name))
         
@@ -100,7 +104,12 @@ class Storage(commands.Cog):
         for filepath in filepaths:
             os.remove(filepath)
 
-    @server.add_route(path="/send/file", method="POST", cog="API")
+    def generate_url(self, filename: str, channel_id: int, timestamp: str):
+        """Generate an url to retrieve a file already sent."""
+        PUBLIC_API_URL = os.environ["PUBLIC_API_URL"]
+        return f"{PUBLIC_API_URL}/retrieve?filename={filename}&channel_id={channel_id}&timestamp={timestamp}"
+
+    @server.add_route(path="/send", method="POST", cog="API")
     async def send_file_to_channel(self, request: web.Request):
         """Endpoint to send a file to a specific channel by ID."""
         filename: str
@@ -116,7 +125,7 @@ class Storage(commands.Cog):
         field = await reader.next()
         if field.name == "file":
             filename = field.filename
-            filepath = f"{self.tmp_directory}/{filename}"
+            filepath = f"{Storage.tmp_directory}/{filename}"
 
             # Save the file temporarily
             async with aiofiles.open(filepath, 'wb') as f:
@@ -133,40 +142,83 @@ class Storage(commands.Cog):
             return web.json_response({"error": "Channel not found"}, status=404)
 
         # await channel.send(file=discord.File(filepath))
-        await self.send_file_in_chunks(filepath, filename, channel_id)
+        storage = Storage(self.bot)
+        timestamp = storage.get_timestamp()
+        await storage.send_file_in_chunks(filepath, filename, channel_id, timestamp)
+        url = storage.generate_url(filename, channel_id, timestamp)
 
         # Optionally, delete the temp file after sending it
         os.remove(filepath)
-        message = f"Uploaded {filename} channel: {channel_id}"
+        message = f"Uploaded {filename}"
         print(message)
-        return web.json_response({"message": message}, status=200)
+        print(url)
+        return web.json_response({"message": message, "url": url}, status=200)
 
 
-    @server.add_route(path="/retrieve/file", method="POST", cog="API")
-    async def retrieve_file_from_channel(self, request: web.Request):
+    @server.add_route(path="/retrieve", method="GET", cog="API")
+    async def retrieve_file_from_channel_request(self, request: web.Request):
         """
         Endpoint to retrieve, reassemble, and download the original file from a channel
-        based on its name and the channel ID.
+        based on its filename, the timestamp and potentially channel_id.
         """
         # Extract the JSON data from the request
-        body = await request.json()
+        body = request.query
 
         # Extract the required information: channel ID and original filename
         channel_id = body.get("channel_id") or self.channel_id
-        original_filename = body.get("filename")
-        chosen_timestamp = body.get("timestamp")
-        print('timestamp:', chosen_timestamp)
+        filename = body.get("filename")
+        timestamp = body.get("timestamp")
+        limit = body.get("limit")
+        print('body:', body)
+        print("channel_id:", channel_id)
+        print("filename:", filename)
+        print("timestamp:", timestamp)
+        print("limit:", limit)
 
-        if not channel_id or not original_filename:
-            return web.json_response({"error": "Channel ID or filename missing"}, status=400)
+        if not channel_id:
+            return web.json_response({"error": "channel_id missing"}, status=400)
+        if not filename:
+            return web.json_response({"error": "filename missing"}, status=400)
+        if limit:
+            try:
+                limit = int(limit)
+            except:
+                return web.json_response({"error": "limit is not a number"}, status=400)
 
-        # Fetch the Discord channel
         channel: discord.TextChannel = await self.bot.fetch_channel(channel_id)
         if not channel:
-            return web.json_response({"error": "Channel not found"}, status=404)
+            return web.json_response({"error": "channel not found"}, status=404)
+        print("channel:", channel)
 
+        try:
+            reassembled_filepath = await Storage(self.bot).retrieve_file_from_channel(
+                filename,
+                channel,
+                timestamp,
+                limit
+            )
+            headers = {'Content-Disposition': f'attachment; filename="{filename}"'}
+            return web.FileResponse(reassembled_filepath, headers=headers)
+        except MessageNotFound as e:
+            return web.json_response({"error": str(e)}, status=404)
+
+
+    async def retrieve_file_from_channel(
+        self,
+        filename: str,
+        channel: discord.TextChannel,
+        timestamp: str,
+        limit: int = 1000,
+    ):
+        """Retrieve a file from a channel using:
+            - filename
+            - channel
+            - timestamp
+            - limit [1000] (number of messages checked)
+        """
         # Prepare the path to save the reassembled file
-        reassembled_filepath = f"{self.tmp_directory}/{original_filename}"
+        reassembled_filepath = f"{Storage.tmp_directory}/{filename}"
+        print("reassembled_filepath:", reassembled_filepath)
 
         # Initialize list to collect all file chunks
         file_chunks = []
@@ -175,9 +227,9 @@ class Storage(commands.Cog):
         found = False
 
         def is_well_formed(dfilename: str):
-            if not dfilename.startswith(original_filename):
+            if not dfilename.startswith(filename):
                 return False
-            dextension = dfilename[len(original_filename)+1:]
+            dextension = dfilename[len(filename)+1:]
             if dextension.count(".") != 1:
                 return False
             dtimestamp, dpart = dextension.split(".")
@@ -192,13 +244,16 @@ class Storage(commands.Cog):
 
         def deconstruct(dfilepath: str):
             dfilename = dfilepath.split('/')[-1]
-            dextension = dfilename[len(original_filename)+1:]
+            dextension = dfilename[len(filename)+1:]
             dtimestamp, dpart = dextension.split(".")
             return dextension, dtimestamp, dpart
 
 
         # Iterate through the channel's message history to find the file chunks
-        async for message in channel.history(limit=1000):  # Adjust limit as needed
+        i = 0
+        async for message in channel.history(limit=limit, oldest_first=False):  # Adjust limit as needed
+            i+=1
+            if i%100==0: print(i, "messages")
             if stop and found: break
             for attachment in message.attachments:
                 print(f"attachement found: {attachment.filename}")
@@ -207,8 +262,9 @@ class Storage(commands.Cog):
                     # print(f"skip and delete {dfilename} because malformed")
                     await message.delete()
                     continue
-                if dfilename.startswith(original_filename):
-                    dextension = dfilename[len(original_filename)+1:]
+                if dfilename.startswith(filename):
+                    dextension = dfilename[len(filename)+1:]
+                    # print(filename, dfilename, dextension)
                     if dextension.count(".") != 1:
                         break
                     dtimestamp, dpart = dextension.split(".")
@@ -216,23 +272,23 @@ class Storage(commands.Cog):
                     # print("dextension", dextension)
                     # print("dtimestamp", dtimestamp)
                     # print("dpart", dpart)
-                    # print("chosen_timestamp", chosen_timestamp)
-                    if not chosen_timestamp:
-                        chosen_timestamp = dtimestamp
-                    if chosen_timestamp == dtimestamp:
+                    # print("timestamp", timestamp)
+                    if not timestamp:
+                        timestamp = dtimestamp
+                    if timestamp == dtimestamp:
                         # print("found", dtimestamp)
                         found = True
                     elif found:
-                            # print("stop", chosen_timestamp, "!=", dtimestamp)
-                            stop = True
-                            break
+                        # print("stop", timestamp, "!=", dtimestamp)
+                        stop = True
+                        break
 
-                    chunk_path = f"{self.tmp_directory}/{dfilename}"
+                    chunk_path = f"{Storage.tmp_directory}/{dfilename}"
                     await attachment.save(chunk_path)
                     file_chunks.append(chunk_path)
 
         if not file_chunks:
-            return web.json_response({"error": "No file chunks found in the channel."}, status=404)
+            raise MessageNotFound("No file chunks found in the channel.")
 
         # Sort the chunks by part number
         print("sorting chunks", file_chunks)
@@ -250,8 +306,7 @@ class Storage(commands.Cog):
             os.remove(chunk_path)
 
         # Serve the reassembled file as a download response
-        headers = {'Content-Disposition': f'attachment; filename="{original_filename}"'}
-        return web.FileResponse(reassembled_filepath, headers=headers)
+        return reassembled_filepath
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Storage(bot))
