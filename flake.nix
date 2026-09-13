@@ -41,7 +41,7 @@
           export UV_PYTHON=${python.interpreter}
           export UV_PYTHON_DOWNLOADS=never
           export UV_PYTHON_PREFERENCE=only-system
-          export UV_PROJECT_ENVIRONMENT="''${STATE_DIRECTORY:-$PWD}/venv"
+          export UV_PROJECT_ENVIRONMENT="''${CACHE_DIRECTORY:-$PWD}/venv"
           export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath libs}
 
           uv sync --frozen --no-dev --project ${src}
@@ -111,8 +111,9 @@
             environment = {
               DISCORD_BOT_HOST = cfg.host;
               DISCORD_BOT_PORT = toString cfg.port;
-              UV_CACHE_DIR = "/var/cache/discord-bot";
+              UV_CACHE_DIR = "/var/cache/discord-bot/uv";
               HOME = "/var/lib/discord-bot";
+              TERM = "dumb";
             };
             serviceConfig = {
               ExecStart = lib.getExe cfg.package;
