@@ -140,7 +140,7 @@ pygithub==2.4.0
     # via discord-bot (pyproject.toml)
 pygments==2.18.0
     # via rich
-pyjwt==2.9.0
+pyjwt==2.13.0
     # via pygithub
 pymongo==4.8.0
     # via discord-bot (pyproject.toml)
