@@ -30,6 +30,7 @@
         packages = [
           python
           pkgs.uv
+          pkgs.just
           pkgs.ffmpeg # py-cord[voice], nightcore
           pkgs.chromedriver # selenium
           pkgs.chromium

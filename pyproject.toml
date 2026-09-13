@@ -23,7 +23,6 @@ dependencies = [
     "pyyaml",
     "youtube-dl",
     "python-dotenv",
-    "dpy-http-server",
     "pexpect",
     "dnspython",
     "requests-futures",
