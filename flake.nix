@@ -104,6 +104,11 @@
               ProtectHome = true;
               PrivateTmp = true;
               NoNewPrivileges = true;
+              CacheDirectory = "discord-bot";
+              Environment = [
+                "UV_CACHE_DIR=/var/cache/discord-bot"
+                "HOME=/var/lib/discord-bot"
+              ];
             };
           };
         };
