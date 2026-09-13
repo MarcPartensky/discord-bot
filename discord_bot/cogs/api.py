@@ -34,6 +34,7 @@ class API(commands.Cog):
         self._setup_routes()
         self.runner = None
         self.site = None
+        self._server_started = False
 
     async def _delayed_start_server(self):
         """Attend que le bot soit prêt puis démarre le serveur."""
@@ -72,23 +73,56 @@ class API(commands.Cog):
             traceback.print_exc()
 
     async def send_user(self, request: web.Request):
-        """API home path."""
-        body = await request.json()
-        user: discord.User = await self.bot.fetch_user(body["id"])
-        await user.send(body["message"])
-        return web.json_response(
-            data={"text": "Successfully sent message."}, status=200
-        )
+        """Send a DM to a Discord user."""
+        try:
+            body = await request.json()
+            user = await self.bot.fetch_user(int(body["id"]))
+            await user.send(body["message"])
+            return web.json_response(
+                data={"text": "Successfully sent message."}, status=200
+            )
+        except KeyError as e:
+            return web.json_response(
+                data={"error": f"Missing required field: {e}"}, status=400
+            )
+        except discord.NotFound:
+            return web.json_response(
+                data={"error": "User not found"}, status=404
+            )
+        except discord.Forbidden:
+            return web.json_response(
+                data={"error": "Cannot send DM to this user"}, status=403
+            )
+        except Exception as e:
+            return web.json_response(
+                data={"error": str(e)}, status=500
+            )
 
     async def send_channel(self, request: web.Request):
-        """API home path."""
-        body = await request.json()
-        channel: discord.TextChannel = await self.bot.fetch_channel(body["id"])
-        await channel.send(body["message"])
-        self.bot.commands
-        return web.json_response(
-            data={"text": "Successfully sent message."}, status=200
-        )
+        """Send a message to a Discord channel."""
+        try:
+            body = await request.json()
+            channel = await self.bot.fetch_channel(int(body["id"]))
+            await channel.send(body["message"])
+            return web.json_response(
+                data={"text": "Successfully sent message."}, status=200
+            )
+        except KeyError as e:
+            return web.json_response(
+                data={"error": f"Missing required field: {e}"}, status=400
+            )
+        except discord.NotFound:
+            return web.json_response(
+                data={"error": "Channel not found"}, status=404
+            )
+        except discord.Forbidden:
+            return web.json_response(
+                data={"error": "Bot lacks permission to send messages"}, status=403
+            )
+        except Exception as e:
+            return web.json_response(
+                data={"error": str(e)}, status=500
+            )
 
     async def command_channel(self, request: web.Request):
         """API home path."""
@@ -140,9 +174,14 @@ class API(commands.Cog):
         )
 
     async def debug_bot(self, request: web.Request):
-        """API home path."""
-        body = await request.json()
-        return web.json_response(data=self.bot, status=200)
+        """Return bot debug information."""
+        data = {
+            "id": str(self.bot.user.id) if self.bot.user else None,
+            "name": str(self.bot.user) if self.bot.user else None,
+            "guilds": len(self.bot.guilds),
+            "cogs": list(self.bot.cogs.keys())
+        }
+        return web.json_response(data=data, status=200)
 
     async def live(self, request: web.Request):
         """API home path."""
