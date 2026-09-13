@@ -41,10 +41,11 @@
           export UV_PYTHON=${python.interpreter}
           export UV_PYTHON_DOWNLOADS=never
           export UV_PYTHON_PREFERENCE=only-system
-          export UV_PROJECT_ENVIRONMENT="''${CACHE_DIRECTORY:-$PWD}/venv"
+          export UV_PROJECT_ENVIRONMENT="''${RUNTIME_DIRECTORY:-$PWD}/venv"
           export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath libs}
 
           uv sync --frozen --no-dev --project ${src}
+          sync
 
           VENV="$UV_PROJECT_ENVIRONMENT"
           BOT_DIR="$("$VENV/bin/python" -c 'import discord_bot, pathlib; print(pathlib.Path(discord_bot.__file__).parent)')"
@@ -104,6 +105,12 @@
         };
 
         config = lib.mkIf cfg.enable {
+          users.users.discord-bot = {
+            isSystemUser = true;
+            group = "discord-bot";
+          };
+          users.groups.discord-bot = {};
+
           systemd.services.discord-bot = {
             wantedBy = ["multi-user.target"];
             wants = ["network-online.target"];
@@ -118,9 +125,12 @@
             serviceConfig = {
               ExecStart = lib.getExe cfg.package;
               EnvironmentFile = cfg.environmentFile;
-              DynamicUser = true;
+              User = "discord-bot";
+              Group = "discord-bot";
               StateDirectory = "discord-bot";
               CacheDirectory = "discord-bot";
+              RuntimeDirectory = "discord-bot";
+              RuntimeDirectorySize = "4G";
               WorkingDirectory = "/var/lib/discord-bot";
               Restart = "always";
               RestartSec = 10;
