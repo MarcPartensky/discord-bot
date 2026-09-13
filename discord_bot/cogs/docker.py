@@ -23,7 +23,7 @@ class Docker(commands.Cog):
         """Initialize the ialab cog."""
         super().__init__(**kwargs)
         self.bot: commands.Bot = bot
-        self.url: str = os.environ["DOCKER_API_URL"]
+        self.url: str = os.environ.get("DOCKER_API_URL", "")
         self.color = discord.Color(0x4EB3F2)
         self.states = dict(
             exited=discord.Color.red(),

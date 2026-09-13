@@ -33,7 +33,7 @@ class API(commands.Cog):
             "DISCORD_BOT_GUILD_ID"
         ) or "550332212340326428")
         self.contexts: typing.Dict[str, commands.Context] = {}
-        self.channel_id = int(os.environ["CHANNEL_ID_NOTIF"])
+        self.channel_id = int(os.environ.get("CHANNEL_ID_NOTIF", "0"))
         self.bot.loop.create_task(self._start_server())
 
     async def _start_server(self):

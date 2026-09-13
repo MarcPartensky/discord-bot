@@ -17,7 +17,7 @@ class Quiz:
         owners: str,
         timestamp: float = time.time(),
         questions: list = [],
-        seed: int = random.randint(1e9, 1e10 - 1),
+        seed: int = random.randint(int(1e9), int(1e10) - 1),
         n=0,
     ):
         """Create a quiz using the list of questions."""

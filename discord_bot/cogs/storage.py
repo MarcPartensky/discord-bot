@@ -24,7 +24,7 @@ class Storage(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.channel_id = int(os.environ["CHANNEL_ID_NOTIF"])
+        self.channel_id = int(os.environ.get("CHANNEL_ID_NOTIF", "0"))
         self.password = "password"
         # self.tmp_directory = "/tmp"
 

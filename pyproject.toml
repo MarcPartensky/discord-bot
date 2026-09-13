@@ -3,8 +3,8 @@ name = "discord-bot"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = "==3.8.13"
-# requires-python = "==3.12"
+# requires-python = "==3.8.13"
+requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4",
     "fbchat",
@@ -39,6 +39,7 @@ dependencies = [
     "psycopg2-binary",
     "aiofiles>=24.1.0",
     "apscheduler>=3.10.4",
+    "async-timeout>=5.0.1",
 ]
 
 [build-system]
