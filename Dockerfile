@@ -1,10 +1,10 @@
-FROM python:3.8.13-alpine AS alpine
+FROM python:3.13-alpine AS alpine
 LABEL maintainer="marc.partensky@proton.me"
 LABEL image="https://hub.docker.com/r/marcpartensky/discord-bot"
 LABEL source="https://github.com/marcpartensky/discord-bot"
 
 WORKDIR /app
-COPY README.md LICENSE pyproject.toml uv.lock build.sh ./
+COPY README.md LICENSE pyproject.toml uv.lock build.sh requirements.txt ./
 COPY ./discord_bot discord_bot
 RUN ./build.sh
 WORKDIR /app/discord_bot

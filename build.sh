@@ -9,8 +9,8 @@ wait
 export PATH="$PATH:$HOME/.cargo/bin"
 
 # uv sync -v &
-uv pip compile pyproject.toml -o requirements.txt
-# uv export > requirements.txt
+# uv pip compile pyproject.toml -o requirements.txt
+# uv export --format requirements.txt > requirements.txt
 # sed -i '1,2d' requirements.txt
 pip install -r requirements.txt  &
 apk add ffmpeg postgresql p7zip &
