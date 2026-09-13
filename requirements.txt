@@ -118,7 +118,7 @@ paho-mqtt==1.6.1
     # via fbchat
 pexpect==4.9.0
     # via discord-bot (pyproject.toml)
-pillow==10.4.0
+pillow==12.3.0
     # via discord-bot (pyproject.toml)
 progressbar2==4.5.0
     # via discord-bot (pyproject.toml)
