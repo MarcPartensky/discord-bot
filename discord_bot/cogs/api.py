@@ -10,11 +10,10 @@ import os, time
 import typing
 import uuid
 import traceback
+import asyncio
 import discord
 import aiofiles
-from discord.ext import commands
-
-import server
+from discord.ext import commands, tasks
 from aiohttp import web
 
 MAX_CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB
@@ -24,24 +23,54 @@ class API(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.server = server.HTTPServer(
-            bot=self.bot,
-            host=os.environ.get("DISCORD_BOT_HOST") or "localhost",
-            port=int(os.environ.get("DISCORD_BOT_PORT") or "8000"),
-        )
+        self.host = os.environ.get("DISCORD_BOT_HOST") or "localhost"
+        self.port = int(os.environ.get("DISCORD_BOT_PORT") or "8000")
         self.guild_id = int(os.environ.get(
             "DISCORD_BOT_GUILD_ID"
         ) or "550332212340326428")
         self.contexts: typing.Dict[str, commands.Context] = {}
         self.channel_id = int(os.environ.get("CHANNEL_ID_NOTIF", "0"))
-        self.bot.loop.create_task(self._start_server())
+        self.app = web.Application()
+        self._setup_routes()
+        self.runner = None
+        self.site = None
+
+    async def _delayed_start_server(self):
+        """Attend que le bot soit prêt puis démarre le serveur."""
+        print("DEBUG: Waiting for bot to be ready...")
+        await self.bot.wait_until_ready()
+        print("DEBUG: Bot ready, starting server...")
+        await self._start_server()
+
+    def _setup_routes(self):
+        """Setup all HTTP routes."""
+        self.app.router.add_post("/send/user", self.send_user)
+        self.app.router.add_post("/send/channel", self.send_channel)
+        self.app.router.add_post("/command/channel", self.command_channel)
+        self.app.router.add_get("/debug/bot", self.debug_bot)
+        self.app.router.add_get("/live", self.live)
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        """Démarre le serveur HTTP quand le bot est prêt."""
+        if not self._server_started:
+            await self._start_server()
+            self._server_started = True
 
     async def _start_server(self):
         """Task to run the HTTP server."""
-        await self.bot.wait_until_ready()
-        await self.server.start()
+        try:
+            print(f"DEBUG: Starting HTTP server on {self.host}:{self.port}")
+            self.runner = web.AppRunner(self.app)
+            await self.runner.setup()
+            self.site = web.TCPSite(self.runner, self.host, self.port)
+            await self.site.start()
+            print(f"HTTP SERVER STARTED, LISTENING ON {self.host}:{self.port}")
+        except Exception as e:
+            print(f"ERROR starting HTTP server: {e}")
+            import traceback
+            traceback.print_exc()
 
-    @server.add_route(path="/send/user", method="POST", cog="API")
     async def send_user(self, request: web.Request):
         """API home path."""
         body = await request.json()
@@ -51,7 +80,6 @@ class API(commands.Cog):
             data={"text": "Successfully sent message."}, status=200
         )
 
-    @server.add_route(path="/send/channel", method="POST", cog="API")
     async def send_channel(self, request: web.Request):
         """API home path."""
         body = await request.json()
@@ -62,7 +90,6 @@ class API(commands.Cog):
             data={"text": "Successfully sent message."}, status=200
         )
 
-    @server.add_route(path="/command/channel", method="POST", cog="API")
     async def command_channel(self, request: web.Request):
         """API home path."""
         body = await request.json()
@@ -112,13 +139,11 @@ class API(commands.Cog):
             data={"error": "No match found.", "commands": command_list}, status=404
         )
 
-    @server.add_route(path="/debug/bot", method="GET", cog="API")
     async def debug_bot(self, request: web.Request):
         """API home path."""
         body = await request.json()
         return web.json_response(data=self.bot, status=200)
 
-    @server.add_route(path="/live", method="GET", cog="API")
     async def live(self, request: web.Request):
         """API home path."""
         return web.json_response(text="OK", status=200)
@@ -138,5 +163,7 @@ class API(commands.Cog):
             return
 
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(API(bot))
+def setup(bot: commands.Bot):
+    api_cog = API(bot)
+    bot.add_cog(api_cog)
+    print("DEBUG: API cog setup() called")

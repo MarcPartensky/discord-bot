@@ -13,7 +13,6 @@ import aiofiles
 from discord.ext.commands import MessageNotFound
 from discord.ext import commands
 
-import server
 from aiohttp import web
 
 MAX_CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB
@@ -109,7 +108,6 @@ class Storage(commands.Cog):
         PUBLIC_API_URL = os.environ["PUBLIC_API_URL"]
         return f"{PUBLIC_API_URL}/retrieve?filename={filename}&channel_id={channel_id}&timestamp={timestamp}"
 
-    @server.add_route(path="/send", method="POST", cog="API")
     async def send_file_to_channel(self, request: web.Request):
         """Endpoint to send a file to a specific channel by ID."""
         filename: str
@@ -155,7 +153,6 @@ class Storage(commands.Cog):
         return web.json_response({"message": message, "url": url}, status=200)
 
 
-    @server.add_route(path="/retrieve", method="GET", cog="API")
     async def retrieve_file_from_channel_request(self, request: web.Request):
         """
         Endpoint to retrieve, reassemble, and download the original file from a channel

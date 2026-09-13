@@ -51,11 +51,15 @@ class Main(commands.Bot):
         self.good_invited = "bon invité"
         self.bad_invited = "mauvais invité"
         self.help_every = 5
+        self._status = itertools.cycle([])  # Will be populated in load_status()
 
     async def setup_hook(self) -> None:
         """Automatically run by discord.py."""
-        self.load_status()
+        print("DEBUG: setup_hook called")
         await self.load_cogs()
+        print("DEBUG: load_cogs finished")
+        self.load_status()
+        print("DEBUG: load_status finished")
 
     def load_status(self):
         """Charge les statuts."""
@@ -79,7 +83,7 @@ class Main(commands.Bot):
                 bar.update(i)
                 if filename.endswith(".py"):
                     print(filename)
-                    await self.load_extension(f"cogs.{filename[:-3]}")
+                    self.load_extension(f"cogs.{filename[:-3]}")
 
     @commands.command()
     async def environment(self, ctx: commands.Context):
@@ -159,17 +163,34 @@ class Main(commands.Bot):
             - discord.ActivityType.watching,
             - discord.ActivityType.competing
         """
-        await self.change_presence(
-            activity=discord.Activity(
-                type=discord.ActivityType.watching, name=next(self._status)
+        try:
+            status_name = next(self._status)
+            await self.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.watching, name=status_name
+                )
             )
-        )
+        except StopIteration:
+            # Pas de statuts disponibles, on ne fait rien
+            pass
 
     @commands.Cog.listener()
     async def on_ready(self):
         """Déclare être prêt."""
         self.change_status.start()
         print(f"{self.user} is connected to Discord!")
+
+        # Démarrer le serveur HTTP API
+        print(f"DEBUG: on_ready - Looking for API cog...")
+        api_cog = self.get_cog("API")
+        print(f"DEBUG: API cog = {api_cog}")
+        if api_cog and hasattr(api_cog, '_start_server'):
+            print(f"DEBUG: Starting HTTP server from on_ready...")
+            if not hasattr(api_cog, '_server_started') or not api_cog._server_started:
+                await api_cog._start_server()
+                api_cog._server_started = True
+        else:
+            print("DEBUG: API cog not found or no _start_server method")
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
@@ -288,6 +309,7 @@ async def main():
     bot = Main(intents=intents, command_prefix=prefix, case_insensitive=False, client_id=client_id)
 
     async with bot:
+        await bot.setup_hook()
         await bot.start(token)
 
 
