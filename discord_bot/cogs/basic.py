@@ -376,5 +376,5 @@ class Basic(commands.Cog):
         """Affiche l'id du channel."""
         await ctx.send("> "+str(ctx.channel.id))
 
-async def setup(bot):
-    await bot.add_cog(Basic(bot))
+def setup(bot):
+    bot.add_cog(Basic(bot))

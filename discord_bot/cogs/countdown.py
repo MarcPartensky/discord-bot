@@ -175,6 +175,6 @@ class CountDown(commands.Cog):
         await self.bot.wait_until_ready()
 
 
-async def setup(bot):
+def setup(bot):
     """Setup the CountDown cog."""
-    await bot.add_cog(CountDown(bot))
+    bot.add_cog(CountDown(bot))

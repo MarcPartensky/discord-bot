@@ -99,6 +99,6 @@ class Shell(commands.Cog):
     #         shell.close()
 
 
-async def setup(bot):
+def setup(bot):
     """Setup the Shell cog."""
-    await bot.add_cog(Shell(bot))
+    bot.add_cog(Shell(bot))

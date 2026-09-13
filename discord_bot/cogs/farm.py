@@ -40,8 +40,8 @@ class Farm(commands.Cog):
             del self.farms[name]
 
 
-async def setup(bot):
-    await bot.add_cog(Farm(bot))
+def setup(bot):
+    bot.add_cog(Farm(bot))
 
 
 """

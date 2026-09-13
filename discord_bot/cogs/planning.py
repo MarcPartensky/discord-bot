@@ -234,5 +234,5 @@ class Planning(commands.Cog):
         return embed
 
 
-async def setup(bot):
-    await bot.add_cog(Planning(bot))
+def setup(bot):
+    bot.add_cog(Planning(bot))

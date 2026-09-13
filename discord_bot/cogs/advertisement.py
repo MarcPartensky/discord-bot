@@ -70,5 +70,5 @@ class Advertisement(commands.Cog):
         await ctx.send(f"Le prix de {name} est maintenant à {price}.")
 
 
-async def setup(bot):
-    await bot.add_cog(Advertisement(bot))
+def setup(bot):
+    bot.add_cog(Advertisement(bot))

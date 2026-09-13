@@ -164,5 +164,5 @@ class VoiceChannel(commands.Cog):
                 break
 
 
-async def setup(bot):
-    await bot.add_cog(VoiceChannel(bot))
+def setup(bot):
+    bot.add_cog(VoiceChannel(bot))

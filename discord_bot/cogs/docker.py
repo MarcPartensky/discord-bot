@@ -324,6 +324,6 @@ class Docker(commands.Cog):
         return await ctx.send(f"```md\n{text}\n```")
 
 
-async def setup(bot: commands.Bot):
+def setup(bot: commands.Bot):
     """Setup the ialab cog."""
-    await bot.add_cog(Docker(bot))
+    bot.add_cog(Docker(bot))

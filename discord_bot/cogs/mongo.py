@@ -273,6 +273,6 @@ class Mongo(commands.Cog):
         await ctx.send(f"> {text_path}")
 
 
-async def setup(bot):
+def setup(bot):
     """Setup the cog."""
-    await bot.add_cog(Mongo(bot))
+    bot.add_cog(Mongo(bot))

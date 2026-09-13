@@ -305,5 +305,5 @@ class Storage(commands.Cog):
         # Serve the reassembled file as a download response
         return reassembled_filepath
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(Storage(bot))
+def setup(bot: commands.Bot):
+    bot.add_cog(Storage(bot))

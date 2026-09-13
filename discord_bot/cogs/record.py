@@ -62,5 +62,5 @@ class Record(commands.Cog):
     def once_done(self, *args):
         print("its done", args)
 
-async def setup(bot):
-    await bot.add_cog(Record(bot))
+def setup(bot):
+    bot.add_cog(Record(bot))

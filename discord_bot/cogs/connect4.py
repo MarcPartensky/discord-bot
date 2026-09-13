@@ -155,5 +155,5 @@ class Puissance4(commands.Cog):
             await self.message.edit(content="Personne ne gagne." + msg)
 
 
-async def setup(bot):
-    await bot.add_cog(Puissance4(bot))
+def setup(bot):
+    bot.add_cog(Puissance4(bot))

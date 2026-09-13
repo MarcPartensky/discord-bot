@@ -70,5 +70,5 @@ class TypingRace(commands.Cog):
         await ctx.send(msg)
 
 
-async def setup(bot):
-    await bot.add_cog(TypingRace(bot))
+def setup(bot):
+    bot.add_cog(TypingRace(bot))

@@ -129,5 +129,5 @@ class SoundDeck(commands.Cog):
         sound.last_used_time = time.time()
 
 
-async def setup(bot):
-    await bot.add_cog(SoundDeck(bot))
+def setup(bot):
+    bot.add_cog(SoundDeck(bot))

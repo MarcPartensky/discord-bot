@@ -110,5 +110,5 @@ class Test(commands.Cog):
         await ctx.send(user.id)
 
 
-async def setup(bot):
-    await bot.add_cog(Test(bot))
+def setup(bot):
+    bot.add_cog(Test(bot))

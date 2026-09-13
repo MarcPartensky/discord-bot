@@ -186,5 +186,5 @@ class Casino(commands.Cog):
         return account
 
 
-async def setup(bot):
-    await bot.add_cog(Casino(bot))
+def setup(bot):
+    bot.add_cog(Casino(bot))

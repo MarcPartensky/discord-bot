@@ -2,9 +2,6 @@ set dotenv-load := true
 
 image := "marcpartensky/discord-bot"
 
-default:
-    @just --list
-
 # lance le bot en local
 run:
     uv run --directory discord_bot python .

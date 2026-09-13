@@ -351,5 +351,5 @@ class Backup(commands.Cog):
         except Exception as e:
             await ctx.send(f"Erreur: {str(e)}")
 
-async def setup(bot):
-    await bot.add_cog(Backup(bot))
+def setup(bot):
+    bot.add_cog(Backup(bot))

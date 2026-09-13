@@ -108,5 +108,5 @@ class Library(commands.Cog):
             await self.channel.send(file=file)
 
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(Library(bot))
+def setup(bot: commands.Bot):
+    bot.add_cog(Library(bot))
