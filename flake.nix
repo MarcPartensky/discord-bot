@@ -38,7 +38,12 @@
           export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath libs}
 
           uv sync --frozen --no-dev --project ${src}
-          exec "$UV_PROJECT_ENVIRONMENT/bin/python" -m discord_bot
+
+          VENV="$UV_PROJECT_ENVIRONMENT"
+          BOT_DIR="$("$VENV/bin/python" -c 'import discord_bot, pathlib; print(pathlib.Path(discord_bot.__file__).parent)')"
+          export PYTHONPATH="$BOT_DIR"
+
+          exec "$VENV/bin/python" -m discord_bot
         '';
       };
 
