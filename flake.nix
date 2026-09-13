@@ -29,7 +29,14 @@
     in {
       packages.default = pkgs.writeShellApplication {
         name = "discord-bot";
-        runtimeInputs = [python pkgs.uv pkgs.ffmpeg pkgs.chromedriver pkgs.chromium];
+        runtimeInputs = [
+          python
+          pkgs.uv
+          pkgs.ffmpeg
+          pkgs.chromedriver
+          pkgs.chromium
+          pkgs.ncurses
+        ];
         text = ''
           export UV_PYTHON=${python.interpreter}
           export UV_PYTHON_DOWNLOADS=never
@@ -43,12 +50,20 @@
           BOT_DIR="$("$VENV/bin/python" -c 'import discord_bot, pathlib; print(pathlib.Path(discord_bot.__file__).parent)')"
           export PYTHONPATH="$BOT_DIR"
 
+          cd "$BOT_DIR"
           exec "$VENV/bin/python" -m discord_bot
         '';
       };
 
       devShells.default = pkgs.mkShell {
-        packages = [python pkgs.uv pkgs.just pkgs.ffmpeg pkgs.chromedriver pkgs.chromium];
+        packages = [
+          python
+          pkgs.uv
+          pkgs.just
+          pkgs.ffmpeg
+          pkgs.chromedriver
+          pkgs.chromium
+        ];
         env = {
           UV_PYTHON = python.interpreter;
           UV_PYTHON_DOWNLOADS = "never";
@@ -96,12 +111,15 @@
             environment = {
               DISCORD_BOT_HOST = cfg.host;
               DISCORD_BOT_PORT = toString cfg.port;
+              UV_CACHE_DIR = "/var/cache/discord-bot";
+              HOME = "/var/lib/discord-bot";
             };
             serviceConfig = {
               ExecStart = lib.getExe cfg.package;
               EnvironmentFile = cfg.environmentFile;
               DynamicUser = true;
               StateDirectory = "discord-bot";
+              CacheDirectory = "discord-bot";
               WorkingDirectory = "/var/lib/discord-bot";
               Restart = "always";
               RestartSec = 10;
@@ -109,11 +127,6 @@
               ProtectHome = true;
               PrivateTmp = true;
               NoNewPrivileges = true;
-              CacheDirectory = "discord-bot";
-              Environment = [
-                "UV_CACHE_DIR=/var/cache/discord-bot"
-                "HOME=/var/lib/discord-bot"
-              ];
             };
           };
         };
