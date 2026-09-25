@@ -50,7 +50,7 @@ click==7.1.2
     #   translate
 colorama==0.4.6
     # via discord-bot (pyproject.toml)
-cryptography==43.0.1
+cryptography==50.0.0
     # via pyjwt
 deprecated==1.2.14
     # via pygithub
