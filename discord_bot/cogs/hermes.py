@@ -7,9 +7,12 @@ OpenAI-compatible du gateway Hermes dedie (services/discord-hermes-bridge cote
 NixOS, loopback uniquement).
 
 Variables d'environnement (injectees par systemd, cf. services/discord-bot) :
-    HERMES_BRIDGE_URL        ex. http://127.0.0.1:8643/v1/chat/completions
+    HERMES_BRIDGE_URL        ex. http://127.0.0.1:8642/p/discord-bridge/v1/chat/completions
     HERMES_BRIDGE_API_KEY    bearer token (sops secrets/discord-hermes-bridge.yml)
     HERMES_BRIDGE_ROLE_NAME  nom du role Discord autorise (defaut "hermes")
+
+L'API server Hermes est un listener UNIQUE par hote (profil default) ; un profil
+secondaire y est expose sous /p/<profil>/..., d'ou le chemin ci-dessus.
 """
 
 import asyncio
@@ -23,9 +26,9 @@ from discord.ext import commands
 from config.config import prefix, masters
 from utils.tools import create_role_if_missing
 
-BRIDGE_URL = os.environ.get(
-    "HERMES_BRIDGE_URL", "http://127.0.0.1:8643/v1/chat/completions"
-)
+DEFAULT_BRIDGE_URL = "http://127.0.0.1:8642/p/discord-bridge/v1/chat/completions"
+
+BRIDGE_URL = os.environ.get("HERMES_BRIDGE_URL", DEFAULT_BRIDGE_URL)
 BRIDGE_KEY = os.environ.get("HERMES_BRIDGE_API_KEY")
 ROLE_NAME = os.environ.get("HERMES_BRIDGE_ROLE_NAME", "hermes")
 MAX_HISTORY = 20  # messages (user + assistant) gardes par utilisateur
