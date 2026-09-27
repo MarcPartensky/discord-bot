@@ -3,16 +3,17 @@
 
 Reserve aux membres qui portent le role Discord `hermes` (nom configurable via
 `HERMES_BRIDGE_ROLE_NAME`) et aux masters du bot. Parle a l'API server
-OpenAI-compatible du gateway Hermes dedie (services/discord-hermes-bridge cote
-NixOS, loopback uniquement).
+OpenAI-compatible d'Hermes (services/hermes cote NixOS, loopback uniquement).
+
+L'API server est un listener UNIQUE par hote : un profil secondaire n'a pas son
+propre port, il est servi sur le listener du profil default sous /p/<profil>/...
 
 Variables d'environnement (injectees par systemd, cf. services/discord-bot) :
-    HERMES_BRIDGE_URL        ex. http://127.0.0.1:8642/p/discord-bridge/v1/chat/completions
+    HERMES_BRIDGE_URL        defaut http://127.0.0.1:8642/p/discord-bridge/v1/chat/completions
     HERMES_BRIDGE_API_KEY    bearer token (sops secrets/discord-hermes-bridge.yml)
     HERMES_BRIDGE_ROLE_NAME  nom du role Discord autorise (defaut "hermes")
-
-L'API server Hermes est un listener UNIQUE par hote (profil default) ; un profil
-secondaire y est expose sous /p/<profil>/..., d'ou le chemin ci-dessus.
+    HERMES_BRIDGE_ASK_PORT   port loopback de la surface de test (defaut 8052)
+    DISCORD_BOT_API_TOKEN    si pose, exige en Bearer (convention de cogs/api.py)
 """
 
 import asyncio
@@ -21,6 +22,7 @@ import typing
 
 import discord
 import requests
+from aiohttp import web
 from discord.ext import commands
 
 from config.config import prefix, masters
@@ -49,6 +51,16 @@ class Hermes(commands.Cog):
         self.bot = bot
         self.color: discord.Color = discord.Color.blurple()
         self.histories: typing.Dict[int, list] = {}
+
+        # Surface de test locale (loopback) : joindre Hermes par HTTP sans client
+        # Discord, et LIRE sa reponse en JSON. Sert au test de bout en bout du
+        # pont depuis le serveur (systemd injecte le port).
+        self.ask_host = os.environ.get("HERMES_BRIDGE_ASK_HOST", "127.0.0.1")
+        self.ask_port = int(os.environ.get("HERMES_BRIDGE_ASK_PORT", "8052"))
+        self.api_token = os.environ.get("DISCORD_BOT_API_TOKEN")
+        self.ask_runner: typing.Optional[web.AppRunner] = None
+        self.ask_site: typing.Optional[web.TCPSite] = None
+        self.ask_lock = asyncio.Lock()
 
     # --- autorisation ------------------------------------------------------
 
@@ -108,7 +120,7 @@ class Hermes(commands.Cog):
         history.append({"role": "assistant", "content": answer})
         return answer
 
-    # --- ecoute ------------------------------------------------------------
+    # --- ecoute Discord ----------------------------------------------------
 
     @commands.Cog.listener(name="on_message")
     async def on_message(self, msg: discord.Message):
@@ -159,6 +171,68 @@ class Hermes(commands.Cog):
             return await ctx.send("> Commande utilisable uniquement en serveur.")
         await create_role_if_missing(ctx, ROLE_NAME, self.color)
         await ctx.send(f"> Role `{ROLE_NAME}` pret.")
+
+    # --- surface de test locale (loopback) ---------------------------------
+
+    @web.middleware
+    async def _ask_auth(self, request: web.Request, handler):
+        """Meme convention que cogs/api.py : Bearer exige seulement si le token est pose."""
+        if self.api_token and request.path != "/live":
+            if request.headers.get("Authorization") != f"Bearer {self.api_token}":
+                return web.json_response({"error": "Unauthorized"}, status=401)
+        return await handler(request)
+
+    @commands.Cog.listener(name="on_ready")
+    async def start_ask_server(self):
+        """Demarre la surface de test (idempotent : on_ready peut se redeclencher)."""
+        async with self.ask_lock:
+            if self.ask_site is not None:
+                return
+            app = web.Application(middlewares=[self._ask_auth])
+            app.router.add_get("/live", self.ask_live)
+            app.router.add_post("/hermes/ask", self.ask_http)
+            self.ask_runner = web.AppRunner(app)
+            await self.ask_runner.setup()
+            site = web.TCPSite(self.ask_runner, self.ask_host, self.ask_port)
+            try:
+                await site.start()
+            except OSError:
+                await self.ask_runner.cleanup()
+                self.ask_runner = None
+                raise
+            self.ask_site = site
+            print(f"Hermes ask server listening on {self.ask_host}:{self.ask_port}")
+
+    def cog_unload(self):
+        """Arrete la surface de test."""
+        if self.ask_runner:
+            asyncio.create_task(self.ask_runner.cleanup())
+
+    async def ask_live(self, request: web.Request):
+        """Healthcheck."""
+        return web.Response(text="OK")
+
+    async def ask_http(self, request: web.Request):
+        """POST {"message": "..."} -> {"answer": "..."} (historique par user_id)."""
+        try:
+            body = await request.json()
+        except Exception:  # noqa: BLE001
+            return web.json_response({"error": "JSON invalide."}, status=400)
+        body = body or {}
+        message = body.get("message")
+        if not message:
+            return web.json_response({"error": "Champ 'message' manquant."}, status=400)
+        try:
+            user_id = int(body.get("user_id") or (masters[0] if masters else 0))
+        except (TypeError, ValueError):
+            return web.json_response({"error": "user_id invalide."}, status=400)
+        try:
+            answer = await self._ask(user_id, message)
+        except Exception as exc:  # noqa: BLE001
+            return web.json_response(
+                {"error": f"{type(exc).__name__}: {exc}"}, status=502
+            )
+        return web.json_response({"answer": answer, "user_id": user_id})
 
     # --- utilitaires -------------------------------------------------------
 
