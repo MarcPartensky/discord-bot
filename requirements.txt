@@ -142,7 +142,7 @@ pygments==2.18.0
     # via rich
 pyjwt==2.9.0
     # via pygithub
-pymongo==4.8.0
+pymongo==4.18.2
     # via discord-bot (pyproject.toml)
 pynacl==1.5.0
     # via
