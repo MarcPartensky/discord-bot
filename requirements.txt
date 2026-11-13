@@ -56,7 +56,7 @@ deprecated==1.2.14
     # via pygithub
 distro==1.9.0
     # via groq
-dnspython==2.6.1
+dnspython==2.9.2
     # via
     #   discord-bot (pyproject.toml)
     #   pymongo
